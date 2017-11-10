@@ -31,6 +31,10 @@ public:
 
 	void	Jump();
 
+	void	BeginGrab();
+	void	StopGrab();
+	void	Throw();
+
 private:
 	AMainCharacter*	MainCharacter;
 	UMoveComponent*	MoveComponent;

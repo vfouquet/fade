@@ -27,4 +27,9 @@ public:
 	void	MoveForward(float Value);
 	void	MoveRight(float Value);
 	
+
+	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Speed")
+	float	WalkThreshold = 0.1f;
+	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Speed")
+	float	JogThreshold = 0.5f;
 };

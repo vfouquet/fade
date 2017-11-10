@@ -2,6 +2,7 @@
 
 #include "MainCharacter.h"
 
+#include "HoldComponent.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -42,4 +43,28 @@ void AMainCharacter::RotateVertical(float Value)
 {
 	float Input = Value * 100.0f * GetWorld()->GetDeltaSeconds();
 	AddControllerPitchInput(Input);
+}
+
+void	AMainCharacter::BeginGrab()
+{
+	UHoldComponent*	holdComp = FindComponentByClass<UHoldComponent>();
+	if (!holdComp)
+		return;
+	holdComp->Grab();
+}
+
+void	AMainCharacter::StopGrab()
+{
+	UHoldComponent*	holdComp = FindComponentByClass<UHoldComponent>();
+	if (!holdComp)
+		return;
+	holdComp->StopGrab();
+}
+
+void	AMainCharacter::Throw()
+{
+	UHoldComponent*	holdComp = FindComponentByClass<UHoldComponent>();
+	if (!holdComp)
+		return;
+	holdComp->Throw();
 }
