@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "MainCharacter.generated.h"
 
+class USpringArmComponent;
+class UViewTargetComponent;
+
 UCLASS()
 class BREATH_API AMainCharacter : public ACharacter
 {
@@ -32,4 +35,9 @@ public:
 	void	BeginGrab();
 	void	StopGrab();
 	void	Throw();
+private:
+	UPROPERTY(VisibleAnywhere)
+	USpringArmComponent*	SpringArmComponent;
+	UViewTargetComponent*	ViewTargetComponent;
+
 };

@@ -46,9 +46,6 @@ protected:
 	void	TargetTransitionEndCallback();
 
 private:
-	UPROPERTY(VisibleAnywhere)
-	USpringArmComponent*	SpringArmComponent;
-
 	ACharacter*	PlayerCharacter;
 
 	UTimelineComponent*	TargetTransitionTimeline;
