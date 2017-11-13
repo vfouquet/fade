@@ -13,8 +13,15 @@ UCLASS()
 class BREATH_API UPlayerCameraComponent : public UCameraComponent
 {
 	GENERATED_BODY()
-	
-	
-	
-	
+
+
+public:
+	UPlayerCameraComponent();
+
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
+
+	virtual void OnAttachmentChanged() override;
+
+private:
+	USceneComponent*	LookAtTarget;
 };
