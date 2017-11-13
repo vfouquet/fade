@@ -5,7 +5,7 @@
 #include "HoldComponent.h"
 
 #include "GameFramework/SpringArmComponent.h"
-#include "Components/ViewTargetComponent.h"
+#include "Cameras/PlayerCameraComponent.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -19,8 +19,8 @@ AMainCharacter::AMainCharacter()
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->AttachToComponent(this->GetRootComponent(), rules);
 
-	ViewTargetComponent = CreateDefaultSubobject<UViewTargetComponent>(TEXT("ViewTargetComponent"));
-	ViewTargetComponent->AttachToComponent(SpringArmComponent, rules);
+	CameraComponent = CreateDefaultSubobject<UPlayerCameraComponent>(TEXT("PlayerCameraComponent"));
+	CameraComponent->AttachToComponent(SpringArmComponent, rules);
 
 }
 

@@ -7,7 +7,7 @@
 #include "MainCharacter.generated.h"
 
 class USpringArmComponent;
-class UViewTargetComponent;
+class UPlayerCameraComponent;
 
 UCLASS()
 class BREATH_API AMainCharacter : public ACharacter
@@ -37,7 +37,7 @@ public:
 	void	Throw();
 private:
 	UPROPERTY(VisibleAnywhere)
-	USpringArmComponent*	SpringArmComponent;
-	UViewTargetComponent*	ViewTargetComponent;
+	USpringArmComponent*		SpringArmComponent;
+	UPlayerCameraComponent*		CameraComponent;
 
 };
