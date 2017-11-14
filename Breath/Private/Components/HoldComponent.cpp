@@ -71,6 +71,14 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		}
 	}
 
+	if (closestInteractableObject.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Object : %s"), *closestInteractableObject->GetOwner()->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Object : None"));
+	}
 	if (currentHoldingState == EHoldingState::LightGrabbing)
 		handleComponent->SetTargetLocation(handleTargetLocation->GetComponentLocation());
 }
@@ -102,7 +110,10 @@ void	UHoldComponent::Grab()
 	if (!closestInteractableObject->IsHeavy)
 	{
 		currentHoldingState = EHoldingState::LightGrabbing;
+
 		holdingObject = closestInteractableObject.Get();
+		if (holdingObject->IsSticked())
+			holdingObject->Unstick();
 		AActor*	holdingActor = holdingObject->GetOwner();
 
 		//MAYBE QLWAYS TRY THE ROOT AS PRIMITIVE
@@ -151,9 +162,9 @@ void	UHoldComponent::Stick()
 			return;
 
 		currentHoldingState = EHoldingState::Sticking;
-		UPrimitiveComponent* tempHoldingPrim = holdingPrimitiveComponent;
+		holdingObject->SetStickingActivated();
+		closestInteractableObject->AddStickConstraint(holdingObject, holdingPrimitiveComponent, TEXT("None"));
 		releaseLightGrabbedObject();
-		closestInteractableObject->AddStickConstraint(tempHoldingPrim, TEXT("None"));
 		currentHoldingState = EHoldingState::None;
 	}
 }

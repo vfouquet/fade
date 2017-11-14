@@ -33,7 +33,7 @@ void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// ...
 }
 
-UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UPrimitiveComponent* stickedObject, FName stickedBoneName)
+UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInteractableComponent* hook, UPrimitiveComponent* stickedObject, FName stickedBoneName)
 {
 	AActor* owner = GetOwner();
 	if (!owner)
@@ -51,5 +51,43 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UPrimiti
 	stickConstraint->RegisterComponent();
 	stickConstraint->SetConstrainedComponents(objectPrim, FName("None"), stickedObject, stickedBoneName);
 	//stickConstraint->SetDisableCollision(true);
+	
+	FStickConstraint	constraint;
+	constraint.physicConstraint = stickConstraint;
+	constraint.carrier = this;
+	constraint.hook = hook;
+	stickingConstraints.Add(constraint);
+	hook->stickingConstraints.Add(constraint);
+
 	return stickConstraint;
+}
+
+void	UInteractableComponent::Unstick()
+{
+	if (!isSticked)
+		return;
+	for (int pos = 0; pos < stickingConstraints.Num(); pos++)
+	{
+		if (this == stickingConstraints[pos].hook)
+		{
+			stickingConstraints[pos].physicConstraint->BreakConstraint();
+			stickingConstraints[pos].physicConstraint->DestroyComponent();
+			stickingConstraints[pos].carrier->RemoveHookingConstraint(this);
+			stickingConstraints.RemoveAt(pos);
+			isSticked = false;
+			return;
+		}
+	}
+}
+
+void	UInteractableComponent::RemoveHookingConstraint(UInteractableComponent* hookToRemove)
+{
+	for (int pos = 0; pos < stickingConstraints.Num(); pos++)
+	{
+		if (stickingConstraints[pos].hook == hookToRemove)
+		{
+			stickingConstraints.RemoveAt(pos);
+			return;
+		}
+	}
 }
