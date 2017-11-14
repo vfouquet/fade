@@ -2,6 +2,7 @@
 
 #include "InteractableComponent.h"
 
+#include "GameFramework/Actor.h"
 
 // Sets default values for this component's properties
 UInteractableComponent::UInteractableComponent()
@@ -32,3 +33,23 @@ void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// ...
 }
 
+UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UPrimitiveComponent* stickedObject, FName stickedBoneName)
+{
+	AActor* owner = GetOwner();
+	if (!owner)
+		return nullptr;
+	UPrimitiveComponent* objectPrim = owner->FindComponentByClass<UPrimitiveComponent>();
+	if (!objectPrim && !stickedObject)
+		return nullptr;
+	UPhysicsConstraintComponent* stickConstraint = NewObject<UPhysicsConstraintComponent>(this, TEXT("CustomPhysicConstraint"));
+	if (!stickConstraint)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Could not create physical constraint"));
+		return nullptr;
+	}
+	stickConstraint->SetupAttachment(owner->GetRootComponent());
+	stickConstraint->RegisterComponent();
+	stickConstraint->SetConstrainedComponents(objectPrim, FName("None"), stickedObject, stickedBoneName);
+	//stickConstraint->SetDisableCollision(true);
+	return stickConstraint;
+}

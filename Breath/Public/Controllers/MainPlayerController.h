@@ -34,6 +34,7 @@ public:
 	void	BeginGrab();
 	void	StopGrab();
 	void	Throw();
+	void	Stick();
 
 private:
 	AMainCharacter*	MainCharacter;

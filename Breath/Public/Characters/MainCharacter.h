@@ -35,6 +35,7 @@ public:
 	void	BeginGrab();
 	void	StopGrab();
 	void	Throw();
+	void	Stick();
 private:
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent*		SpringArmComponent;

@@ -43,11 +43,21 @@ public:
 	void	Throw();
 	void	Stick();
 
+	UFUNCTION(BlueprintCallable)
+	UInteractableComponent*	GetClosestInteractableObject() { return closestInteractableObject.IsValid() ? closestInteractableObject.Get() : nullptr; }
+	UFUNCTION(BlueprintCallable)
+	UInteractableComponent*	GetCurrentHeldObject() { return holdingObject; }
+	UFUNCTION(BlueprintCallable)
+	EHoldingState			GetCurrentState() { return currentHoldingState; }
+	UFUNCTION(BlueprintCallable)
+	void	releaseLightGrabbedObject();
 public:
 	UPROPERTY(EditAnywhere, Category = "Grab")
 	FComponentReference	HandleTargetLocationReference;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float	ThrowPower = 10.0f;
+
+private:
 
 private:
 	TWeakObjectPtr<UInteractableComponent>		closestInteractableObject;
@@ -56,7 +66,7 @@ private:
 	USceneComponent*			handleTargetLocation = nullptr;
 	UCapsuleComponent*			characterCapsule = nullptr;
 
-	TWeakObjectPtr<UInteractableComponent>	holdingObject;
-	UPrimitiveComponent*					holdingPrimitiveComponent = nullptr;
-	EHoldingState							currentHoldingState = EHoldingState::None;
+	UInteractableComponent*		holdingObject;
+	UPrimitiveComponent*		holdingPrimitiveComponent = nullptr;
+	EHoldingState				currentHoldingState = EHoldingState::None;
 };

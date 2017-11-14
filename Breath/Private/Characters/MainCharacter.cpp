@@ -21,7 +21,6 @@ AMainCharacter::AMainCharacter()
 
 	CameraComponent = CreateDefaultSubobject<UPlayerCameraComponent>(TEXT("PlayerCameraComponent"));
 	CameraComponent->AttachToComponent(SpringArmComponent, rules);
-
 }
 
 // Called when the game starts or when spawned
@@ -78,4 +77,12 @@ void	AMainCharacter::Throw()
 	if (!holdComp)
 		return;
 	holdComp->Throw();
+}
+
+void	AMainCharacter::Stick()
+{
+	UHoldComponent* holdComp = FindComponentByClass<UHoldComponent>();
+	if (!holdComp)
+		return;
+	holdComp->Stick();
 }

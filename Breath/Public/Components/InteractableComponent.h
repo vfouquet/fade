@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
+
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "InteractableComponent.generated.h"
@@ -24,6 +26,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UPhysicsConstraintComponent*	AddStickConstraint(UPrimitiveComponent* stickedObject, FName stickedBoneName);
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	CanBeGrabbed = false;
@@ -33,4 +37,7 @@ public:
 	bool	CanAcceptStick = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	IsHeavy = false;
+
+private:
+	TArray<UPhysicsConstraintComponent>	stickingConstraints;
 };

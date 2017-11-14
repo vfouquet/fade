@@ -6,6 +6,8 @@
 #include "InteractableComponent.h"
 #include "DrawDebugHelpers.h"
 
+#include "UnrealEd.h"
+
 // Sets default values for this component's properties
 UHoldComponent::UHoldComponent()
 {
@@ -55,6 +57,8 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		for (auto& hitRes : hitResults)
 		{
 			UInteractableComponent* interComp = hitRes.Actor->FindComponentByClass<UInteractableComponent>();
+			if (interComp == holdingObject)
+				continue;
 			if (interComp)
 			{
 				float distance = (hitRes.Actor->GetActorLocation() - characterCapsule->GetComponentLocation()).Size();
@@ -73,6 +77,8 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 void	UHoldComponent::Grab()
 {
+	if (currentHoldingState != EHoldingState::None)
+		return;
 	if (!closestInteractableObject.IsValid())
 		return;
 
@@ -101,9 +107,7 @@ void	UHoldComponent::StopGrab()
 {
 	if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
-		handleComponent->ReleaseComponent();
-		holdingObject = nullptr;
-		holdingPrimitiveComponent = nullptr;
+		releaseLightGrabbedObject();
 		currentHoldingState = EHoldingState::None;
 	}
 }
@@ -115,15 +119,34 @@ void	UHoldComponent::Throw()
 		currentHoldingState = EHoldingState::Throwing;
 
 		//DO THIS AT THE END OF ANIMATION (NOTIFY)
-		handleComponent->ReleaseComponent();
-		holdingPrimitiveComponent->AddImpulse(characterCapsule->GetForwardVector() * ThrowPower);
-		holdingPrimitiveComponent = nullptr;
-		holdingObject = nullptr;
+		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
+		releaseLightGrabbedObject();
+		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * ThrowPower);
 		currentHoldingState = EHoldingState::None;
 	}
 }
 
 void	UHoldComponent::Stick()
 {
+	if (!holdingObject || !closestInteractableObject.IsValid())
+		return;
 	//ATTACH CONSTRAINT TO OTHER OBJECT
+	if (currentHoldingState == EHoldingState::LightGrabbing)
+	{
+		if (!closestInteractableObject->CanAcceptStick || !holdingObject->CanBeSticked)
+			return;
+
+		currentHoldingState = EHoldingState::Sticking;
+		UPrimitiveComponent* tempHoldingPrim = holdingPrimitiveComponent;
+		releaseLightGrabbedObject();
+		closestInteractableObject->AddStickConstraint(tempHoldingPrim, TEXT("None"));
+		currentHoldingState = EHoldingState::None;
+	}
+}
+
+void	UHoldComponent::releaseLightGrabbedObject()
+{
+	handleComponent->ReleaseComponent();
+	holdingObject = nullptr;
+	holdingPrimitiveComponent = nullptr;
 }

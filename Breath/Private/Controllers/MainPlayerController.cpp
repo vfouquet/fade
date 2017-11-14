@@ -20,6 +20,7 @@ void AMainPlayerController::SetupInputComponent()
 		InputComponent->BindAction("Grab", IE_Pressed, this, &AMainPlayerController::BeginGrab);
 		InputComponent->BindAction("Grab", IE_Released, this, &AMainPlayerController::StopGrab);
 		InputComponent->BindAction("Throw", IE_Pressed, this, &AMainPlayerController::Throw);
+		InputComponent->BindAction("Stick", IE_Pressed, this, &AMainPlayerController::Stick);
 	}
 }
 
@@ -100,4 +101,10 @@ void	AMainPlayerController::Throw()
 {
 	if (MainCharacter)
 		MainCharacter->Throw();
+}
+
+void	AMainPlayerController::Stick()
+{
+	if (MainCharacter)
+		MainCharacter->Stick();
 }
