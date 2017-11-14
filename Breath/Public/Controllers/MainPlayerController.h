@@ -31,6 +31,7 @@ public:
 
 	void	Jump();
 
+	void	Action();
 	void	BeginGrab();
 	void	StopGrab();
 	void	Throw();

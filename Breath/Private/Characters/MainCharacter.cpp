@@ -55,6 +55,14 @@ void AMainCharacter::RotateVertical(float Value)
 	AddControllerPitchInput(Input);
 }
 
+void	AMainCharacter::Action()
+{
+	UHoldComponent*	holdComp = FindComponentByClass<UHoldComponent>();
+	if (!holdComp)
+		return;
+	holdComp->Action();
+}
+
 void	AMainCharacter::BeginGrab()
 {
 	UHoldComponent*	holdComp = FindComponentByClass<UHoldComponent>();

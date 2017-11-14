@@ -17,6 +17,7 @@ void AMainPlayerController::SetupInputComponent()
 		InputComponent->BindAxis("LookVertical", this, &AMainPlayerController::RotateVertical);
 
 		InputComponent->BindAction("Jump", IE_Pressed, this, &AMainPlayerController::Jump);
+		InputComponent->BindAction("Action", IE_Pressed, this, &AMainPlayerController::Action);
 		InputComponent->BindAction("Grab", IE_Pressed, this, &AMainPlayerController::BeginGrab);
 		InputComponent->BindAction("Grab", IE_Released, this, &AMainPlayerController::StopGrab);
 		InputComponent->BindAction("Throw", IE_Pressed, this, &AMainPlayerController::Throw);
@@ -83,6 +84,12 @@ void AMainPlayerController::Jump()
 	{
 		MainCharacter->Jump();
 	}
+}
+
+void	AMainPlayerController::Action()
+{
+	if (MainCharacter)
+		MainCharacter->Action();
 }
 
 void	AMainPlayerController::BeginGrab()

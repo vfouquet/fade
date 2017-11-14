@@ -75,8 +75,22 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		handleComponent->SetTargetLocation(handleTargetLocation->GetComponentLocation());
 }
 
+void	UHoldComponent::Action()
+{
+	if (currentHoldingState == EHoldingState::LightGrabbing)
+	{
+		if (closestInteractableObject.IsValid() && closestInteractableObject->CanAcceptStick)
+			Stick();
+		else
+			Throw();
+	}
+	else if (currentHoldingState == EHoldingState::HeavyGrabbing)
+		Throw();
+}
+
 void	UHoldComponent::Grab()
 {
+	//TO DO GRAB->UNSTICK SOMETHING FROM OBJECT
 	if (currentHoldingState != EHoldingState::None)
 		return;
 	if (!closestInteractableObject.IsValid())

@@ -32,6 +32,7 @@ public:
 	void	RotateHorizontal(float Value);
 	void	RotateVertical(float Value);
 	
+	void	Action();
 	void	BeginGrab();
 	void	StopGrab();
 	void	Throw();

@@ -38,6 +38,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void	Action();
 	void	Grab();
 	void	StopGrab();
 	void	Throw();
@@ -49,8 +50,6 @@ public:
 	UInteractableComponent*	GetCurrentHeldObject() { return holdingObject; }
 	UFUNCTION(BlueprintCallable)
 	EHoldingState			GetCurrentState() { return currentHoldingState; }
-	UFUNCTION(BlueprintCallable)
-	void	releaseLightGrabbedObject();
 public:
 	UPROPERTY(EditAnywhere, Category = "Grab")
 	FComponentReference	HandleTargetLocationReference;
@@ -58,6 +57,7 @@ public:
 	float	ThrowPower = 10.0f;
 
 private:
+	void	releaseLightGrabbedObject();
 
 private:
 	TWeakObjectPtr<UInteractableComponent>		closestInteractableObject;
