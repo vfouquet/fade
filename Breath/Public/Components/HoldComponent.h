@@ -44,20 +44,28 @@ public:
 	void	Throw();
 	void	Stick();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	UInteractableComponent*	GetClosestInteractableObject() { return closestInteractableObject.IsValid() ? closestInteractableObject.Get() : nullptr; }
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	UInteractableComponent*	GetCurrentHeldObject() { return holdingObject; }
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	EHoldingState			GetCurrentState() { return currentHoldingState; }
+	UFUNCTION(BlueprintPure)
+	bool	getPushingPoints(FVector& leftPoint, FVector& rightPoint);
 public:
 	UPROPERTY(EditAnywhere, Category = "Grab")
 	FComponentReference	HandleTargetLocationReference;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float	ThrowPower = 10.0f;
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHoldStateChanged, EHoldingState, previous, EHoldingState, next);
+	UPROPERTY(BlueprintAssignable)
+	FHoldStateChanged	holdingStateChangedDelegate;
 
 private:
 	void	releaseLightGrabbedObject();
+	void	createHandConstraint();
+	void	releaseHeavyGrabbedObject();
 
 private:
 	TWeakObjectPtr<UInteractableComponent>		closestInteractableObject;
@@ -69,4 +77,7 @@ private:
 	UInteractableComponent*		holdingObject;
 	UPrimitiveComponent*		holdingPrimitiveComponent = nullptr;
 	EHoldingState				currentHoldingState = EHoldingState::None;
+
+	UPhysicsConstraintComponent*	leftHandConstraint = nullptr;
+	UPhysicsConstraintComponent*	rightHandConstraint = nullptr;
 };
