@@ -6,8 +6,6 @@
 #include "InteractableComponent.h"
 #include "DrawDebugHelpers.h"
 
-#include "HeavyInteractableMoveComponent.h"
-
 #ifdef WITH_EDITOR
 #include "UnrealEd.h"
 #endif
