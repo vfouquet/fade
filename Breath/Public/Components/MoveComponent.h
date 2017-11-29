@@ -27,9 +27,17 @@ public:
 	void	MoveForward(float Value);
 	void	MoveRight(float Value);
 	
+	void	BlockCharacter() { isBlocked = true; }
+	void	UnblockCharacter() { isBlocked = false; }
+	void	EnableMovingHeavyObjectMode() { isMovingHeavyObject = true; }
+	void	DisableMovingHeavyObjectMode() { isMovingHeavyObject = false; }
 
 	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Speed")
 	float	WalkThreshold = 0.1f;
 	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Speed")
 	float	JogThreshold = 0.5f;
+
+private:
+	bool	isBlocked = false;
+	bool	isMovingHeavyObject = false;
 };

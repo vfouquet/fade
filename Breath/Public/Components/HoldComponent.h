@@ -5,6 +5,7 @@
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "./Components/CapsuleComponent.h"
 #include "InteractableComponent.h"
+#include "MoveComponent.h"
 
 UENUM(BlueprintType)
 enum class EHoldingState : uint8
@@ -15,16 +16,16 @@ enum class EHoldingState : uint8
 	Throwing UMETA(DisplayName = "Throwing"),
 	Sticking UMETA(DisplayName = "Sticking"),
 };
-
+	
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "HoldComponent.generated.h"
-
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BREATH_API UHoldComponent : public UActorComponent
 {
 	GENERATED_BODY()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHoldStateChanged, EHoldingState, previous, EHoldingState, next);
 
 public:	
 	// Sets default values for this component's properties
@@ -45,23 +46,25 @@ public:
 	void	Stick();
 
 	UFUNCTION(BlueprintPure)
-	UInteractableComponent*	GetClosestInteractableObject() { return closestInteractableObject.IsValid() ? closestInteractableObject.Get() : nullptr; }
+	UInteractableComponent*			GetClosestInteractableObject() const { return closestInteractableObject.IsValid() ? closestInteractableObject.Get() : nullptr; }
 	UFUNCTION(BlueprintPure)
-	UInteractableComponent*	GetCurrentHeldObject() { return holdingObject; }
+	UInteractableComponent*			GetCurrentHeldObject() const { return holdingObject; }
 	UFUNCTION(BlueprintPure)
-	EHoldingState			GetCurrentState() { return currentHoldingState; }
+	EHoldingState					GetCurrentState() const { return currentHoldingState; }
 	UFUNCTION(BlueprintPure)
-	bool	getPushingPoints(FVector& leftPoint, FVector& rightPoint);
+	UPhysicsConstraintComponent*	GetLeftHandConstraint() const { return leftHandConstraint; }
+	UFUNCTION(BlueprintPure)
+	UPhysicsConstraintComponent*	GetRightHandConstraint() const { return rightHandConstraint; }
+
+	//CURRENTLY PUBLIC FOR BLUEPRINT TESTS
+	UFUNCTION(BlueprintPure)
+	bool							getPushingPoints(FVector& leftPoint, FVector& rightPoint) const;
 public:
 	UPROPERTY(EditAnywhere, Category = "Grab")
 	FComponentReference	HandleTargetLocationReference;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float	ThrowPower = 10.0f;
 	
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHoldStateChanged, EHoldingState, previous, EHoldingState, next);
-	UPROPERTY(BlueprintAssignable)
-	FHoldStateChanged	holdingStateChangedDelegate;
-
 private:
 	void	releaseLightGrabbedObject();
 	void	createHandConstraint();
@@ -70,14 +73,19 @@ private:
 private:
 	TWeakObjectPtr<UInteractableComponent>		closestInteractableObject;
 	
-	UPhysicsHandleComponent*	handleComponent;
-	USceneComponent*			handleTargetLocation = nullptr;
-	UCapsuleComponent*			characterCapsule = nullptr;
+	UPhysicsHandleComponent*		handleComponent;
+	UPrimitiveComponent*			handleTargetLocation = nullptr;
+	UCapsuleComponent*				characterCapsule = nullptr;
 
-	UInteractableComponent*		holdingObject;
-	UPrimitiveComponent*		holdingPrimitiveComponent = nullptr;
-	EHoldingState				currentHoldingState = EHoldingState::None;
+	UInteractableComponent*			holdingObject;
+	UPrimitiveComponent*			holdingPrimitiveComponent = nullptr;
+	EHoldingState					currentHoldingState = EHoldingState::None;
 
 	UPhysicsConstraintComponent*	leftHandConstraint = nullptr;
 	UPhysicsConstraintComponent*	rightHandConstraint = nullptr;
+
+	UMoveComponent*					characterMoveComponent = nullptr;
+public:
+	UPROPERTY(BlueprintAssignable)
+	FHoldStateChanged	holdingStateChangedDelegate;
 };

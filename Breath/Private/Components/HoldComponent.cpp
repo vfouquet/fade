@@ -30,7 +30,8 @@ void UHoldComponent::BeginPlay()
 	// ...
 	
 	characterCapsule = GetOwner()->FindComponentByClass<UCapsuleComponent>();
-	handleTargetLocation = HandleTargetLocationReference.GetComponent(GetOwner());
+	characterMoveComponent = GetOwner()->FindComponentByClass<UMoveComponent>();
+	handleTargetLocation = Cast<UPrimitiveComponent>(HandleTargetLocationReference.GetComponent(GetOwner()));
 }
 
 
@@ -58,6 +59,8 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	{	
 		for (auto& hitRes : hitResults)
 		{
+			if (!hitRes.Actor.IsValid())
+				continue;
 			UInteractableComponent* interComp = hitRes.Actor->FindComponentByClass<UInteractableComponent>();
 			if (interComp == holdingObject)
 				continue;
@@ -114,7 +117,7 @@ void	UHoldComponent::Grab()
 	if (!closestInteractableObject->IsHeavy)
 	{
 		currentHoldingState = EHoldingState::LightGrabbing;
-		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::LightGrabbing);
+		//holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::LightGrabbing);
 
 		holdingObject = closestInteractableObject.Get();
 		if (holdingObject->IsSticked())
@@ -130,12 +133,15 @@ void	UHoldComponent::Grab()
 	else
 	{
 		currentHoldingState = EHoldingState::HeavyGrabbing;
+		if (characterMoveComponent)
+			characterMoveComponent->EnableMovingHeavyObjectMode();
+
 		holdingObject = closestInteractableObject.Get();
 		holdingPrimitiveComponent =
 			holdingObject->GetOwner()->FindComponentByClass<UPrimitiveComponent>();
 		createHandConstraint();
 
-		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::HeavyGrabbing);
+		//holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::HeavyGrabbing);
 	}
 }
 
@@ -145,16 +151,19 @@ void	UHoldComponent::StopGrab()
 	{
 		releaseLightGrabbedObject();
 		currentHoldingState = EHoldingState::None;
-		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::None);
+		//holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::None);
 	}
 	else if (currentHoldingState == EHoldingState::HeavyGrabbing)
 	{
+		//holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyGrabbing, EHoldingState::None);
+		if (characterMoveComponent)
+			characterMoveComponent->DisableMovingHeavyObjectMode();
+
 		releaseHeavyGrabbedObject();
 
 		holdingObject = nullptr;
 		holdingPrimitiveComponent = nullptr;
 		currentHoldingState = EHoldingState::None;
-		holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyGrabbing, EHoldingState::None);
 	}
 }
 
@@ -163,13 +172,13 @@ void	UHoldComponent::Throw()
 	if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
 		currentHoldingState = EHoldingState::Throwing;
-		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Throwing);
+		//holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Throwing);
 
 		//DO THIS AT THE END OF ANIMATION (NOTIFY)
 		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
 		releaseLightGrabbedObject();
 		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * ThrowPower);
-		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
+		//holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
 		currentHoldingState = EHoldingState::None;
 	}
 }
@@ -185,12 +194,18 @@ void	UHoldComponent::Stick()
 			return;
 
 		currentHoldingState = EHoldingState::Sticking;
+		if (characterMoveComponent)
+			characterMoveComponent->BlockCharacter();
+
 		holdingObject->SetStickingActivated();
 		closestInteractableObject->AddStickConstraint(holdingObject, holdingPrimitiveComponent, TEXT("None"));
 		releaseLightGrabbedObject();
-		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Sticking);
+		//holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Sticking);
+
+		if (characterMoveComponent)
+			characterMoveComponent->UnblockCharacter();
 		currentHoldingState = EHoldingState::None;
-		holdingStateChangedDelegate.Broadcast(EHoldingState::Sticking, EHoldingState::None);
+		//holdingStateChangedDelegate.Broadcast(EHoldingState::Sticking, EHoldingState::None);
 	}
 }
 
@@ -232,10 +247,12 @@ void	UHoldComponent::createHandConstraint()
 	rightHandConstraint->SetWorldLocation(rightHandLocation);
 	//
 
-	leftHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingPrimitiveComponent, "None");
-	rightHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingPrimitiveComponent, "None");
-	leftHandConstraint->SetDisableCollision(true);
-	rightHandConstraint->SetDisableCollision(true);
+	//leftHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingPrimitiveComponent, "None");
+	leftHandConstraint->SetConstrainedComponents(handleTargetLocation, "None", holdingPrimitiveComponent, "None");
+	//rightHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingPrimitiveComponent, "None");
+	rightHandConstraint->SetConstrainedComponents(handleTargetLocation, "None", holdingPrimitiveComponent, "None");
+	//leftHandConstraint->SetDisableCollision(true);
+	//rightHandConstraint->SetDisableCollision(true);
 
 	//characterCapsule->GetBodyInstance()->Weld(holdingPrimitiveComponent->GetBodyInstance(), holdingPrimitiveComponent->GetComponentTransform());
 }
@@ -255,7 +272,7 @@ void	UHoldComponent::releaseHeavyGrabbedObject()
 	//characterCapsule->GetBodyInstance()->UnWeld(holdingPrimitiveComponent->GetBodyInstance());
 }
 
-bool	UHoldComponent::getPushingPoints(FVector& firstPoint, FVector& secondPoint)
+bool	UHoldComponent::getPushingPoints(FVector& firstPoint, FVector& secondPoint) const
 {
 	FVector	pointLoc;
 	float dis = holdingPrimitiveComponent->GetClosestPointOnCollision(characterCapsule->GetOwner()->GetActorLocation(), pointLoc);

@@ -36,44 +36,64 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 void UMoveComponent::MoveForward(float Value)
 {
-	bool neg = false;
-	if (Value < 0.0f)
-	{
-		neg = true;
-		Value *= -1.0f;
-	}
-
-	if (Value <= WalkThreshold)
+	if (isBlocked)
 		return;
-	float realValue = (Value <= JogThreshold) ? JogThreshold : 1.0f;
-	realValue *= (neg) ? -1.0f : 1.0f;
 
-	ACharacter* Char = Cast<ACharacter>(GetOwner());
+	if (!isMovingHeavyObject)
+	{
+		bool neg = false;
+		if (Value < 0.0f)
+		{
+			neg = true;
+			Value *= -1.0f;
+		}
 
-	FRotator CamRot = Char->GetControlRotation();
-	CamRot.Pitch = 0.0f;
-	FVector MoveDir = CamRot.Vector();
-	Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
+		if (Value <= WalkThreshold)
+			return;
+		float realValue = (Value <= JogThreshold) ? JogThreshold : 1.0f;
+		realValue *= (neg) ? -1.0f : 1.0f;
+
+		ACharacter* Char = Cast<ACharacter>(GetOwner());
+		APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
+
+		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
+		CamRot.Pitch = 0.0f;
+		FVector MoveDir = CamRot.Vector();
+		Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
+
+		FVector direction = Char->GetCharacterMovement()->GetLastInputVector() + MoveDir * realValue;
+		Char->SetActorRotation(direction.Rotation().Quaternion());
+	}
 }
 
 void UMoveComponent::MoveRight(float Value)
 {
-	bool neg = false;
-	if (Value < 0.0f)
-	{
-		neg = true;
-		Value *= -1.0f;
-	}
-
-	if (Value <= WalkThreshold)
+	if (isBlocked)
 		return;
 
-	float realValue = (Value <= JogThreshold) ? JogThreshold : 1.0f;
-	realValue *= (neg) ? -1.0f : 1.0f;
-	ACharacter* Char = Cast<ACharacter>(GetOwner());
+	if (!isMovingHeavyObject)
+	{
+			bool neg = false;
+		if (Value < 0.0f)
+		{
+			neg = true;
+			Value *= -1.0f;
+		}
 
-	FRotator CamRot = Char->GetControlRotation();
-	CamRot.Pitch = 0.0f;
-	FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
-	Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
+		if (Value <= WalkThreshold)
+			return;
+
+		float realValue = (Value <= JogThreshold) ? JogThreshold : 1.0f;
+		realValue *= (neg) ? -1.0f : 1.0f;
+		ACharacter* Char = Cast<ACharacter>(GetOwner());
+		APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
+
+		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
+		CamRot.Pitch = 0.0f;
+		FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
+		Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
+
+		FVector direction = Char->GetCharacterMovement()->GetLastInputVector() + MoveDir * realValue;
+		Char->SetActorRotation(direction.Rotation().Quaternion());
+	}
 }
