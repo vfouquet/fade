@@ -13,8 +13,8 @@ void AMainPlayerController::SetupInputComponent()
 	{
 		InputComponent->BindAxis("MoveForward", this, &AMainPlayerController::MoveForward);
 		InputComponent->BindAxis("MoveRight", this, &AMainPlayerController::MoveRight);
-		InputComponent->BindAxis("LookHorizontal", this, &AMainPlayerController::RotateHorizontal);
-		InputComponent->BindAxis("LookVertical", this, &AMainPlayerController::RotateVertical);
+		//InputComponent->BindAxis("LookHorizontal", this, &AMainPlayerController::RotateHorizontal);
+		//InputComponent->BindAxis("LookVertical", this, &AMainPlayerController::RotateVertical);
 
 		InputComponent->BindAction("Jump", IE_Pressed, this, &AMainPlayerController::Jump);
 		InputComponent->BindAction("Action", IE_Pressed, this, &AMainPlayerController::Action);

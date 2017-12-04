@@ -36,8 +36,12 @@ public:
 	float	WalkThreshold = 0.1f;
 	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Speed")
 	float	JogThreshold = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
+	float	HeavyAngleTolerance = 5.0f;
 
 private:
-	bool	isBlocked = false;
-	bool	isMovingHeavyObject = false;
+	
+	FVector2D	currentInputValue;
+	bool		isBlocked = false;
+	bool		isMovingHeavyObject = false;
 };

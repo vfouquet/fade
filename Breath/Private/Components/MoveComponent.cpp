@@ -39,7 +39,7 @@ void UMoveComponent::MoveForward(float Value)
 	if (isBlocked)
 		return;
 
-//	if (!isMovingHeavyObject)
+	if (!isMovingHeavyObject)
 	{
 		bool neg = false;
 		if (Value < 0.0f)
@@ -60,9 +60,25 @@ void UMoveComponent::MoveForward(float Value)
 		CamRot.Pitch = 0.0f;
 		FVector MoveDir = CamRot.Vector();
 		Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
+	}
+	else
+	{
+		currentInputValue.Y = Value;
+		ACharacter* Char = Cast<ACharacter>(GetOwner());
+		APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
 
-		FVector direction = Char->GetCharacterMovement()->GetLastInputVector() + MoveDir * realValue;
-		//Char->SetActorRotation(direction.Rotation().Quaternion());
+		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
+		float diff = CamRot.Yaw - Char->GetActorRotation().Yaw + 90.0f;
+		float	inputAngle = FMath::RadiansToDegrees(FMath::Atan2(currentInputValue.Y, currentInputValue.X));
+		FVector2D	targetAngles(diff - HeavyAngleTolerance, diff + HeavyAngleTolerance);
+		if (inputAngle >= targetAngles.X && inputAngle <= targetAngles.Y)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("THIS IS OK"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Diff : %f   -   Input Angle : %f"), diff, inputAngle);
+		}
 	}
 }
 
@@ -71,7 +87,7 @@ void UMoveComponent::MoveRight(float Value)
 	if (isBlocked)
 		return;
 
-	//if (!isMovingHeavyObject)
+	if (!isMovingHeavyObject)
 	{
 		bool neg = false;
 		if (Value < 0.0f)
@@ -92,8 +108,24 @@ void UMoveComponent::MoveRight(float Value)
 		CamRot.Pitch = 0.0f;
 		FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
 		Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
+	}
+	else
+	{
+		currentInputValue.X = Value;
+		ACharacter* Char = Cast<ACharacter>(GetOwner());
+		APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
 
-		FVector direction = Char->GetCharacterMovement()->GetLastInputVector() + MoveDir * realValue;
-		//Char->SetActorRotation(direction.Rotation().Quaternion());
+		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
+		float diff = CamRot.Yaw - Char->GetActorRotation().Yaw + 90.0f;
+		float	inputAngle = FMath::RadiansToDegrees(FMath::Atan2(currentInputValue.Y, currentInputValue.X));
+		FVector2D	targetAngles(diff - HeavyAngleTolerance, diff + HeavyAngleTolerance);
+		if (inputAngle >= targetAngles.X && inputAngle <= targetAngles.Y)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("THIS IS OK"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Diff : %f   -   Input Angle : %f"), diff, inputAngle);
+		}
 	}
 }

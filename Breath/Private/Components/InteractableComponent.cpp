@@ -41,18 +41,21 @@ void UInteractableComponent::BeginPlay()
 
 	rightConstraintPoint->AttachToComponent(primitiveComp, rules);
 	rightConstraintPoint->SetSphereRadius(10.0f, true);
-	rightConstraintPoint->SetMassOverrideInKg("None", halfMass, true);
 	rightConstraintPoint->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	rightConstraintPoint->SetMassOverrideInKg("None", halfMass, true);
 	rightConstraintPoint->SetSimulatePhysics(true);
 	rightConstraintPoint->SetActive(false);
 
+	leftConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	leftConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 22.5f);
+	leftConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
 	leftConstraint->AttachToComponent(primitiveComp, rules);
 	leftConstraint->SetActive(false);
+	rightConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	rightConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 22.5f);
+	rightConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
 	rightConstraint->AttachToComponent(primitiveComp, rules);
 	rightConstraint->SetActive(false);
-
-	//leftConstraintPoint->WeldToImplementation(primitiveComp);
-	//rightConstraintPoint->WeldToImplementation(primitiveComp);
 }
 
 
@@ -95,27 +98,6 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInterac
 
 UPrimitiveComponent*	UInteractableComponent::CreateLeftConstraintPoint(FVector location)
 {
-	/*
-	leftConstraintPoint = NewObject<USphereComponent>(this, TEXT("LeftConstraintPoint"));
-	if (!leftConstraintPoint)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Could not create left constraint point"));
-		return nullptr;
-	}
-
-	leftConstraintPoint->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	leftConstraintPoint->SetWorldLocation(location);
-	leftConstraintPoint->SetSphereRadius(0.0f, true);
-	UPrimitiveComponent*	primitiveComp = GetOwner()->FindComponentByClass<UPrimitiveComponent>();
-	FAttachmentTransformRules	rules(EAttachmentRule::KeepWorld, true);
-	leftConstraintPoint->AttachToComponent(primitiveComp, rules);
-	//leftConstraintPoint->AttachTo(primitiveComp, "None", EAttachLocation::KeepWorldPosition, true);
-	primitiveComp->GetBodyInstance()->Weld(leftConstraintPoint->GetBodyInstance(), leftConstraintPoint->GetComponentTransform());
-	leftConstraintPoint->SetSimulatePhysics(true);
-	//leftConstraintPoint->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	leftConstraintPoint->RegisterComponent();
-	*/
-	
 	UPrimitiveComponent*	primitiveComp = GetOwner()->FindComponentByClass<UPrimitiveComponent>();
 	leftConstraintPoint->SetWorldLocation(location);
 	leftConstraintPoint->SetActive(true);
@@ -128,28 +110,6 @@ UPrimitiveComponent*	UInteractableComponent::CreateLeftConstraintPoint(FVector l
 
 UPrimitiveComponent*	UInteractableComponent::CreateRightConstraintPoint(FVector location)
 {
-	/*
-	rightConstraintPoint = NewObject<USphereComponent>(this, TEXT("RightConstraintPoint"));
-	if (!rightConstraintPoint)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Could not create right constraint point"));
-		return nullptr;
-	}
-
-	//rightConstraintPoint->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	rightConstraintPoint->SetWorldLocation(location);
-	rightConstraintPoint->SetSphereRadius(0.0f, true);
-	
-	UPrimitiveComponent*	primitiveComp = GetOwner()->FindComponentByClass<UPrimitiveComponent>();
-	FAttachmentTransformRules	rules(EAttachmentRule::KeepWorld, true);
-	rightConstraintPoint->AttachToComponent(primitiveComp, rules);
-	//rightConstraintPoint->AttachTo(primitiveComp, "None", EAttachLocation::KeepWorldPosition, true);
-	primitiveComp->GetBodyInstance()->Weld(rightConstraintPoint->GetBodyInstance(), rightConstraintPoint->GetComponentTransform());
-	rightConstraintPoint->SetSimulatePhysics(true);
-
-	rightConstraintPoint->RegisterComponent();
-	*/
-	
 	UPrimitiveComponent*	primitiveComp = GetOwner()->FindComponentByClass<UPrimitiveComponent>();
 	rightConstraintPoint->SetWorldLocation(location);
 	rightConstraintPoint->SetActive(true);
@@ -162,6 +122,12 @@ UPrimitiveComponent*	UInteractableComponent::CreateRightConstraintPoint(FVector 
 
 void	UInteractableComponent::ReleaseLeftRightConstraintPoint()
 {
+	leftConstraint->BreakConstraint();
+	leftConstraintPoint->SetActive(false);
+	leftConstraint->SetActive(false);
+	rightConstraint->BreakConstraint();
+	rightConstraintPoint->SetActive(false);
+	rightConstraint->SetActive(false);
 	/*
 	if (leftConstraintPoint)
 	{
