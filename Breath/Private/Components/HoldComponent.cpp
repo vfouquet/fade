@@ -32,6 +32,8 @@ void UHoldComponent::BeginPlay()
 	characterCapsule = GetOwner()->FindComponentByClass<UCapsuleComponent>();
 	characterMoveComponent = GetOwner()->FindComponentByClass<UMoveComponent>();
 	handleTargetLocation = Cast<UPrimitiveComponent>(HandleTargetLocationReference.GetComponent(GetOwner()));
+	leftHandConstraint = Cast<UPhysicsConstraintComponent>(LeftHandPhysicalConstraintReference.GetComponent(GetOwner()));
+	rightHandConstraint = Cast<UPhysicsConstraintComponent>(RightHandPhysicalConstraintReference.GetComponent(GetOwner()));
 }
 
 
@@ -88,6 +90,16 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		if (cont->IsInputKeyDown(EKeys::G))
 			GUnrealEd->PlayWorld->bDebugPauseExecution = true;
 #endif
+		/*
+		if (leftHandConstraint)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("LEFT   Swing1 : %f - Swing2 : %f - Twist : %f"), leftHandConstraint->GetCurrentSwing1(), leftHandConstraint->GetCurrentSwing2(), leftHandConstraint->GetCurrentTwist());
+		}
+		if (rightHandConstraint)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("RIGHT  Swing1 : %f - Swing2 : %f - Twist : %f"), rightHandConstraint->GetCurrentSwing1(), rightHandConstraint->GetCurrentSwing2(), rightHandConstraint->GetCurrentTwist());
+		}
+		*/
 	}
 }
 
@@ -117,7 +129,7 @@ void	UHoldComponent::Grab()
 	if (!closestInteractableObject->IsHeavy)
 	{
 		currentHoldingState = EHoldingState::LightGrabbing;
-		//holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::LightGrabbing);
+		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::LightGrabbing);
 
 		holdingObject = closestInteractableObject.Get();
 		if (holdingObject->IsSticked())
@@ -141,7 +153,7 @@ void	UHoldComponent::Grab()
 			holdingObject->GetOwner()->FindComponentByClass<UPrimitiveComponent>();
 		createHandConstraint();
 
-		//holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::HeavyGrabbing);
+		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::HeavyGrabbing);
 	}
 }
 
@@ -151,11 +163,11 @@ void	UHoldComponent::StopGrab()
 	{
 		releaseLightGrabbedObject();
 		currentHoldingState = EHoldingState::None;
-		//holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::None);
+		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::None);
 	}
 	else if (currentHoldingState == EHoldingState::HeavyGrabbing)
 	{
-		//holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyGrabbing, EHoldingState::None);
+		holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyGrabbing, EHoldingState::None);
 		if (characterMoveComponent)
 			characterMoveComponent->DisableMovingHeavyObjectMode();
 
@@ -172,13 +184,13 @@ void	UHoldComponent::Throw()
 	if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
 		currentHoldingState = EHoldingState::Throwing;
-		//holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Throwing);
+		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Throwing);
 
 		//DO THIS AT THE END OF ANIMATION (NOTIFY)
 		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
 		releaseLightGrabbedObject();
 		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * ThrowPower);
-		//holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
+		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
 		currentHoldingState = EHoldingState::None;
 	}
 }
@@ -200,12 +212,12 @@ void	UHoldComponent::Stick()
 		holdingObject->SetStickingActivated();
 		closestInteractableObject->AddStickConstraint(holdingObject, holdingPrimitiveComponent, TEXT("None"));
 		releaseLightGrabbedObject();
-		//holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Sticking);
+		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Sticking);
 
 		if (characterMoveComponent)
 			characterMoveComponent->UnblockCharacter();
 		currentHoldingState = EHoldingState::None;
-		//holdingStateChangedDelegate.Broadcast(EHoldingState::Sticking, EHoldingState::None);
+		holdingStateChangedDelegate.Broadcast(EHoldingState::Sticking, EHoldingState::None);
 	}
 }
 
@@ -218,70 +230,34 @@ void	UHoldComponent::releaseLightGrabbedObject()
 
 void	UHoldComponent::createHandConstraint()
 {
-	leftHandConstraint = NewObject<UPhysicsConstraintComponent>(this, TEXT("Left Hand Constraint"));
-	if (!leftHandConstraint)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Could not create left hand constraint"));
-		return;
-	}
-	rightHandConstraint = NewObject<UPhysicsConstraintComponent>(this, TEXT("Right Hand Constraint"));
-	if (!rightHandConstraint)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Could not create right hand constraint"));
-		
-		leftHandConstraint->DestroyComponent();
-		return;
-	}
-	leftHandConstraint->SetupAttachment(GetOwner()->GetRootComponent());
-	rightHandConstraint->SetupAttachment(GetOwner()->GetRootComponent());
-	leftHandConstraint->RegisterComponent();
-	rightHandConstraint->RegisterComponent();
+	FVector	center;
+	FVector leftSphereLocation;
+	FVector rightSphereLocation;
+	getPushingPoints(center, leftSphereLocation, rightSphereLocation);
 
-	//TEMPORARY CHANGE WHEN CHARACTER HAVE BONE (USE BONE IN SET CONSTRAINED)
-	
-	FVector	leftHandLocation;
-	FVector	rightHandLocation;
-	getPushingPoints(leftHandLocation, rightHandLocation);
-
-	leftHandConstraint->SetWorldLocation(leftHandLocation);
-	rightHandConstraint->SetWorldLocation(rightHandLocation);
-	//
-
+	leftHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingObject->CreateLeftConstraintPoint(leftSphereLocation), "None");
+	rightHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingObject->CreateRightConstraintPoint(rightSphereLocation), "None");
 	//leftHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingPrimitiveComponent, "None");
-	leftHandConstraint->SetConstrainedComponents(handleTargetLocation, "None", holdingPrimitiveComponent, "None");
 	//rightHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingPrimitiveComponent, "None");
-	rightHandConstraint->SetConstrainedComponents(handleTargetLocation, "None", holdingPrimitiveComponent, "None");
-	//leftHandConstraint->SetDisableCollision(true);
-	//rightHandConstraint->SetDisableCollision(true);
-
-	//characterCapsule->GetBodyInstance()->Weld(holdingPrimitiveComponent->GetBodyInstance(), holdingPrimitiveComponent->GetComponentTransform());
 }
 
 void	UHoldComponent::releaseHeavyGrabbedObject()
 {
 	if (leftHandConstraint)
-	{
 		leftHandConstraint->BreakConstraint();
-		leftHandConstraint->DestroyComponent();
-	}
 	if (rightHandConstraint)
-	{
 		rightHandConstraint->BreakConstraint();
-		rightHandConstraint->DestroyComponent();
-	}
-	//characterCapsule->GetBodyInstance()->UnWeld(holdingPrimitiveComponent->GetBodyInstance());
 }
 
-bool	UHoldComponent::getPushingPoints(FVector& firstPoint, FVector& secondPoint) const
+bool	UHoldComponent::getPushingPoints(FVector& centerPoint, FVector& firstPoint, FVector& secondPoint) const
 {
-	FVector	pointLoc;
-	float dis = holdingPrimitiveComponent->GetClosestPointOnCollision(characterCapsule->GetOwner()->GetActorLocation(), pointLoc);
+	float dis = holdingPrimitiveComponent->GetClosestPointOnCollision(characterCapsule->GetOwner()->GetActorLocation(), centerPoint);
 	if (dis == 0.0f)
 		return false;
-	FVector direction = pointLoc - characterCapsule->GetOwner()->GetActorLocation();
+	FVector direction = centerPoint - characterCapsule->GetOwner()->GetActorLocation();
 	FVector normal = FVector::CrossProduct(direction, characterCapsule->GetOwner()->GetActorUpVector()).GetUnsafeNormal();
-	firstPoint = pointLoc + normal * characterCapsule->GetScaledCapsuleRadius();
-	secondPoint = pointLoc - normal * characterCapsule->GetScaledCapsuleRadius();
+	firstPoint = centerPoint + normal * characterCapsule->GetScaledCapsuleRadius();
+	secondPoint = centerPoint - normal * characterCapsule->GetScaledCapsuleRadius();
 	DrawDebugSphere(GetWorld(), firstPoint, 10.0f, 12, FColor::Emerald, true, 5.0f);
 	DrawDebugSphere(GetWorld(), secondPoint, 10.0f, 12, FColor::Turquoise, true, 5.0f);
 	return true;

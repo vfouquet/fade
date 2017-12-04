@@ -58,13 +58,17 @@ public:
 
 	//CURRENTLY PUBLIC FOR BLUEPRINT TESTS
 	UFUNCTION(BlueprintPure)
-	bool							getPushingPoints(FVector& leftPoint, FVector& rightPoint) const;
+	bool							getPushingPoints(FVector& centerPoint, FVector& leftPoint, FVector& rightPoint) const;
 public:
 	UPROPERTY(EditAnywhere, Category = "Grab")
 	FComponentReference	HandleTargetLocationReference;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float	ThrowPower = 10.0f;
-	
+	UPROPERTY(EditAnywhere, Category = "Hold")
+	FComponentReference	LeftHandPhysicalConstraintReference;
+	UPROPERTY(EditAnywhere, Category = "Hold")
+	FComponentReference	RightHandPhysicalConstraintReference;
+
 private:
 	void	releaseLightGrabbedObject();
 	void	createHandConstraint();

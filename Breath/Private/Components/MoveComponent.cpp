@@ -39,7 +39,7 @@ void UMoveComponent::MoveForward(float Value)
 	if (isBlocked)
 		return;
 
-	if (!isMovingHeavyObject)
+//	if (!isMovingHeavyObject)
 	{
 		bool neg = false;
 		if (Value < 0.0f)
@@ -62,7 +62,7 @@ void UMoveComponent::MoveForward(float Value)
 		Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
 
 		FVector direction = Char->GetCharacterMovement()->GetLastInputVector() + MoveDir * realValue;
-		Char->SetActorRotation(direction.Rotation().Quaternion());
+		//Char->SetActorRotation(direction.Rotation().Quaternion());
 	}
 }
 
@@ -71,9 +71,9 @@ void UMoveComponent::MoveRight(float Value)
 	if (isBlocked)
 		return;
 
-	if (!isMovingHeavyObject)
+	//if (!isMovingHeavyObject)
 	{
-			bool neg = false;
+		bool neg = false;
 		if (Value < 0.0f)
 		{
 			neg = true;
@@ -94,6 +94,6 @@ void UMoveComponent::MoveRight(float Value)
 		Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
 
 		FVector direction = Char->GetCharacterMovement()->GetLastInputVector() + MoveDir * realValue;
-		Char->SetActorRotation(direction.Rotation().Quaternion());
+		//Char->SetActorRotation(direction.Rotation().Quaternion());
 	}
 }

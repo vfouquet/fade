@@ -33,7 +33,7 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	auto* temp = FindComponentByClass<UPhysicsConstraintComponent>();
 }
 
 // Called to bind functionality to input

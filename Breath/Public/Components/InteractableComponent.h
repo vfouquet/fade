@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Components/SphereComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 #include "CoreMinimal.h"
@@ -34,6 +35,10 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPhysicsConstraintComponent*	AddStickConstraint(UInteractableComponent* hook, UPrimitiveComponent* stickedObject, FName stickedBoneName);
+	UPrimitiveComponent*			CreateLeftConstraintPoint(FVector location);
+	UPrimitiveComponent*			CreateRightConstraintPoint(FVector location);
+	void							ReleaseLeftRightConstraintPoint();
+	
 	void							Unstick();
 	void							RemoveHookingConstraint(UInteractableComponent* hookToRemove);
 
@@ -50,7 +55,12 @@ public:
 	bool	IsHeavy = false;
 
 private:
-	TArray<FStickConstraint>	stickingConstraints;
+	TArray<FStickConstraint>		stickingConstraints;
 
-	bool						isSticked = false;
+	USphereComponent*				leftConstraintPoint = nullptr;
+	USphereComponent*				rightConstraintPoint = nullptr;
+	UPhysicsConstraintComponent*	leftConstraint = nullptr;
+	UPhysicsConstraintComponent*	rightConstraint = nullptr;
+
+	bool							isSticked = false;
 };
