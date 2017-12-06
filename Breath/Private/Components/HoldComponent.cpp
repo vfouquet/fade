@@ -86,6 +86,10 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		ACharacter*	charac = Cast<ACharacter>(GetOwner());
 		if (!charac)
 			return;
+		UMoveComponent* moveComp = charac->FindComponentByClass<UMoveComponent>();
+		if (moveComp)
+			moveComp->SetHoldingObjectLocation(holdingPrimitiveComponent->GetComponentLocation());
+
 		APlayerController*	cont = Cast<APlayerController>(charac->GetController());
 		if (cont->IsInputKeyDown(EKeys::G))
 			GUnrealEd->PlayWorld->bDebugPauseExecution = true;

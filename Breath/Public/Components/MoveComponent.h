@@ -27,10 +27,25 @@ public:
 	void	MoveForward(float Value);
 	void	MoveRight(float Value);
 	
+	UFUNCTION(BlueprintPure)
+	float	GetInputAngle() const { return FMath::RadiansToDegrees(FMath::Atan2(currentInputValue.Y, currentInputValue.X)); };
+	UFUNCTION(BlueprintPure)
+	float	GetCameraTargetDiffAngle() const;
+	UFUNCTION(BlueprintPure)
+	float	GetRotateMultiplayer(float value) const;
+
+	UFUNCTION(BlueprintCallable)
 	void	BlockCharacter() { isBlocked = true; }
+	UFUNCTION(BlueprintCallable)
 	void	UnblockCharacter() { isBlocked = false; }
-	void	EnableMovingHeavyObjectMode() { isMovingHeavyObject = true; }
-	void	DisableMovingHeavyObjectMode() { isMovingHeavyObject = false; }
+	UFUNCTION(BlueprintCallable)
+	void	EnableMovingHeavyObjectMode();
+	UFUNCTION(BlueprintCallable)
+	void	DisableMovingHeavyObjectMode();
+	UFUNCTION(BlueprintCallable)
+	void	SetHoldingObjectLocation(FVector const& value) { holdingObjectLocation = value; }
+
+public:
 
 	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Speed")
 	float	WalkThreshold = 0.1f;
@@ -38,10 +53,12 @@ public:
 	float	JogThreshold = 0.5f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
 	float	HeavyAngleTolerance = 5.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
+	float	RotationSpeed = 10.0f;
 
 private:
-	
-	FVector2D	currentInputValue;
 	bool		isBlocked = false;
 	bool		isMovingHeavyObject = false;
+	FVector		holdingObjectLocation;
+	FVector2D	currentInputValue;
 };

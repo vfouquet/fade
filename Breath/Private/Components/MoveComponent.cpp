@@ -39,7 +39,40 @@ void UMoveComponent::MoveForward(float Value)
 	if (isBlocked)
 		return;
 
-	if (!isMovingHeavyObject)
+	ACharacter* Char = Cast<ACharacter>(GetOwner());
+	APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
+
+	float	realValue = 0.0f;
+
+	if (isMovingHeavyObject)
+	{
+		currentInputValue.Y = Value;
+		if (Value == 0.0f)
+			return;
+
+		float	inputAngle = GetInputAngle();
+		float	cameraDiffAngle = GetCameraTargetDiffAngle();
+
+		float difference = inputAngle - cameraDiffAngle;
+
+		if (difference >= -HeavyAngleTolerance && difference <= HeavyAngleTolerance)
+			realValue = 1.0f;
+		else if (difference >= -180.0f - HeavyAngleTolerance && difference <= -180.0f + HeavyAngleTolerance)
+			realValue = -1.0f;
+		else
+		{
+			float coeff = GetRotateMultiplayer(difference) * RotationSpeed * GetWorld()->GetDeltaSeconds();
+			//MAYBE USE DELTA TIME AND OBJECT WEIGHT
+			FRotator	rotation = FQuat(FVector::UpVector, FMath::DegreesToRadians(coeff)).Rotator();
+			FVector		holdingToCharac = Char->GetActorLocation() - holdingObjectLocation;
+			FVector		holdingToNewLoc = rotation.RotateVector(holdingToCharac);
+			FVector		finalLocation = holdingToNewLoc + holdingObjectLocation;
+			FRotator	finalRotation = rotation + Char->GetActorRotation();
+			Char->SetActorLocationAndRotation(finalLocation, finalRotation.Quaternion(), true, nullptr, ETeleportType::TeleportPhysics);
+			return;
+		}
+	}
+	else
 	{
 		bool neg = false;
 		if (Value < 0.0f)
@@ -50,36 +83,14 @@ void UMoveComponent::MoveForward(float Value)
 
 		if (Value <= WalkThreshold)
 			return;
-		float realValue = (Value <= JogThreshold) ? JogThreshold : 1.0f;
+		realValue = (Value <= JogThreshold) ? JogThreshold : 1.0f;
 		realValue *= (neg) ? -1.0f : 1.0f;
-
-		ACharacter* Char = Cast<ACharacter>(GetOwner());
-		APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
-
-		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
-		CamRot.Pitch = 0.0f;
-		FVector MoveDir = CamRot.Vector();
-		Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
 	}
-	else
-	{
-		currentInputValue.Y = Value;
-		ACharacter* Char = Cast<ACharacter>(GetOwner());
-		APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
 
-		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
-		float diff = CamRot.Yaw - Char->GetActorRotation().Yaw + 90.0f;
-		float	inputAngle = FMath::RadiansToDegrees(FMath::Atan2(currentInputValue.Y, currentInputValue.X));
-		FVector2D	targetAngles(diff - HeavyAngleTolerance, diff + HeavyAngleTolerance);
-		if (inputAngle >= targetAngles.X && inputAngle <= targetAngles.Y)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("THIS IS OK"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Diff : %f   -   Input Angle : %f"), diff, inputAngle);
-		}
-	}
+	FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
+	CamRot.Pitch = 0.0f;
+	FVector MoveDir = CamRot.Vector();
+	Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
 }
 
 void UMoveComponent::MoveRight(float Value)
@@ -87,6 +98,9 @@ void UMoveComponent::MoveRight(float Value)
 	if (isBlocked)
 		return;
 
+	ACharacter* Char = Cast<ACharacter>(GetOwner());
+	APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
+
 	if (!isMovingHeavyObject)
 	{
 		bool neg = false;
@@ -101,8 +115,6 @@ void UMoveComponent::MoveRight(float Value)
 
 		float realValue = (Value <= JogThreshold) ? JogThreshold : 1.0f;
 		realValue *= (neg) ? -1.0f : 1.0f;
-		ACharacter* Char = Cast<ACharacter>(GetOwner());
-		APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
 
 		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
 		CamRot.Pitch = 0.0f;
@@ -112,20 +124,70 @@ void UMoveComponent::MoveRight(float Value)
 	else
 	{
 		currentInputValue.X = Value;
-		ACharacter* Char = Cast<ACharacter>(GetOwner());
-		APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
+		if (Value == 0.0f)
+			return;
 
-		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
-		float diff = CamRot.Yaw - Char->GetActorRotation().Yaw + 90.0f;
-		float	inputAngle = FMath::RadiansToDegrees(FMath::Atan2(currentInputValue.Y, currentInputValue.X));
-		FVector2D	targetAngles(diff - HeavyAngleTolerance, diff + HeavyAngleTolerance);
-		if (inputAngle >= targetAngles.X && inputAngle <= targetAngles.Y)
+		float	inputAngle = GetInputAngle();
+		float	cameraDiffAngle = GetCameraTargetDiffAngle();
+
+		float difference = inputAngle - cameraDiffAngle;
+
+		if (difference >= -HeavyAngleTolerance && difference <= HeavyAngleTolerance)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("THIS IS OK"));
+			FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
+			CamRot.Pitch = 0.0f;
+			FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
+			Char->GetCharacterMovement()->AddInputVector(MoveDir * -1.0f);
+		}
+		else if (difference >= -180.0f - HeavyAngleTolerance && difference <= -180.0f + HeavyAngleTolerance)
+		{
+			FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
+			CamRot.Pitch = 0.0f;
+			FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
+			Char->GetCharacterMovement()->AddInputVector(MoveDir * 1.0f);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Diff : %f   -   Input Angle : %f"), diff, inputAngle);
+			float coeff = GetRotateMultiplayer(difference) * RotationSpeed * GetWorld()->GetDeltaSeconds();
+			//MAYBE USE DELTA TIME AND OBJECT WEIGHT
+			FRotator	rotation = FQuat(FVector::UpVector, FMath::DegreesToRadians(coeff)).Rotator();
+			FVector		holdingToCharac = Char->GetActorLocation() - holdingObjectLocation;
+			FVector		holdingToNewLoc = rotation.RotateVector(holdingToCharac);
+			FVector		finalLocation = holdingToNewLoc + holdingObjectLocation;
+			FRotator	finalRotation = rotation + Char->GetActorRotation();
+			Char->SetActorLocationAndRotation(finalLocation, finalRotation.Quaternion(), true, nullptr, ETeleportType::TeleportPhysics);
 		}
 	}
+}
+
+float	UMoveComponent::GetCameraTargetDiffAngle() const
+{
+	ACharacter* Char = Cast<ACharacter>(GetOwner());
+	APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
+
+	FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
+	return CamRot.Yaw - Char->GetActorRotation().Yaw + 90.0f;
+}
+
+float	UMoveComponent::GetRotateMultiplayer(float value) const
+{
+	if (value < -180.0f)
+		value += 360.0f;
+	return value > 0.0f ? 1.0f : -1.0f;
+}
+
+void	UMoveComponent::EnableMovingHeavyObjectMode()
+{
+	isMovingHeavyObject = true;
+	ACharacter* Char = Cast<ACharacter>(GetOwner());
+	if (Char)
+		Char->GetCharacterMovement()->bOrientRotationToMovement = false;
+}
+
+void	UMoveComponent::DisableMovingHeavyObjectMode()
+{
+	isMovingHeavyObject = false;
+	ACharacter* Char = Cast<ACharacter>(GetOwner());
+	if (Char)
+		Char->GetCharacterMovement()->bOrientRotationToMovement = true;
 }

@@ -56,6 +56,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	UPhysicsConstraintComponent*	GetRightHandConstraint() const { return rightHandConstraint; }
 
+	UFUNCTION(BlueprintPure)
+	FVector	GetHoldingObjectLocation() const { return holdingPrimitiveComponent != nullptr ? holdingPrimitiveComponent->GetComponentLocation() : FVector(); }
+
 	//CURRENTLY PUBLIC FOR BLUEPRINT TESTS
 	UFUNCTION(BlueprintPure)
 	bool							getPushingPoints(FVector& centerPoint, FVector& leftPoint, FVector& rightPoint) const;
