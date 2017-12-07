@@ -56,7 +56,7 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	shape.SetCapsule(characterCapsule->GetScaledCapsuleRadius(), characterCapsule->GetScaledCapsuleHalfHeight());
 
 	if (GetWorld()->SweepMultiByChannel(hitResults, handleTargetLocation->GetComponentLocation(),
-		handleTargetLocation->GetComponentLocation(), quaternion,
+		handleTargetLocation->GetComponentLocation() + GetOwner()->GetActorForwardVector() * DetectionOffset, quaternion,
 		ECC_WorldDynamic, shape, queryParams, responseParam))
 	{	
 		for (auto& hitRes : hitResults)
@@ -88,12 +88,15 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		UMoveComponent* moveComp = charac->FindComponentByClass<UMoveComponent>();
 		if (moveComp)
 			moveComp->SetHoldingObjectLocation(holdingPrimitiveComponent->GetComponentLocation());
-#ifdef WITH_EDITOR
-		APlayerController*	cont = Cast<APlayerController>(charac->GetController());
-		if (cont->IsInputKeyDown(EKeys::G))
-			GUnrealEd->PlayWorld->bDebugPauseExecution = true;
-#endif
 	}
+#ifdef WITH_EDITOR
+	ACharacter*	charac = Cast<ACharacter>(GetOwner());
+	if (!charac)
+		return;
+	APlayerController*	cont = Cast<APlayerController>(charac->GetController());
+	if (cont->IsInputKeyDown(EKeys::G))
+		GUnrealEd->PlayWorld->bDebugPauseExecution = true;
+#endif
 }
 
 void	UHoldComponent::Action()

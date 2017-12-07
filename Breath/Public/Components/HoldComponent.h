@@ -63,6 +63,8 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool							getPushingPoints(FVector& centerPoint, FVector& leftPoint, FVector& rightPoint) const;
 public:
+	UPROPERTY(EditAnywhere, Category = "Detection")
+	float	DetectionOffset = 30.0f;
 	UPROPERTY(EditAnywhere, Category = "Grab")
 	FComponentReference	HandleTargetLocationReference;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
