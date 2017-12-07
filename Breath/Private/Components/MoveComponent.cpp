@@ -31,7 +31,42 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	if (isMovingHeavyObject)
+	{
+		if (currentInputValue == FVector2D::ZeroVector)
+			return;
+
+		ACharacter* Char = Cast<ACharacter>(GetOwner());
+		float	inputAngle = GetInputAngle();
+		float	cameraDiffAngle = GetCameraTargetDiffAngle();
+
+		float difference = inputAngle - cameraDiffAngle;
+		if (difference < -180.0f)
+			difference += 360.0f;
+
+		if (difference >= -HeavyAngleTolerance && difference <= HeavyAngleTolerance)
+		{
+			FVector MoveDir = Char->GetActorRotation().Vector();
+			Char->GetCharacterMovement()->AddInputVector(MoveDir);
+		}
+		else if (difference >= -180.0f - HeavyAngleTolerance && difference <= -180.0f + HeavyAngleTolerance)
+		{
+			FVector MoveDir = Char->GetActorRotation().Vector();
+			Char->GetCharacterMovement()->AddInputVector(MoveDir * -1.0f);
+		}
+		else
+		{
+			float angle = RotationSpeed * GetWorld()->GetDeltaSeconds();	
+			angle *= (difference > 0.0f) ? 1.0f : -1.0f;
+			//MAYBE USE DELTA TIME AND OBJECT WEIGHT
+			FRotator	rotation = FQuat(FVector::UpVector, FMath::DegreesToRadians(angle)).Rotator();
+			FVector		holdingToCharac = Char->GetActorLocation() - holdingObjectLocation;
+			FVector		holdingToNewLoc = rotation.RotateVector(holdingToCharac);
+			FVector		finalLocation = holdingToNewLoc + holdingObjectLocation;
+			FRotator	finalRotation = rotation + Char->GetActorRotation();
+			Char->SetActorLocationAndRotation(finalLocation, finalRotation.Quaternion(), true, nullptr, ETeleportType::None);
+		}
+	}
 }
 
 void UMoveComponent::MoveForward(float Value)
@@ -42,36 +77,8 @@ void UMoveComponent::MoveForward(float Value)
 	ACharacter* Char = Cast<ACharacter>(GetOwner());
 	APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
 
-	float	realValue = 0.0f;
-
 	if (isMovingHeavyObject)
-	{
 		currentInputValue.Y = Value;
-		if (Value == 0.0f)
-			return;
-
-		float	inputAngle = GetInputAngle();
-		float	cameraDiffAngle = GetCameraTargetDiffAngle();
-
-		float difference = inputAngle - cameraDiffAngle;
-
-		if (difference >= -HeavyAngleTolerance && difference <= HeavyAngleTolerance)
-			realValue = 1.0f;
-		else if (difference >= -180.0f - HeavyAngleTolerance && difference <= -180.0f + HeavyAngleTolerance)
-			realValue = -1.0f;
-		else
-		{
-			float coeff = GetRotateMultiplayer(difference) * RotationSpeed * GetWorld()->GetDeltaSeconds();
-			//MAYBE USE DELTA TIME AND OBJECT WEIGHT
-			FRotator	rotation = FQuat(FVector::UpVector, FMath::DegreesToRadians(coeff)).Rotator();
-			FVector		holdingToCharac = Char->GetActorLocation() - holdingObjectLocation;
-			FVector		holdingToNewLoc = rotation.RotateVector(holdingToCharac);
-			FVector		finalLocation = holdingToNewLoc + holdingObjectLocation;
-			FRotator	finalRotation = rotation + Char->GetActorRotation();
-			Char->SetActorLocationAndRotation(finalLocation, finalRotation.Quaternion(), true, nullptr, ETeleportType::TeleportPhysics);
-			return;
-		}
-	}
 	else
 	{
 		bool neg = false;
@@ -83,14 +90,14 @@ void UMoveComponent::MoveForward(float Value)
 
 		if (Value <= WalkThreshold)
 			return;
-		realValue = (Value <= JogThreshold) ? JogThreshold : 1.0f;
+		float realValue = (Value <= JogThreshold) ? JogThreshold : 1.0f;
 		realValue *= (neg) ? -1.0f : 1.0f;
-	}
 
-	FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
-	CamRot.Pitch = 0.0f;
-	FVector MoveDir = CamRot.Vector();
-	Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
+		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
+		CamRot.Pitch = 0.0f;
+		FVector MoveDir = CamRot.Vector();
+		Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
+	}
 }
 
 void UMoveComponent::MoveRight(float Value)
@@ -122,42 +129,7 @@ void UMoveComponent::MoveRight(float Value)
 		Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
 	}
 	else
-	{
 		currentInputValue.X = Value;
-		if (Value == 0.0f)
-			return;
-
-		float	inputAngle = GetInputAngle();
-		float	cameraDiffAngle = GetCameraTargetDiffAngle();
-
-		float difference = inputAngle - cameraDiffAngle;
-
-		if (difference >= -HeavyAngleTolerance && difference <= HeavyAngleTolerance)
-		{
-			FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
-			CamRot.Pitch = 0.0f;
-			FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
-			Char->GetCharacterMovement()->AddInputVector(MoveDir * -1.0f);
-		}
-		else if (difference >= -180.0f - HeavyAngleTolerance && difference <= -180.0f + HeavyAngleTolerance)
-		{
-			FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
-			CamRot.Pitch = 0.0f;
-			FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
-			Char->GetCharacterMovement()->AddInputVector(MoveDir * 1.0f);
-		}
-		else
-		{
-			float coeff = GetRotateMultiplayer(difference) * RotationSpeed * GetWorld()->GetDeltaSeconds();
-			//MAYBE USE DELTA TIME AND OBJECT WEIGHT
-			FRotator	rotation = FQuat(FVector::UpVector, FMath::DegreesToRadians(coeff)).Rotator();
-			FVector		holdingToCharac = Char->GetActorLocation() - holdingObjectLocation;
-			FVector		holdingToNewLoc = rotation.RotateVector(holdingToCharac);
-			FVector		finalLocation = holdingToNewLoc + holdingObjectLocation;
-			FRotator	finalRotation = rotation + Char->GetActorRotation();
-			Char->SetActorLocationAndRotation(finalLocation, finalRotation.Quaternion(), true, nullptr, ETeleportType::TeleportPhysics);
-		}
-	}
 }
 
 float	UMoveComponent::GetCameraTargetDiffAngle() const
@@ -167,13 +139,6 @@ float	UMoveComponent::GetCameraTargetDiffAngle() const
 
 	FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
 	return CamRot.Yaw - Char->GetActorRotation().Yaw + 90.0f;
-}
-
-float	UMoveComponent::GetRotateMultiplayer(float value) const
-{
-	if (value < -180.0f)
-		value += 360.0f;
-	return value > 0.0f ? 1.0f : -1.0f;
 }
 
 void	UMoveComponent::EnableMovingHeavyObjectMode()

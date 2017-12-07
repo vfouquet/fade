@@ -82,28 +82,17 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		handleComponent->SetTargetLocation(handleTargetLocation->GetComponentLocation());
 	else if (currentHoldingState == EHoldingState::HeavyGrabbing)
 	{
-#ifdef WITH_EDITOR
 		ACharacter*	charac = Cast<ACharacter>(GetOwner());
 		if (!charac)
 			return;
 		UMoveComponent* moveComp = charac->FindComponentByClass<UMoveComponent>();
 		if (moveComp)
 			moveComp->SetHoldingObjectLocation(holdingPrimitiveComponent->GetComponentLocation());
-
+#ifdef WITH_EDITOR
 		APlayerController*	cont = Cast<APlayerController>(charac->GetController());
 		if (cont->IsInputKeyDown(EKeys::G))
 			GUnrealEd->PlayWorld->bDebugPauseExecution = true;
 #endif
-		/*
-		if (leftHandConstraint)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("LEFT   Swing1 : %f - Swing2 : %f - Twist : %f"), leftHandConstraint->GetCurrentSwing1(), leftHandConstraint->GetCurrentSwing2(), leftHandConstraint->GetCurrentTwist());
-		}
-		if (rightHandConstraint)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("RIGHT  Swing1 : %f - Swing2 : %f - Twist : %f"), rightHandConstraint->GetCurrentSwing1(), rightHandConstraint->GetCurrentSwing2(), rightHandConstraint->GetCurrentTwist());
-		}
-		*/
 	}
 }
 
@@ -177,8 +166,6 @@ void	UHoldComponent::StopGrab()
 
 		releaseHeavyGrabbedObject();
 
-		holdingObject = nullptr;
-		holdingPrimitiveComponent = nullptr;
 		currentHoldingState = EHoldingState::None;
 	}
 }
@@ -194,6 +181,23 @@ void	UHoldComponent::Throw()
 		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
 		releaseLightGrabbedObject();
 		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * ThrowPower);
+		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
+		currentHoldingState = EHoldingState::None;
+	}
+	else if (currentHoldingState == EHoldingState::HeavyGrabbing)
+	{
+		currentHoldingState = EHoldingState::Throwing;
+		holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyGrabbing, EHoldingState::Throwing);
+
+		//DO THIS AT THE END OF ANIMATION (NOTIFY)
+		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
+
+		releaseHeavyGrabbedObject();
+
+		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * ThrowPower);
+		if (characterMoveComponent)
+			characterMoveComponent->DisableMovingHeavyObjectMode();
+
 		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
 		currentHoldingState = EHoldingState::None;
 	}
@@ -251,6 +255,8 @@ void	UHoldComponent::releaseHeavyGrabbedObject()
 		leftHandConstraint->BreakConstraint();
 	if (rightHandConstraint)
 		rightHandConstraint->BreakConstraint();
+	holdingObject = nullptr;
+	holdingPrimitiveComponent = nullptr;
 }
 
 bool	UHoldComponent::getPushingPoints(FVector& centerPoint, FVector& firstPoint, FVector& secondPoint) const

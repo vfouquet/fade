@@ -31,8 +31,6 @@ public:
 	float	GetInputAngle() const { return FMath::RadiansToDegrees(FMath::Atan2(currentInputValue.Y, currentInputValue.X)); };
 	UFUNCTION(BlueprintPure)
 	float	GetCameraTargetDiffAngle() const;
-	UFUNCTION(BlueprintPure)
-	float	GetRotateMultiplayer(float value) const;
 
 	UFUNCTION(BlueprintCallable)
 	void	BlockCharacter() { isBlocked = true; }
