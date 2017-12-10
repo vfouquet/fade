@@ -69,6 +69,8 @@ public:
 	FComponentReference	HandleTargetLocationReference;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float	ThrowPower = 10.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hold")
+		float	HoldSnapOffset = 75.0f;
 	UPROPERTY(EditAnywhere, Category = "Hold")
 	FComponentReference	LeftHandPhysicalConstraintReference;
 	UPROPERTY(EditAnywhere, Category = "Hold")

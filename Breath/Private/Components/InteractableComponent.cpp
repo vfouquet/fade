@@ -47,12 +47,12 @@ void UInteractableComponent::BeginPlay()
 	rightConstraintPoint->SetActive(false);
 
 	leftConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	leftConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 22.5f);
+	leftConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);//22.5f);
 	leftConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
 	leftConstraint->AttachToComponent(primitiveComp, rules);
 	leftConstraint->SetActive(false);
 	rightConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	rightConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 22.5f);
+	rightConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);//22.5f);
 	rightConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
 	rightConstraint->AttachToComponent(primitiveComp, rules);
 	rightConstraint->SetActive(false);

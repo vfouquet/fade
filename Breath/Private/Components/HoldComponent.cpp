@@ -141,12 +141,26 @@ void	UHoldComponent::Grab()
 	else
 	{
 		currentHoldingState = EHoldingState::HeavyGrabbing;
+
+		ACharacter* character = Cast<ACharacter>(characterCapsule->GetOwner());	
+		holdingObject = closestInteractableObject.Get();
+		AActor* holdingActor = holdingObject->GetOwner();
+		holdingPrimitiveComponent = holdingActor->FindComponentByClass<UPrimitiveComponent>();
+
+		FHitResult	hitRes;
+		FCollisionQueryParams	queryParams;
+		queryParams.AddIgnoredActor(character);
+		GetWorld()->LineTraceSingleByChannel(hitRes, character->GetActorLocation(), holdingPrimitiveComponent->GetComponentLocation(), ECollisionChannel::ECC_PhysicsBody, queryParams);
+		FRotator newRot = (hitRes.Normal * -1.0f).Rotation();
+		FVector	holdPrimExtent = holdingPrimitiveComponent->Bounds.BoxExtent;
+		holdPrimExtent.Z = 0.0f;
+		FVector	holdingPoint = holdingPrimitiveComponent->GetComponentLocation() + (holdPrimExtent + HoldSnapOffset) * hitRes.Normal;
+
+		character->SetActorLocationAndRotation(holdingPoint, newRot, true);
+
 		if (characterMoveComponent)
 			characterMoveComponent->EnableMovingHeavyObjectMode();
-
-		holdingObject = closestInteractableObject.Get();
-		holdingPrimitiveComponent =
-			holdingObject->GetOwner()->FindComponentByClass<UPrimitiveComponent>();
+	
 		createHandConstraint();
 
 		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::HeavyGrabbing);
