@@ -43,7 +43,7 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	closestInteractableObject = nullptr;
-	if (!handleTargetLocation && !characterCapsule)
+	if (!handleTargetLocation && !characterCapsule && !GetOwner())
 		return;
 	// ...
 	float closestInteractable = FLT_MAX;
