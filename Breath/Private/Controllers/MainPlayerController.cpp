@@ -2,8 +2,38 @@
 
 #include "MainPlayerController.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/SpringArmComponent.h"
+
+#include "Cameras/CameraRailManager.h"
+
 #include "MainCharacter.h"
 #include "MoveComponent.h"
+
+#include "Camera/CameraActor.h"
+
+void AMainPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (CameraActorClass != nullptr)
+	{
+		CameraActor = GetWorld()->SpawnActor<ACameraActor>(CameraActorClass, this->GetActorTransform());
+	}
+	else
+	{
+		CameraActor = GetWorld()->SpawnActor<ACameraActor>(ACameraActor::StaticClass(), this->GetActorTransform());
+	}
+
+	CameraActor->SetActorLabel(TEXT("RailCamera"));
+
+	this->SetViewTarget(CameraActor);
+}
+
+ACameraActor* AMainPlayerController::GetCameraActor()
+{
+	return CameraActor;
+}
 
 void AMainPlayerController::SetupInputComponent()
 {
@@ -34,6 +64,7 @@ void AMainPlayerController::Possess(APawn* aPawn)
 	if (MainCharacter != nullptr)
 	{
 		MoveComponent = MainCharacter->FindComponentByClass<UMoveComponent>();
+		SpringArmComponent = MainCharacter->FindComponentByClass<USpringArmComponent>();
 	}
 }
 
@@ -41,6 +72,7 @@ void AMainPlayerController::UnPossess()
 {
 	Super::UnPossess();
 
+	SpringArmComponent = nullptr;
 	MoveComponent = nullptr;
 	MainCharacter = nullptr;
 }

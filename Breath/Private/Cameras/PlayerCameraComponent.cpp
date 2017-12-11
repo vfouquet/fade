@@ -2,9 +2,6 @@
 
 #include "PlayerCameraComponent.h"
 
-
-
-
 UPlayerCameraComponent::UPlayerCameraComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -26,5 +23,7 @@ void UPlayerCameraComponent::TickComponent(float DeltaTime, enum ELevelTick Tick
 
 void UPlayerCameraComponent::OnAttachmentChanged()
 {
+	Super::OnAttachmentChanged();
+
 	LookAtTarget = this->GetAttachParent();
 }

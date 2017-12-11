@@ -13,14 +13,17 @@ AMainCharacter::AMainCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-
-	FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
-
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArmComponent->AttachToComponent(this->GetRootComponent(), rules);
+	SpringArmComponent->SetupAttachment(this->GetRootComponent());
 
-	CameraComponent = CreateDefaultSubobject<UPlayerCameraComponent>(TEXT("PlayerCameraComponent"));
-	CameraComponent->AttachToComponent(SpringArmComponent, rules);
+#if WITH_EDITOR
+	if (bIsThirdPersonCamera == true)
+	{
+		CameraComponent = CreateDefaultSubobject<UPlayerCameraComponent>(TEXT("PlayerCameraComponent"));
+		CameraComponent->SetupAttachment(SpringArmComponent);
+	}
+#endif
+
 }
 
 // Called when the game starts or when spawned

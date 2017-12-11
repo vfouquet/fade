@@ -8,6 +8,7 @@
 
 class AMainCharacter;
 class UMoveComponent;
+class USpringArmComponent;
 
 /**
  * 
@@ -17,7 +18,13 @@ class BREATH_API AMainPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void BeginPlay() override;
+
 public:
+	UFUNCTION(BlueprintPure)
+	ACameraActor*	GetCameraActor();
+
 	virtual void SetupInputComponent() override;
 
 	virtual void Possess(APawn* aPawn) override;
@@ -37,7 +44,16 @@ public:
 	void	Throw();
 	void	Stick();
 
+
+
+protected:
+	UPROPERTY(VisibleAnywhere)
+	ACameraActor*		CameraActor;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ACameraActor>	CameraActorClass;
+
 private:
-	AMainCharacter*	MainCharacter;
-	UMoveComponent*	MoveComponent;
+	AMainCharacter*			MainCharacter;
+	UMoveComponent*			MoveComponent;
+	USpringArmComponent*	SpringArmComponent;
 };

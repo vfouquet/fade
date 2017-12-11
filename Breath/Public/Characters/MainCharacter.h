@@ -15,6 +15,10 @@ class BREATH_API AMainCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool	bIsThirdPersonCamera;
+
+public:
 	// Sets default values for this character's properties
 	AMainCharacter();
 
