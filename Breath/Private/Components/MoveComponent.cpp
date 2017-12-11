@@ -45,28 +45,35 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
 		FRotator playerForward = (holdingObjectLocation - Char->GetActorLocation()).Rotation();
-		float cameraDiffAngle = CamRot.Yaw - Char->GetActorRotation().Yaw - 90.0f;
-		//float cameraDiffAngle = CamRot.Yaw - playerForward.Yaw;
-		
-		float difference = inputAngle - cameraDiffAngle;
-		if (difference < -180.0f)
-			difference += 360.0f;
-		UE_LOG(LogTemp, Warning, TEXT("Diff : %f"), difference);
+		float cameraDiffAngle = CamRot.Yaw - Char->GetActorRotation().Yaw;
+	
 
-		if (difference >= -HeavyAngleTolerance && difference <= HeavyAngleTolerance)
-		{
-			FVector MoveDir = Char->GetActorRotation().Vector();
-			Char->GetCharacterMovement()->AddInputVector(MoveDir * -1.0f);
-		}
-		else if (difference >= -180.0f - HeavyAngleTolerance && difference <= -180.0f + HeavyAngleTolerance)
+		inputAngle += 90.0f;
+		if (inputAngle < 0.0f)
+			inputAngle += 360.0f;
+	
+		if (cameraDiffAngle < 0.0f)
+			cameraDiffAngle += 360.0f;
+
+		float difference = inputAngle - cameraDiffAngle;
+
+		if (difference < 0.0f)
+			difference += 360.0f;
+
+		if (difference >= 180.0f -HeavyAngleTolerance && difference <= 180.0f + HeavyAngleTolerance)
 		{
 			FVector MoveDir = Char->GetActorRotation().Vector();
 			Char->GetCharacterMovement()->AddInputVector(MoveDir);
 		}
+		else if (difference >= 360.0f - HeavyAngleTolerance || difference <= HeavyAngleTolerance)
+		{
+			FVector MoveDir = Char->GetActorRotation().Vector();
+			Char->GetCharacterMovement()->AddInputVector(MoveDir * -1.0f);
+		}
 		else
 		{
 			float angle = RotationSpeed * GetWorld()->GetDeltaSeconds();	
-			angle *= (difference > 0.0f) ? -1.0f : 1.0f;
+			angle *= (difference >= 0.0f && difference < 180.0f) ? -1.0f : 1.0f;
 			//MAYBE USE OBJECT WEIGHT
 			FRotator	rotation = FQuat(FVector::UpVector, FMath::DegreesToRadians(angle)).Rotator();
 			FVector		holdingToCharac = Char->GetActorLocation() - holdingObjectLocation;
@@ -75,13 +82,6 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 			FRotator	finalRotation = rotation + Char->GetActorRotation();
 			Char->SetActorLocationAndRotation(finalLocation, finalRotation.Quaternion(), true, nullptr, ETeleportType::None);
 		}
-
-		CamRot.Pitch = 0.0f;
-		CamRot.Roll = 0.0f;
-		FRotator debugRotator;
-		debugRotator.Yaw = difference;
-		DrawDebugLine(GetWorld(), Char->GetActorLocation(), Char->GetActorLocation() + debugRotator.RotateVector(CamRot.Vector()) * 100.0f, FColor::Blue);
-		DrawDebugLine(GetWorld(), Char->GetActorLocation(), Char->GetActorLocation() + debugRotator.RotateVector(CamRot.Vector()) * -100.0f, FColor::Magenta);
 	}
 }
 
