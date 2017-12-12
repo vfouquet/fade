@@ -28,6 +28,7 @@ public:
 	ACameraRailManager();
 
 	float	GetInputKeyAtWorldLocation(FVector WorldLocation);
+	float	GetDistanceAlongSplineAtWorldLocation(FVector WorldLocation);
 	float	GetCurrentInputKey();
 
 	void	AttachCamera(ARailCamera* CameraToAttach);
@@ -58,5 +59,6 @@ protected:
 	TAssetPtr<ACameraRailPoint>	RootPoint;
 
 private:
+	bool	bInCameraRailDistanceTolerance;
 	float	CurrentInputKey;
 };

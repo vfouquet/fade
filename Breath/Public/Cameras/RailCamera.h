@@ -33,6 +33,8 @@ struct FCameraSettings
 	float	CameraRotationSpeed;
 	UPROPERTY(EditAnywhere)
 	float	CameraRailOffset;
+	UPROPERTY(EditAnywhere, meta = (ClampMin = 0.f))
+	float	CameraRailDistanceTolerance;
 	UPROPERTY(EditAnywhere)
 	float	CameraDistanceOffset;
 	UPROPERTY(EditAnywhere)
@@ -46,6 +48,7 @@ struct FCameraSettings
 		CameraSpeed = 0.40f;
 		CameraRotationSpeed = 400.0f;
 		CameraRailOffset = 0.0f;
+		CameraRailDistanceTolerance = 0.0f;
 		CameraDistanceOffset = 0.0f;
 		CameraDistanceOffsetSpeed = 100.f;
 		InterestPoints.Empty();
