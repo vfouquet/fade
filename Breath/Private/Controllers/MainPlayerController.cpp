@@ -28,6 +28,8 @@ void AMainPlayerController::BeginPlay()
 	CameraActor->SetActorLabel(TEXT("RailCamera"));
 
 	this->SetViewTarget(CameraActor);
+
+	
 }
 
 ACameraActor* AMainPlayerController::GetCameraActor()

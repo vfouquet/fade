@@ -17,4 +17,7 @@ class BREATH_API ABreathGameModeBase : public AGameModeBase
 	
 	
 	
+public:
+	virtual void RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot) override;
+
 };

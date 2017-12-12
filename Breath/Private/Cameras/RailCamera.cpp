@@ -66,6 +66,24 @@ void ARailCamera::AttachToRail(ACameraRailManager* CameraRailManager)
 	}
 }
 
+void ARailCamera::AttachToRailWithPlayer(ACameraRailManager* CameraRailManager, AActor* PlayerActor)
+{
+	if (CurrentRailManager != CameraRailManager)
+	{
+		if (CurrentRailManager != nullptr)
+		{
+			CurrentRailManager->DetachCamera();
+		}
+
+		CurrentRailManager = CameraRailManager;
+
+		if (CurrentRailManager != nullptr)
+		{
+			CurrentRailManager->AttachCamera(this, PlayerActor);
+		}
+	}
+}
+
 void ARailCamera::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);

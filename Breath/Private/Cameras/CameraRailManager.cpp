@@ -32,6 +32,11 @@ ACameraRailManager::ACameraRailManager()
 	CurrentInputKey = 0.0f;
 }
 
+float ACameraRailManager::GetInputKeyAtWorldLocation(FVector WorldLocation)
+{
+	return FlatSplineComponent->FindInputKeyClosestToWorldLocation(WorldLocation);
+}
+
 float ACameraRailManager::GetCurrentInputKey()
 {
 	return this->CurrentInputKey;
@@ -39,8 +44,19 @@ float ACameraRailManager::GetCurrentInputKey()
 
 void ACameraRailManager::AttachCamera(ARailCamera* CameraToAttach)
 {
-	if (CameraToAttach != nullptr)
+	if (CameraToAttach != nullptr )
 	{
+		this->RailCamera = CameraToAttach;
+		CurrentInputKey = FlatSplineComponent->FindInputKeyClosestToWorldLocation(PlayerActor->GetActorLocation());
+		this->SetActorTickEnabled(true);
+	}
+}
+
+void ACameraRailManager::AttachCamera(ARailCamera* CameraToAttach, AActor* PlayerActor)
+{
+	if (CameraToAttach != nullptr, PlayerActor != nullptr)
+	{
+		this->PlayerActor = PlayerActor;
 		this->RailCamera = CameraToAttach;
 		CurrentInputKey = FlatSplineComponent->FindInputKeyClosestToWorldLocation(PlayerActor->GetActorLocation());
 		this->SetActorTickEnabled(true);
@@ -118,7 +134,7 @@ void ACameraRailManager::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (RailCamera != nullptr)
+	if (RailCamera != nullptr && PlayerActor != nullptr)
 	{
 		FVector PlayerLoc = PlayerActor->GetActorLocation();
 

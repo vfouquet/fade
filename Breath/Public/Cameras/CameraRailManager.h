@@ -27,9 +27,11 @@ public:
 public:
 	ACameraRailManager();
 
+	float	GetInputKeyAtWorldLocation(FVector WorldLocation);
 	float	GetCurrentInputKey();
 
 	void	AttachCamera(ARailCamera* CameraToAttach);
+	void	AttachCamera(ARailCamera* CameraToAttach, AActor* PlayerActor);
 	void	DetachCamera();
 
 protected:
