@@ -87,7 +87,7 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 			return;
 		UMoveComponent* moveComp = charac->FindComponentByClass<UMoveComponent>();
 		if (moveComp)
-			moveComp->SetHoldingObjectLocation(holdingPrimitiveComponent->GetComponentLocation());
+			moveComp->SetHoldingObjectLocationAndMass(holdingPrimitiveComponent->GetComponentLocation(), holdingPrimitiveComponent->GetMass());
 	}
 #ifdef WITH_EDITOR
 	ACharacter*	charac = Cast<ACharacter>(GetOwner());

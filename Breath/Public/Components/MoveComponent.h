@@ -41,7 +41,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	DisableMovingHeavyObjectMode();
 	UFUNCTION(BlueprintCallable)
-	void	SetHoldingObjectLocation(FVector const& value) { holdingObjectLocation = value; }
+	void	SetHoldingObjectLocationAndMass(FVector const& value, float const mass) { holdingObjectLocation = value; holdingObjectMass = mass; }
 
 public:
 
@@ -53,10 +53,19 @@ public:
 	float	HeavyAngleTolerance = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
 	float	RotationSpeed = 10.0f;
+	/*Use the value for a mass threshold**/
+	UPROPERTY(EditAnywhere, Category = "HeavyValues")
+	float	MassGrabValues[3];
+	/*Use the value for the multiplier**/
+	UPROPERTY(EditAnywhere, Category = "HeavyValues")
+	float	MassGrabMultipliers[3];
 
 private:
 	bool		isBlocked = false;
 	bool		isMovingHeavyObject = false;
+
+	float		holdingObjectMass = 0.0f;
 	FVector		holdingObjectLocation;
+	
 	FVector2D	currentInputValue;
 };
