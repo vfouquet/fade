@@ -37,7 +37,11 @@ public:
 
 	EChemicalType const&	GetType() const { return type; }
 	UFUNCTION(BlueprintCallable)
-		EChemicalState const&	GetState() const { return state; }
+	EChemicalState const&	GetState() const { return state; }
+	UFUNCTION(BlueprintCallable)
+	void	SetState(EChemicalState const value) { state = value; }
+	UFUNCTION(BlueprintCallable)
+	void	SetType(EChemicalType const value) { type = value; }
 
 public:
 	UPROPERTY(BlueprintAssignable)
