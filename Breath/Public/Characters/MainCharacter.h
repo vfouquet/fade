@@ -41,6 +41,8 @@ public:
 	void	StopGrab();
 	void	Throw();
 	void	Stick();
+	bool	Climb();
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent*		SpringArmComponent;

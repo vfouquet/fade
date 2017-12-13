@@ -27,7 +27,9 @@ public:
 
 	void	MoveForward(float Value);
 	void	MoveRight(float Value);
-	
+
+	bool	Climb();
+
 	UFUNCTION(BlueprintPure)
 	float	GetInputAngle() const { return FMath::RadiansToDegrees(FMath::Atan2(currentInputValue.Y, currentInputValue.X)); };
 	UFUNCTION(BlueprintPure)

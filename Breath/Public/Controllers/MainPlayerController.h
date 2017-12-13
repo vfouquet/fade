@@ -44,8 +44,6 @@ public:
 	void	Throw();
 	void	Stick();
 
-
-
 protected:
 	UPROPERTY(VisibleAnywhere)
 	ACameraActor*		CameraActor;

@@ -5,8 +5,8 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-#include "DrawDebugHelpers.h"
 #include "BoxClimbComponent.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values for this component's properties
 UMoveComponent::UMoveComponent()
@@ -161,6 +161,34 @@ void UMoveComponent::MoveRight(float Value)
 			Char->GetCharacterMovement()->AddInputVector(MoveDir);;
 	}
 	currentInputValue.X = Value;
+}
+
+bool	UMoveComponent::Climb()
+{
+	UBoxClimbComponent*	highestClimbBox = nullptr;
+	for (auto& climbBox : climbBoxes)
+	{
+		if (climbBox->IsOverlappingClimbingSurface() && !highestClimbBox)
+			highestClimbBox = climbBox;
+		else if (climbBox->IsOverlappingOthers())
+			break;
+			
+	}
+	if (!highestClimbBox)
+		return false;
+
+	if (highestClimbBox->CheckSpaceOver())
+	{
+		ACharacter* character = Cast<ACharacter>(GetOwner());
+		if (!character)
+			return false;
+		UCapsuleComponent*	characterCapsule = character->FindComponentByClass<UCapsuleComponent>();
+		if (!characterCapsule)
+			return false;
+		character->SetActorLocation(highestClimbBox->GetClimbedLocation() + FVector::UpVector * characterCapsule->GetScaledCapsuleHalfHeight());
+		return true;
+	}
+	return false;
 }
 
 float	UMoveComponent::GetCameraTargetDiffAngle() const

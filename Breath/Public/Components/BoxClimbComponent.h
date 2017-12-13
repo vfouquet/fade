@@ -15,7 +15,16 @@ class BREATH_API UBoxClimbComponent : public UBoxComponent
 	GENERATED_BODY()
 
 public:
-	bool	IsOverlappingClimbingSurface() const { return climbingComponent.IsValid(); }
+	UBoxClimbComponent() { PrimaryComponentTick.bCanEverTick = true; }
+
+	virtual void	BeginPlay() override;
+	virtual void	TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
+	bool	IsOverlappingClimbingSurface() const { return climbingComponents.Num() > 0; }
+	bool	IsOverlappingOthers() const;
+
+	bool	CheckSpaceOver() const;
+	FVector	GetClimbedLocation() const;
 
 private:
 	UFUNCTION()
@@ -24,5 +33,5 @@ private:
 	void	OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 private:
-	TWeakObjectPtr<UPrimitiveComponent>	climbingComponent;
+	TArray<TWeakObjectPtr<UPrimitiveComponent>>	climbingComponents;
 };

@@ -116,7 +116,8 @@ void AMainPlayerController::Jump()
 {
 	if (MainCharacter != nullptr)
 	{
-		MainCharacter->Jump();
+		if (!MainCharacter->Climb())
+			MainCharacter->Jump();
 	}
 }
 

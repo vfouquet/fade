@@ -97,3 +97,11 @@ void	AMainCharacter::Stick()
 		return;
 	holdComp->Stick();
 }
+
+bool	AMainCharacter::Climb()
+{
+	UMoveComponent*	moveComp = FindComponentByClass<UMoveComponent>();
+	if (moveComp)
+		return moveComp->Climb();
+	return false;
+}
