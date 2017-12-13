@@ -39,9 +39,11 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+#if WITH_EDITOR
 	virtual void PreEditChange(UProperty* PropertyThatWillChange) override;
 	virtual void PostEditMove(bool bFinished) override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 
 	virtual void Tick(float DeltaSeconds) override;
 

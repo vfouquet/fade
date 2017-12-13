@@ -13,10 +13,10 @@ UCLASS()
 class BREATH_API UEditorUtilities : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-	
+#if WITH_EDITOR
 	UFUNCTION(BlueprintCallable)
 	static void SelectActor(AActor* Actor);
 	UFUNCTION(BlueprintCallable)
 	static bool ModifyActor(AActor* Actor, bool bAlwaysMarkDirty);
-	
+#endif
 };

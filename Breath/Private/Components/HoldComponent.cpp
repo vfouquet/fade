@@ -4,9 +4,10 @@
 
 #include "Engine/World.h"
 #include "InteractableComponent.h"
+#include "GameFramework/Character.h"
 #include "DrawDebugHelpers.h"
 
-#ifdef WITH_EDITOR
+#if WITH_EDITOR
 #include "UnrealEd.h"
 #endif
 
@@ -89,7 +90,7 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		if (moveComp)
 			moveComp->SetHoldingObjectLocationAndMass(holdingPrimitiveComponent->GetComponentLocation(), holdingPrimitiveComponent->GetMass());
 	}
-#ifdef WITH_EDITOR
+#if WITH_EDITOR
 	ACharacter*	charac = Cast<ACharacter>(GetOwner());
 	if (!charac)
 		return;

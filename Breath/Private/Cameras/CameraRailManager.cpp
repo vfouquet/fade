@@ -82,9 +82,9 @@ void ACameraRailManager::DetachCamera()
 	this->SetActorTickEnabled(false);
 }
 
+#if WITH_EDITOR
 void ACameraRailManager::PreEditChange(UProperty* PropertyThatWillChange)
 {
-#if WITH_EDITOR
 	if (PropertyThatWillChange != nullptr && PropertyThatWillChange->GetNameCPP() == "RootPoint" && RootPoint != nullptr)
 	{
 		TAssetPtr<ACameraRailPoint>	CurrentPoint = RootPoint;
@@ -102,36 +102,35 @@ void ACameraRailManager::PreEditChange(UProperty* PropertyThatWillChange)
 			CurrentPoint = CurrentPoint->NextPoint.Get();
 		}
 	}
-#endif
 }
+#endif
 
+#if WITH_EDITOR
 void ACameraRailManager::PostEditMove(bool bFinished)
 {
-#if WITH_EDITOR
 	if (SplineComponent != nullptr && FlatSplineComponent != nullptr)
 	{
 		SplineComponent->SetWorldLocation(FVector::ZeroVector);
 		FlatSplineComponent->SetWorldLocation(FVector::ZeroVector);
 	}
-#endif
 }
+#endif
 
+#if WITH_EDITOR
 void ACameraRailManager::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-#if WITH_EDITOR
 	UpdateSpline(); 
-#endif
 }
+#endif
 
+//#if WITH_EDITOR
 void ACameraRailManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-#if WITH_EDITOR
 	UpdateSpline();
-#endif
 
 	AMainPlayerController* PC = Cast<AMainPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
@@ -142,6 +141,8 @@ void ACameraRailManager::BeginPlay()
 
 	this->SetActorTickEnabled(false);
 }
+//#endif
+
 
 void ACameraRailManager::Tick(float DeltaSeconds)
 {

@@ -81,13 +81,14 @@ private:
 	void	createHandConstraint();
 	void	releaseHeavyGrabbedObject();
 
-private:
+protected:
 	TWeakObjectPtr<UInteractableComponent>		closestInteractableObject;
 	
 	UPhysicsHandleComponent*		handleComponent;
 	UPrimitiveComponent*			handleTargetLocation = nullptr;
 	UCapsuleComponent*				characterCapsule = nullptr;
 
+	UPROPERTY(VisibleAnywhere)
 	UInteractableComponent*			holdingObject;
 	UPrimitiveComponent*			holdingPrimitiveComponent = nullptr;
 	EHoldingState					currentHoldingState = EHoldingState::None;

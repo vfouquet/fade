@@ -10,32 +10,6 @@ UInteractableComponent::UInteractableComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	leftConstraintPoint = CreateDefaultSubobject<USphereComponent>(TEXT("LeftConstraintPoint"));
-	rightConstraintPoint = CreateDefaultSubobject<USphereComponent>(TEXT("RightConstraintPoint"));
-	leftConstraintPoint->SetupAttachment(this);
-	rightConstraintPoint->SetupAttachment(this);
-	leftConstraintPoint->SetActive(false);
-	rightConstraintPoint->SetActive(false);
-	leftConstraintPoint->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	rightConstraintPoint->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	leftConstraintPoint->SetSphereRadius(10.0f, true);
-	rightConstraintPoint->SetSphereRadius(10.0f, true);
-	leftConstraintPoint->SetSimulatePhysics(true);
-	rightConstraintPoint->SetSimulatePhysics(true);
-
-	leftConstraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("LeftConstraint"));
-	rightConstraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("RightConstraint"));
-	leftConstraint->SetupAttachment(this);
-	rightConstraint->SetupAttachment(this);
-	leftConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	leftConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	leftConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	rightConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	rightConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	rightConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	leftConstraint->SetActive(false);
-	rightConstraint->SetActive(false);
 }
 
 
@@ -45,6 +19,32 @@ void UInteractableComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
+	leftConstraintPoint = NewObject<USphereComponent>(this, TEXT("LeftConstraintPoint"));
+	rightConstraintPoint = NewObject<USphereComponent>(this, TEXT("RightConstraintPoint"));
+	leftConstraintPoint->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
+	rightConstraintPoint->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
+	leftConstraintPoint->SetActive(false);
+	rightConstraintPoint->SetActive(false);
+	leftConstraintPoint->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	rightConstraintPoint->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	leftConstraintPoint->SetSphereRadius(10.0f, true);
+	rightConstraintPoint->SetSphereRadius(10.0f, true);
+	leftConstraintPoint->SetSimulatePhysics(true);
+	rightConstraintPoint->SetSimulatePhysics(true);
+
+	leftConstraint = NewObject<UPhysicsConstraintComponent>(this, TEXT("LeftConstraint"));
+	rightConstraint = NewObject<UPhysicsConstraintComponent>(this, TEXT("RightConstraint"));
+	leftConstraint->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
+	rightConstraint->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
+	leftConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	leftConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	leftConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	rightConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	rightConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	rightConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	leftConstraint->SetActive(false);
+	rightConstraint->SetActive(false);
+
 	
 	UPrimitiveComponent*	primitiveComp = GetOwner()->FindComponentByClass<UPrimitiveComponent>();
 	float halfMass = primitiveComp->GetMass() * 0.5f;

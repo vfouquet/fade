@@ -25,8 +25,9 @@ void AMainPlayerController::BeginPlay()
 		CameraActor = GetWorld()->SpawnActor<ACameraActor>(ACameraActor::StaticClass(), this->GetActorTransform());
 	}
 
+#if WITH_EDITOR
 	CameraActor->SetActorLabel(TEXT("RailCamera"));
-
+#endif
 	this->SetViewTarget(CameraActor);
 
 	

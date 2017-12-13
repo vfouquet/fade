@@ -73,9 +73,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	RemoveCurrentPointImpl();
 
+#if WITH_EDITOR
 	virtual void PreEditChange(UProperty* PropertyThatWillChange) override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditMove(bool bFinished) override;
+#endif
+
 	virtual void Destroyed() override;
 
 	// Called every frame

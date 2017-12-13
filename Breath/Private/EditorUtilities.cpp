@@ -1,5 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#if WITH_EDITOR
+
 #include "EditorUtilities.h"
 
 #include "Editor/UnrealEd/Public/Editor.h"
@@ -17,6 +19,7 @@ bool UEditorUtilities::ModifyActor(AActor* Actor, bool bAlwaysMarkDirty = true)
 		Actor->Modify(bAlwaysMarkDirty);
 		return true;
 	}
-
 	return false;
 }
+
+#endif

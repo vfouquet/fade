@@ -59,12 +59,14 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Shitty Stuff")
 	UPhysicsConstraintComponent*	rightConstraint = nullptr;
 
-private:
-	TArray<FStickConstraint>		stickingConstraints;
-
+protected:
+	UPROPERTY(VisibleAnywhere)
 	USphereComponent*				leftConstraintPoint = nullptr;
+	UPROPERTY(VisibleAnywhere)
 	USphereComponent*				rightConstraintPoint = nullptr;
 
+private:
+	TArray<FStickConstraint>		stickingConstraints;
 
 	bool							isSticked = false;
 };

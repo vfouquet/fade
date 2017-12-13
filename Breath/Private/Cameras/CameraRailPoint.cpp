@@ -2,7 +2,9 @@
 
 #include "CameraRailPoint.h"
 
+#if WITH_EDITOR
 #include "Editor/UnrealEd/Public/Editor.h"
+#endif
 #include "Kismet/GameplayStatics.h"
 
 #include "Cameras/CameraRailManager.h"
@@ -128,11 +130,11 @@ void ACameraRailPoint::BeginPlay()
 	Super::BeginPlay();
 }
 
+#if WITH_EDITOR
 void ACameraRailPoint::PreEditChange(UProperty* PropertyThatWillChange)
 {
 	Super::PreEditChange(PropertyThatWillChange);
 
-#if WITH_EDITOR
 	if (PropertyThatWillChange != nullptr)
 	{
 		if (PropertyThatWillChange->GetNameCPP() == "PreviousPoint" && this->PreviousPoint.IsValid())
@@ -152,14 +154,14 @@ void ACameraRailPoint::PreEditChange(UProperty* PropertyThatWillChange)
 			GEditor->EndTransaction();
 		}
 	}
-#endif
 }
+#endif
 
+#if WITH_EDITOR
 void ACameraRailPoint::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-#if WITH_EDITOR
 	if (PropertyChangedEvent.ChangeType == EPropertyChangeType::ValueSet)
 	{
 		if (PropertyChangedEvent.GetPropertyName() == "PreviousPoint" && this->PreviousPoint.IsValid())
@@ -204,14 +206,14 @@ void ACameraRailPoint::PostEditChangeProperty(FPropertyChangedEvent& PropertyCha
 	{
 		CurrentCameraRailManager->UpdateSpline();
 	}
-#endif
 }
+#endif
 
+#if WITH_EDITOR
 void ACameraRailPoint::PostEditMove(bool bFinished)
 {
 	Super::PostEditMove(bFinished);
 
-#if WITH_EDITOR
 	SplinePoint.Position = GetActorLocation();
 	SplinePoint.Rotation = GetActorRotation();
 
@@ -219,8 +221,9 @@ void ACameraRailPoint::PostEditMove(bool bFinished)
 	{
 		CurrentCameraRailManager->UpdateSpline();
 	}
-#endif
 }
+#endif
+
 
 void ACameraRailPoint::Destroyed()
 {

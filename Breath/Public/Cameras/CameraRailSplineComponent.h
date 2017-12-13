@@ -16,6 +16,8 @@ class BREATH_API UCameraRailSplineComponent : public USplineComponent
 	
 	
 public:
+#if WITH_EDITOR
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+#endif
 
 };
