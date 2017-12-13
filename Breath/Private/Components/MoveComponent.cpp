@@ -94,7 +94,14 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		}
 		else
 		{
-			float angle = RotationSpeed * GetWorld()->GetDeltaSeconds();	
+			float	massMult = 0.0f;
+			if (holdingObjectMass <= MassGrabValues[0])
+				massMult = MassGrabMultipliers[0];
+			else if (holdingObjectMass <= MassGrabValues[1])
+				massMult = MassGrabMultipliers[1];
+			else if (holdingObjectMass <= MassGrabValues[2])
+				massMult = MassGrabMultipliers[2];
+			float angle = RotationSpeed * GetWorld()->GetDeltaSeconds() * massMult;	
 			angle *= (difference >= 0.0f && difference < 180.0f) ? -1.0f : 1.0f;
 			//MAYBE USE OBJECT WEIGHT
 			FRotator	rotation = FQuat(FVector::UpVector, FMath::DegreesToRadians(angle)).Rotator();

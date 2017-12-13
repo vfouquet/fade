@@ -197,7 +197,7 @@ void	UHoldComponent::Throw()
 		//DO THIS AT THE END OF ANIMATION (NOTIFY)
 		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
 		releaseLightGrabbedObject();
-		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * ThrowPower);
+		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * ThrowPower * 10000.0f);
 		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
 		currentHoldingState = EHoldingState::None;
 	}
@@ -211,7 +211,7 @@ void	UHoldComponent::Throw()
 
 		releaseHeavyGrabbedObject();
 
-		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * ThrowPower);
+		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * ThrowPower * 10000.0f);
 		if (characterMoveComponent)
 			characterMoveComponent->DisableMovingHeavyObjectMode();
 
