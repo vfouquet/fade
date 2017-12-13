@@ -77,7 +77,7 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 				massMult = MassGrabMultipliers[2];
 
 			FVector MoveDir = Char->GetActorRotation().Vector();
-			Char->GetCharacterMovement()->AddInputVector(MoveDir * massMult);
+			Char->GetCharacterMovement()->AddInputVector(MoveDir * massMult * 0.5f);
 		}
 		else if (difference >= 360.0f - HeavyAngleTolerance || difference <= HeavyAngleTolerance)
 		{
@@ -90,7 +90,7 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 				massMult = MassGrabMultipliers[2];
 
 			FVector MoveDir = Char->GetActorRotation().Vector();
-			Char->GetCharacterMovement()->AddInputVector(MoveDir * -1.0f * massMult);
+			Char->GetCharacterMovement()->AddInputVector(MoveDir * -1.0f * massMult * 0.5f);
 		}
 		else
 		{
