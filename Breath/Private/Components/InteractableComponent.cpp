@@ -13,10 +13,29 @@ UInteractableComponent::UInteractableComponent()
 
 	leftConstraintPoint = CreateDefaultSubobject<USphereComponent>(TEXT("LeftConstraintPoint"));
 	rightConstraintPoint = CreateDefaultSubobject<USphereComponent>(TEXT("RightConstraintPoint"));
-	
+	leftConstraintPoint->SetupAttachment(this);
+	rightConstraintPoint->SetupAttachment(this);
+	leftConstraintPoint->SetActive(false);
+	rightConstraintPoint->SetActive(false);
+	leftConstraintPoint->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	rightConstraintPoint->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	leftConstraintPoint->SetSphereRadius(10.0f, true);
+	rightConstraintPoint->SetSphereRadius(10.0f, true);
+	leftConstraintPoint->SetSimulatePhysics(true);
+	rightConstraintPoint->SetSimulatePhysics(true);
+
 	leftConstraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("LeftConstraint"));
 	rightConstraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("RightConstraint"));
-	// ...
+	leftConstraint->SetupAttachment(this);
+	rightConstraint->SetupAttachment(this);
+	leftConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	leftConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	leftConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	rightConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	rightConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	rightConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	leftConstraint->SetActive(false);
+	rightConstraint->SetActive(false);
 }
 
 
@@ -28,34 +47,20 @@ void UInteractableComponent::BeginPlay()
 	// ...
 	
 	UPrimitiveComponent*	primitiveComp = GetOwner()->FindComponentByClass<UPrimitiveComponent>();
-	FAttachmentTransformRules	rules(EAttachmentRule::KeepWorld, true);
-
 	float halfMass = primitiveComp->GetMass() * 0.5f;
 
-	leftConstraintPoint->AttachToComponent(primitiveComp, rules);
-	leftConstraintPoint->SetSphereRadius(10.0f, true);
+	FVector dist = primitiveComp->GetComponentLocation() - leftConstraintPoint->GetComponentLocation();
+	FVector dist2 = primitiveComp->GetComponentLocation() - rightConstraintPoint->GetComponentLocation();
+	
+	leftConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Limited, dist.Size());
+	leftConstraint->SetLinearYLimit(ELinearConstraintMotion::LCM_Limited, dist.Size());
+	leftConstraint->SetLinearZLimit(ELinearConstraintMotion::LCM_Limited, dist.Size());
+	rightConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Limited, dist2.Size());
+	rightConstraint->SetLinearYLimit(ELinearConstraintMotion::LCM_Limited, dist2.Size());
+	rightConstraint->SetLinearZLimit(ELinearConstraintMotion::LCM_Limited, dist2.Size());
+	
 	leftConstraintPoint->SetMassOverrideInKg("None", halfMass, true);
-	leftConstraintPoint->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	leftConstraintPoint->SetSimulatePhysics(true);
-	leftConstraintPoint->SetActive(false);
-
-	rightConstraintPoint->AttachToComponent(primitiveComp, rules);
-	rightConstraintPoint->SetSphereRadius(10.0f, true);
-	rightConstraintPoint->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	rightConstraintPoint->SetMassOverrideInKg("None", halfMass, true);
-	rightConstraintPoint->SetSimulatePhysics(true);
-	rightConstraintPoint->SetActive(false);
-
-	leftConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	leftConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);//22.5f);
-	leftConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	leftConstraint->AttachToComponent(primitiveComp, rules);
-	leftConstraint->SetActive(false);
-	rightConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	rightConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);//22.5f);
-	rightConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	rightConstraint->AttachToComponent(primitiveComp, rules);
-	rightConstraint->SetActive(false);
 }
 
 
@@ -63,8 +68,6 @@ void UInteractableComponent::BeginPlay()
 void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
 }
 
 UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInteractableComponent* hook, UPrimitiveComponent* stickedObject, FName stickedBoneName)

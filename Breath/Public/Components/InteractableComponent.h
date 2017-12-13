@@ -10,7 +10,7 @@
 #include "InteractableComponent.generated.h"
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class BREATH_API UInteractableComponent : public UActorComponent
+class BREATH_API UInteractableComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
@@ -54,13 +54,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	IsHeavy = false;
 
+	UPROPERTY(VisibleAnywhere, Category = "Shitty Stuff")
+	UPhysicsConstraintComponent*	leftConstraint = nullptr;
+	UPROPERTY(VisibleAnywhere, Category = "Shitty Stuff")
+	UPhysicsConstraintComponent*	rightConstraint = nullptr;
+
 private:
 	TArray<FStickConstraint>		stickingConstraints;
 
 	USphereComponent*				leftConstraintPoint = nullptr;
 	USphereComponent*				rightConstraintPoint = nullptr;
-	UPhysicsConstraintComponent*	leftConstraint = nullptr;
-	UPhysicsConstraintComponent*	rightConstraint = nullptr;
+
 
 	bool							isSticked = false;
 };

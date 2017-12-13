@@ -6,6 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "DrawDebugHelpers.h"
+#include "BoxClimbComponent.h"
 
 // Sets default values for this component's properties
 UMoveComponent::UMoveComponent()
@@ -24,7 +25,12 @@ void UMoveComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
+	for (auto&& climbBoxesReference : climbBoxesReferences)
+	{
+		UBoxClimbComponent*	tempBox = Cast<UBoxClimbComponent>(climbBoxesReference.GetComponent(GetOwner()));
+		if (tempBox)
+			climbBoxes.Add(tempBox);
+	}
 }
 
 
@@ -99,6 +105,14 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 			Char->SetActorLocationAndRotation(finalLocation, finalRotation.Quaternion(), true, nullptr, ETeleportType::None);
 		}
 	}
+	else
+	{
+		float stickLength = currentInputValue.Size();
+		if (stickLength < JogStickThreshold)
+			setWalkMode();
+		else
+			setJogMode();
+	}
 }
 
 void UMoveComponent::MoveForward(float Value)
@@ -109,27 +123,20 @@ void UMoveComponent::MoveForward(float Value)
 	ACharacter* Char = Cast<ACharacter>(GetOwner());
 	APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
 
-	if (isMovingHeavyObject)
-		currentInputValue.Y = Value;
-	else
+	if (!isMovingHeavyObject)
 	{
-		bool neg = false;
-		if (Value < 0.0f)
-		{
-			neg = true;
-			Value *= -1.0f;
-		}
-
-		if (Value <= WalkThreshold)
+		if (Value <= WalkStickThreshold && Value >= -WalkStickThreshold)
 			return;
-		float realValue = (Value <= JogThreshold) ? JogThreshold : 1.0f;
-		realValue *= (neg) ? -1.0f : 1.0f;
 
 		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
 		CamRot.Pitch = 0.0f;
 		FVector MoveDir = CamRot.Vector();
-		Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
+		if (Value < 0.0f)
+			Char->GetCharacterMovement()->AddInputVector(MoveDir * -1.0f);
+		else
+			Char->GetCharacterMovement()->AddInputVector(MoveDir);
 	}
+	currentInputValue.Y = Value;
 }
 
 void UMoveComponent::MoveRight(float Value)
@@ -142,26 +149,18 @@ void UMoveComponent::MoveRight(float Value)
 
 	if (!isMovingHeavyObject)
 	{
-		bool neg = false;
-		if (Value < 0.0f)
-		{
-			neg = true;
-			Value *= -1.0f;
-		}
-
-		if (Value <= WalkThreshold)
+		if (Value <= WalkStickThreshold && Value >= -WalkStickThreshold)
 			return;
-
-		float realValue = (Value <= JogThreshold) ? JogThreshold : 1.0f;
-		realValue *= (neg) ? -1.0f : 1.0f;
 
 		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
 		CamRot.Pitch = 0.0f;
 		FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
-		Char->GetCharacterMovement()->AddInputVector(MoveDir * realValue);
+		if (Value < 0.0f)
+			Char->GetCharacterMovement()->AddInputVector(MoveDir * -1.0f);
+		else
+			Char->GetCharacterMovement()->AddInputVector(MoveDir);;
 	}
-	else
-		currentInputValue.X = Value;
+	currentInputValue.X = Value;
 }
 
 float	UMoveComponent::GetCameraTargetDiffAngle() const
@@ -187,4 +186,22 @@ void	UMoveComponent::DisableMovingHeavyObjectMode()
 	ACharacter* Char = Cast<ACharacter>(GetOwner());
 	if (Char)
 		Char->GetCharacterMovement()->bOrientRotationToMovement = true;
+}
+
+void	UMoveComponent::setWalkMode()
+{
+	ACharacter* Char = Cast<ACharacter>(GetOwner());
+	if (Char)
+	{
+		Char->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	}
+}
+
+void	UMoveComponent::setJogMode()
+{
+	ACharacter* Char = Cast<ACharacter>(GetOwner());
+	if (Char)
+	{
+		Char->GetCharacterMovement()->MaxWalkSpeed = JogSpeed;
+	}
 }

@@ -2,10 +2,11 @@
 
 #pragma once
 
+class UBoxClimbComponent;
+
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "MoveComponent.generated.h"
-
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BREATH_API UMoveComponent : public UActorComponent
@@ -46,9 +47,13 @@ public:
 public:
 
 	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Speed")
-	float	WalkThreshold = 0.1f;
+	float	WalkStickThreshold = 0.1f;
 	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Speed")
-	float	JogThreshold = 0.5f;
+	float	JogStickThreshold = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
+	float	WalkSpeed = 300.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
+	float	JogSpeed = 600.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
 	float	HeavyAngleTolerance = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
@@ -59,13 +64,20 @@ public:
 	/*Use the value for the multiplier**/
 	UPROPERTY(EditAnywhere, Category = "HeavyValues")
 	float	MassGrabMultipliers[3];
+	UPROPERTY(EditAnywhere, Category = "Climb")
+	TArray<FComponentReference>	climbBoxesReferences;
 
 private:
-	bool		isBlocked = false;
-	bool		isMovingHeavyObject = false;
+	void		setWalkMode();
+	void		setJogMode();
 
-	float		holdingObjectMass = 0.0f;
-	FVector		holdingObjectLocation;
+private:
+	TArray<UBoxClimbComponent*>	climbBoxes;
+	bool						isBlocked = false;
+	bool						isMovingHeavyObject = false;
+
+	float						holdingObjectMass = 0.0f;
+	FVector						holdingObjectLocation;
 	
-	FVector2D	currentInputValue;
+	FVector2D					currentInputValue;
 };

@@ -260,6 +260,13 @@ void	UHoldComponent::createHandConstraint()
 	FVector rightSphereLocation;
 	getPushingPoints(center, leftSphereLocation, rightSphereLocation);
 
+	FVector leftHand = leftHandConstraint->GetComponentLocation();
+	FVector rightHand = rightHandConstraint->GetComponentLocation();
+	leftHand.Z = leftSphereLocation.Z;
+	rightHand.Z = rightSphereLocation.Z;
+	leftHandConstraint->SetWorldLocation(leftHand);
+	rightHandConstraint->SetWorldLocation(rightHand);
+
 	leftHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingObject->CreateLeftConstraintPoint(leftSphereLocation), "None");
 	rightHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingObject->CreateRightConstraintPoint(rightSphereLocation), "None");
 	//leftHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingPrimitiveComponent, "None");
