@@ -58,6 +58,15 @@ public:
 	UPhysicsConstraintComponent*	leftConstraint = nullptr;
 	UPROPERTY(VisibleAnywhere, Category = "Shitty Stuff")
 	UPhysicsConstraintComponent*	rightConstraint = nullptr;
+	UPROPERTY(EditAnywhere, Category = "ShittyStuff")
+	FComponentReference	Grab;
+
+	UPrimitiveComponent*	GetGrabComp() const {
+		auto* actor = GetOwner();
+		if (!actor)
+			return nullptr;
+		return Cast<UPrimitiveComponent>(Grab.GetComponent(actor));
+	}
 
 protected:
 	UPROPERTY(VisibleAnywhere)

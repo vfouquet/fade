@@ -146,7 +146,9 @@ void	UHoldComponent::Grab()
 		ACharacter* character = Cast<ACharacter>(characterCapsule->GetOwner());	
 		holdingObject = closestInteractableObject.Get();
 		AActor* holdingActor = holdingObject->GetOwner();
-		holdingPrimitiveComponent = holdingActor->FindComponentByClass<UPrimitiveComponent>();
+		holdingPrimitiveComponent = closestInteractableObject->GetGrabComp();
+		if (!holdingPrimitiveComponent)
+			holdingPrimitiveComponent = holdingActor->FindComponentByClass<UPrimitiveComponent>();
 
 		FHitResult	hitRes;
 		FCollisionQueryParams	queryParams;
@@ -156,6 +158,7 @@ void	UHoldComponent::Grab()
 		FVector	holdPrimExtent = holdingPrimitiveComponent->Bounds.BoxExtent;
 		holdPrimExtent.Z = 0.0f;
 		FVector	holdingPoint = holdingPrimitiveComponent->GetComponentLocation() + (holdPrimExtent + HoldSnapOffset) * hitRes.Normal;
+		holdingActor->SetActorLocation(holdingActor->GetActorLocation() + FVector::UpVector * 10.0f);
 
 		character->SetActorLocationAndRotation(holdingPoint, newRot, true);
 
@@ -293,7 +296,7 @@ bool	UHoldComponent::getPushingPoints(FVector& centerPoint, FVector& firstPoint,
 	FVector normal = FVector::CrossProduct(direction, characterCapsule->GetOwner()->GetActorUpVector()).GetUnsafeNormal();
 	firstPoint = centerPoint + normal * characterCapsule->GetScaledCapsuleRadius();
 	secondPoint = centerPoint - normal * characterCapsule->GetScaledCapsuleRadius();
-	//DrawDebugSphere(GetWorld(), firstPoint, 10.0f, 12, FColor::Emerald, true, 5.0f);
-	//DrawDebugSphere(GetWorld(), secondPoint, 10.0f, 12, FColor::Turquoise, true, 5.0f);
+	DrawDebugSphere(GetWorld(), firstPoint, 10.0f, 12, FColor::Emerald, true, 5.0f);
+	DrawDebugSphere(GetWorld(), secondPoint, 10.0f, 12, FColor::Turquoise, true, 5.0f);
 	return true;
 }

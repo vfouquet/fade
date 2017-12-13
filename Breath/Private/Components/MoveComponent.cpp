@@ -77,7 +77,7 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 				massMult = MassGrabMultipliers[2];
 
 			FVector MoveDir = Char->GetActorRotation().Vector();
-			Char->GetCharacterMovement()->AddInputVector(MoveDir * massMult * 0.5f);
+			Char->GetCharacterMovement()->AddInputVector(MoveDir * massMult);
 		}
 		else if (difference >= 360.0f - HeavyAngleTolerance || difference <= HeavyAngleTolerance)
 		{
@@ -90,7 +90,7 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 				massMult = MassGrabMultipliers[2];
 
 			FVector MoveDir = Char->GetActorRotation().Vector();
-			Char->GetCharacterMovement()->AddInputVector(MoveDir * -1.0f * massMult * 0.5f);
+			Char->GetCharacterMovement()->AddInputVector(MoveDir * -1.0f * massMult);
 		}
 		else
 		{
@@ -192,7 +192,7 @@ bool	UMoveComponent::Climb()
 		UCapsuleComponent*	characterCapsule = character->FindComponentByClass<UCapsuleComponent>();
 		if (!characterCapsule)
 			return false;
-		character->SetActorLocation(highestClimbBox->GetClimbedLocation() + FVector::UpVector * characterCapsule->GetScaledCapsuleHalfHeight());
+		character->SetActorLocation(highestClimbBox->GetClimbedLocation() + FVector::UpVector * (characterCapsule->GetScaledCapsuleHalfHeight() + 10.0f), false, nullptr, ETeleportType::TeleportPhysics);
 		return true;
 	}
 	return false;
