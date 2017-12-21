@@ -42,8 +42,9 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		{
 			EChemicalState previousState = state;
 			state = getNextState(stateChanger.Key);
+			EChemicalTransformation	previousTransformation = stateChanger.Key;
 			currentChangers.Empty();
-			notifyChemicalStateChanged(previousState, state);
+			notifyChemicalStateChanged(previousTransformation, previousState, state);
 			break;
 		}
 	}
@@ -78,41 +79,66 @@ void	UChemicalComponent::OnActorEndOverlap(UPrimitiveComponent* overlapComp, AAc
 	if (transformation != EChemicalTransformation::None)
 	{
 		if (currentChangers.Contains(transformation))
-			currentChangers[transformation].RemoveImpactingActor(OtherActor);
+		{
+			ChemicalStateChanger&	transformationStateChanger = currentChangers[transformation];
+			transformationStateChanger.RemoveImpactingActor(OtherActor);
+			if (transformationStateChanger.GetImpactingActorsNumber() == 0 && !bPersistantTransformation)
+				currentChangers.Remove(transformation);
+		}
 	}
 }
 
-void	UChemicalComponent::notifyChemicalStateChanged(EChemicalState previous, EChemicalState next)
+void	UChemicalComponent::EraseIdentity()
 {
-	stateChangedDelegate.Broadcast(previous, next);
+	currentChangers.Empty();
+	stateChangedDelegate.Broadcast(EChemicalTransformation::Erasing, state, EChemicalState::NoIdentity);
+	state = EChemicalState::NoIdentity;
+}
 
-	EChemicalTransformation	tempTransformation = getPotentialNextTransformation();
-	if (tempTransformation != EChemicalTransformation::None)
+void	UChemicalComponent::GiveIdentity()
+{
+	state = EChemicalState::None;
+	stateChangedDelegate.Broadcast(EChemicalTransformation::GivingIdentity, EChemicalState::NoIdentity, EChemicalState::None);
+}
+
+void	UChemicalComponent::notifyChemicalStateChanged(EChemicalTransformation previousTransformation, EChemicalState previous, EChemicalState next)
+{
+	stateChangedDelegate.Broadcast(previousTransformation, previous, next);
+
+	EChemicalTransformation	transformation = getPotentialSelfNextTransformation();
+	if (transformation != EChemicalTransformation::None)
 	{
-		ChemicalStateChanger& stateChanger = addStateChanger(tempTransformation);
-		stateChanger.AddImpactingActor(this->GetOwner());
+		ChemicalStateChanger& stateChanger = addStateChanger(transformation);
+		stateChanger.AddImpactingActor(GetOwner());
+	}
 
-		TArray<AActor*>	overlappingChemicalActors;
-		GetOwner()->GetOverlappingActors(overlappingChemicalActors);
-		for (auto It = overlappingChemicalActors.CreateConstIterator(); It; ++It)
+	TArray<AActor*>	overlappingChemicalActors;
+	GetOwner()->GetOverlappingActors(overlappingChemicalActors);
+	for (auto It = overlappingChemicalActors.CreateConstIterator(); It; ++It)
+	{
+		UChemicalComponent*	comp = (*It)->FindComponentByClass<UChemicalComponent>();
+		if (!comp)
+			continue;
+		EChemicalTransformation transformation = getEffectiveEffect(comp->GetType(), comp->GetState());
+		if (transformation == EChemicalTransformation::None)
+			continue;
+		if (currentChangers.Contains(transformation))
+			currentChangers[transformation].AddImpactingActor(comp->GetOwner());
+		else
 		{
-			UChemicalComponent*	comp = (*It)->FindComponentByClass<UChemicalComponent>();
-			if (!comp)
-				continue;
-			EChemicalTransformation transformation = getEffectiveEffect(comp->GetType(), comp->GetState());
-			if (transformation != EChemicalTransformation::None && transformation == tempTransformation)
-				currentChangers[transformation].AddImpactingActor(GetOwner());
+			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
+			stateChanger.AddImpactingActor(comp->GetOwner());
 		}
 	}
 }
 
 ChemicalStateChanger&	UChemicalComponent::addStateChanger(EChemicalTransformation transformation)
 {
-	if (transformation == EChemicalTransformation::Drowning)
+	if (transformation == EChemicalTransformation::Drenching)
 	{
 		for (auto& stateChanger : currentChangers)
 		{
-			if (stateChanger.Key == EChemicalTransformation::Burning || stateChanger.Key == EChemicalTransformation::Oiling)
+			if (stateChanger.Key == EChemicalTransformation::Burning || stateChanger.Key == EChemicalTransformation::Staining)
 				currentChangers.Remove(stateChanger.Key);
 		}
 	}

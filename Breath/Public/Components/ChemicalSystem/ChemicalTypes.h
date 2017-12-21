@@ -8,7 +8,7 @@ enum class EChemicalType : uint8
 {
 	None = 0 UMETA(DisplayName = "None"),
 	Wood UMETA(DisplayName = "Wood"),
-	Fiber UMETA(DisplayName = "Fiber"),
+	Fabric UMETA(DisplayName = "Fabric"),
 	Rock UMETA(DisplayName = "Rock"),
 	Ceramic UMETA(DisplayName = "Ceramic"),
 	Water UMETA(DisplayName = "Water"),
@@ -21,14 +21,12 @@ UENUM(BlueprintType)
 enum class EChemicalState : uint8
 {
 	None = 0 UMETA(DisplayName = "None"),
-	Fire UMETA(DisplayName = "Fire"),
-	Ashes UMETA(DisplayName = "Ashes"),
-	Wet UMETA(DisplayName = "Wet"),
-	Oiled UMETA(DisplayName = "Oiled"),
-	Broken UMETA(DisplayName = "Broken"),
-	Extinguished UMETA(DisplayName = "Extinguished"),
-	Dispersed UMETA(DisplayName = "Dispersed"),
-	NoIdentity UMETA(DisplayName = "NoIdentity")
+	Lit UMETA(DisplayName = "Lit"),
+	Burning UMETA(DisplayName = "Burning"),
+	Scorched UMETA(DisplayName = "Scorched"),
+	Drenched UMETA(DisplayName = "Drenched"),
+	Stained UMETA(DisplayName = "Stained"),
+	NoIdentity UMETA(DisplayName = "NoIdentity"),
 };
 
 UENUM(BlueprintType)
@@ -36,6 +34,8 @@ enum class EChemicalTransformation : uint8
 {
 	None = 0 UMETA(DisplayName = "None"),
 	Burning UMETA(DisplayName = "Burning"),
-	Drowning UMETA(DisplayName = "Drowning"),
-	Oiling UMETA(DisplayName = "Oiling")
+	Drenching UMETA(DisplayName = "Drenching"),
+	Staining UMETA(DisplayName = "Staining"),
+	Erasing UMETA(DisplayName = "Erasing"),
+	GivingIdentity UMETA(DisplayName = "GivingIdentity")
 };

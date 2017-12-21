@@ -7,38 +7,18 @@ UChemicalRockComponent::UChemicalRockComponent()
 	type = EChemicalType::Rock;
 }
 
-void	UChemicalRockComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	/*
-	if (state == EChemicalState::None)
-	{
-	UE_LOG(LogTemp, Warning, TEXT("Basic rock"));
-	}
-	else if (state == EChemicalState::Oiled)
-	{
-	UE_LOG(LogTemp, Warning, TEXT("Oiled rock"));
-	}
-	else if (state == EChemicalState::Fire)
-	{
-	UE_LOG(LogTemp, Warning, TEXT("Fired rock"));
-	}
-	*/
-}
-
 EChemicalTransformation		UChemicalRockComponent::getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const
 {
 	if (state == EChemicalState::None)
 	{
 		if (otherType == EChemicalType::Oil && otherState == EChemicalState::None)
-			return EChemicalTransformation::Oiling;
+			return EChemicalTransformation::Staining;
 	}
-	else if (state == EChemicalState::Oiled)
+	else if (state == EChemicalState::Stained)
 	{
 		if (otherType == EChemicalType::Wood || otherType == EChemicalType::Rock)
 		{
-			if (otherState == EChemicalState::Fire)
+			if (otherState == EChemicalState::Burning)
 				return EChemicalTransformation::Burning;
 		}
 		else if (otherType == EChemicalType::Fire)
@@ -47,7 +27,7 @@ EChemicalTransformation		UChemicalRockComponent::getEffectiveEffect(EChemicalTyp
 	return EChemicalTransformation::None;
 }
 
-EChemicalTransformation		UChemicalRockComponent::getPotentialNextTransformation() const
+EChemicalTransformation		UChemicalRockComponent::getPotentialSelfNextTransformation() const
 {
 	return EChemicalTransformation::None;
 }
@@ -56,9 +36,9 @@ EChemicalState	UChemicalRockComponent::getNextState(EChemicalTransformation cons
 {
 	if (transformation == EChemicalTransformation::Burning)
 		return EChemicalState::None;
-	else if (transformation == EChemicalTransformation::Drowning)
-		return EChemicalState::Wet;
-	else if (transformation == EChemicalTransformation::Oiling)
-		return EChemicalState::Oiled;
+	else if (transformation == EChemicalTransformation::Drenching)
+		return EChemicalState::Drenched;
+	else if (transformation == EChemicalTransformation::Staining)
+		return EChemicalState::Stained;
 	return EChemicalState::None;
 }

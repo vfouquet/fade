@@ -7,17 +7,12 @@ UChemicalWaterComponent::UChemicalWaterComponent()
 	type = EChemicalType::Water;
 }
 
-void	UChemicalWaterComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
-
 EChemicalTransformation		UChemicalWaterComponent::getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const
 {
 	return EChemicalTransformation::None;
 }
 
-EChemicalTransformation		UChemicalWaterComponent::getPotentialNextTransformation() const
+EChemicalTransformation		UChemicalWaterComponent::getPotentialSelfNextTransformation() const
 {
 	return EChemicalTransformation::None;
 }

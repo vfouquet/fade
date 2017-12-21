@@ -16,9 +16,7 @@ class BREATH_API UChemicalCeramicComponent : public UChemicalComponent
 	
 	UChemicalCeramicComponent();
 
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const override;
-	virtual EChemicalTransformation		getPotentialNextTransformation() const override;
+	virtual EChemicalTransformation		getPotentialSelfNextTransformation() const override;
 	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const override;
 };

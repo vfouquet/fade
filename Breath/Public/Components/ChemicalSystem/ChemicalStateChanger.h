@@ -22,6 +22,8 @@ public:
 	void	AddImpactingActor(AActor* actor);
 	void	RemoveImpactingActor(AActor* actor);
 
+	int32	GetImpactingActorsNumber() const { return impactingActors.Num(); }
+
 private:
 	TArray<AActor*>	impactingActors;
 	float			targetTime = 0.0f;

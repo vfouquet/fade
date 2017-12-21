@@ -16,7 +16,7 @@ class BREATH_API UChemicalComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FChemicalStateChanged, EChemicalState, previous, EChemicalState, next);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FChemicalStateChanged, EChemicalTransformation, transformation, EChemicalState, previous, EChemicalState, next);
 
 public:
 	// Sets default values for this component's properties
@@ -35,6 +35,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void	OnActorEndOverlap(UPrimitiveComponent* overlapComp, AActor* OtherActor, UPrimitiveComponent* otherComp);
 
+	UFUNCTION(BlueprintCallable)
+	void	EraseIdentity();
+	UFUNCTION(BlueprintCallable)
+	void	GiveIdentity();
+
 	EChemicalType const&	GetType() const { return type; }
 	UFUNCTION(BlueprintCallable)
 	EChemicalState const&	GetState() const { return state; }
@@ -46,11 +51,16 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FChemicalStateChanged	stateChangedDelegate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Transformations")
+	bool	bPersistantTransformation = false;
 
 protected:
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const { return EChemicalTransformation::None; }
-	virtual EChemicalTransformation		getPotentialNextTransformation() const { return EChemicalTransformation::None; }
+	virtual EChemicalTransformation		getPotentialSelfNextTransformation() const { return EChemicalTransformation::None; }
 	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const { return EChemicalState::None; }
+
+protected:
+	virtual ChemicalStateChanger&	addStateChanger(EChemicalTransformation transformation);
 
 protected:
 	TMap<EChemicalTransformation, ChemicalStateChanger>	currentChangers;
@@ -58,8 +68,5 @@ protected:
 	EChemicalState										state = EChemicalState::None;
 
 private:
-	void notifyChemicalStateChanged(EChemicalState previous, EChemicalState next);
-
-private:
-	ChemicalStateChanger&	addStateChanger(EChemicalTransformation transformation);
+	void notifyChemicalStateChanged(EChemicalTransformation transformation, EChemicalState previous, EChemicalState next);
 };

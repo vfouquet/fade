@@ -7,12 +7,6 @@ UChemicalOilComponent::UChemicalOilComponent()
 	type = EChemicalType::Oil;
 }
 
-void	UChemicalOilComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-}
-
 EChemicalTransformation		UChemicalOilComponent::getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const
 {
 	if (otherType == EChemicalType::Fire && otherState == EChemicalState::None)
@@ -20,7 +14,7 @@ EChemicalTransformation		UChemicalOilComponent::getEffectiveEffect(EChemicalType
 	return EChemicalTransformation::None;
 }
 
-EChemicalTransformation		UChemicalOilComponent::getPotentialNextTransformation() const
+EChemicalTransformation		UChemicalOilComponent::getPotentialSelfNextTransformation() const
 {
 	return EChemicalTransformation::None;
 }
@@ -28,6 +22,6 @@ EChemicalTransformation		UChemicalOilComponent::getPotentialNextTransformation()
 EChemicalState	UChemicalOilComponent::getNextState(EChemicalTransformation const& transformation) const
 {
 	if (transformation == EChemicalTransformation::Burning)
-		return EChemicalState::Ashes;
+		return EChemicalState::Scorched;
 	return EChemicalState::None;
 }

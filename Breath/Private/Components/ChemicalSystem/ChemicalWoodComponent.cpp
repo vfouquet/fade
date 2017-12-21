@@ -7,61 +7,58 @@ UChemicalWoodComponent::UChemicalWoodComponent()
 	type = EChemicalType::Wood;
 }
 
-void UChemicalWoodComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+ChemicalStateChanger&	UChemicalWoodComponent::addStateChanger(EChemicalTransformation transformation)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	/*
-	if (state == EChemicalState::None)
+	float time = 0.0f;
+	if (transformation == EChemicalTransformation::Drenching)
 	{
-	UE_LOG(LogTemp, Warning, TEXT("Normal box"));
+		for (auto& stateChanger : currentChangers)
+		{
+			if (stateChanger.Key == EChemicalTransformation::Burning || stateChanger.Key == EChemicalTransformation::Staining)
+				currentChangers.Remove(stateChanger.Key);
+		}
 	}
-	else if (state == EChemicalState::Fire)
+	else if (transformation == EChemicalTransformation::Burning)
 	{
-	UE_LOG(LogTemp, Warning, TEXT("This box is on fire"));
+		if (state == EChemicalState::Drenched)
+			time = drenchToNormal;
+		else if (state == EChemicalState::None)
+			time = normalToLit;
+		else if (state == EChemicalState::Lit)
+			time = litToBurning;
+		else if (state == EChemicalState::Burning)
+			time = burningToScorched;
 	}
-	else if (state == EChemicalState::Ashes)
-	{
-	UE_LOG(LogTemp, Warning, TEXT("This box turned into ashes"));
-	}
-	else if (state == EChemicalState::Wet)
-	{
-	UE_LOG(LogTemp, Warning, TEXT("This box is Wet"));
-	}
-	else if (state == EChemicalState::Oiled)
-	{
-	UE_LOG(LogTemp, Warning, TEXT("This box is oiled"));
-	}
-	*/
+	ChemicalStateChanger	temp(time);
+	currentChangers.Add(transformation, temp);
+	return currentChangers[transformation];
 }
 
 EChemicalTransformation		UChemicalWoodComponent::getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const
 {
 	if (otherType == EChemicalType::Fire && otherState == EChemicalState::None)
 	{
-		if (state == EChemicalState::None || state == EChemicalState::Fire
-			|| state == EChemicalState::Oiled)
+		if (canBurn())
 			return EChemicalTransformation::Burning;
 	}
-	else if (otherType == EChemicalType::Wood && otherState == EChemicalState::Fire)
+	else if (otherType == EChemicalType::Wood && otherState == EChemicalState::Burning)
 	{
-		if (state == EChemicalState::None || state == EChemicalState::Fire
-			|| state == EChemicalState::Oiled)
+		if (canBurn())
 			return EChemicalTransformation::Burning;
 	}
 	else if (otherType == EChemicalType::Water)
 	{
-		if (state == EChemicalState::None || state == EChemicalState::Fire || state == EChemicalState::Oiled)
-			return EChemicalTransformation::Drowning;
+		if (state == EChemicalState::None || state == EChemicalState::Lit || state == EChemicalState::Burning || state == EChemicalState::Stained)
+			return EChemicalTransformation::Drenching;
 	}
 	else if (otherType == EChemicalType::Oil && otherState == EChemicalState::None)
-		return EChemicalTransformation::Oiling;
+		return EChemicalTransformation::Staining;
 	return EChemicalTransformation::None;
 }
 
-EChemicalTransformation		UChemicalWoodComponent::getPotentialNextTransformation() const
+EChemicalTransformation		UChemicalWoodComponent::getPotentialSelfNextTransformation() const
 {
-	if (state == EChemicalState::Fire)
+	if (state == EChemicalState::Burning)
 		return EChemicalTransformation::Burning;
 	return EChemicalTransformation::None;
 }
@@ -71,18 +68,22 @@ EChemicalState	UChemicalWoodComponent::getNextState(EChemicalTransformation cons
 	if (transformation == EChemicalTransformation::Burning)
 	{
 		if (state == EChemicalState::None)
-			return EChemicalState::Fire;
-		else if (state == EChemicalState::Fire)
-			return EChemicalState::Ashes;
-		else if (state == EChemicalState::Oiled)
-			return EChemicalState::Fire;
+			return EChemicalState::Lit;
+		else if (state == EChemicalState::Lit)
+			return EChemicalState::Burning;
+		else if (state == EChemicalState::Burning)
+			return EChemicalState::Scorched;
+		else if (state == EChemicalState::Stained)
+			return EChemicalState::Lit;
+		else if (state == EChemicalState::Drenched)
+			return EChemicalState::None;
 	}
-	else if (transformation == EChemicalTransformation::Drowning)
+	else if (transformation == EChemicalTransformation::Drenching)
 	{
-		if (state == EChemicalState::None || state == EChemicalState::Fire)
-			return EChemicalState::Wet;
+		if (state == EChemicalState::None || state == EChemicalState::Lit || state == EChemicalState::Burning)
+			return EChemicalState::Drenched;
 	}
-	else if (transformation == EChemicalTransformation::Oiling)
-		return EChemicalState::Oiled;
+	else if (transformation == EChemicalTransformation::Staining && canBeStained())
+		return EChemicalState::Stained;
 	return EChemicalState::None;
 }
