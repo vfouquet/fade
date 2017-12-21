@@ -10,7 +10,6 @@ ChemicalStateChanger::ChemicalStateChanger(float value, bool needActorToUpdate)
 
 bool	ChemicalStateChanger::Update(float deltaTime)
 {
-	UE_LOG(LogTemp, Warning, TEXT("%f"), currentTime);
 	if (actorNeeded && impactingActors.Num() == 0)
 		return false;
 	currentTime += deltaTime;
