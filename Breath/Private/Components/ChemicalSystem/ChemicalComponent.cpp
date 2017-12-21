@@ -1,6 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ChemicalComponent.h"
+
+#include "Components/PrimitiveComponent.h"
+
 // Sets default values for this component's properties
 UChemicalComponent::UChemicalComponent()
 {
@@ -19,14 +22,17 @@ void UChemicalComponent::BeginPlay()
 
 	// ...
 	AActor* owner = GetOwner();
-	if (!owner)
-		return;
+	if (!owner) return;
+
+	UPrimitiveComponent* tempPrimitive = Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(owner));
+	if (!tempPrimitive) return;
+	
 	FScriptDelegate	beginOverlapDel;
-	beginOverlapDel.BindUFunction(this, "OnActorOverlap");
-	owner->OnActorBeginOverlap.Add(beginOverlapDel);
+	beginOverlapDel.BindUFunction(this, "OnOverlap");
+	tempPrimitive->OnComponentBeginOverlap.Add(beginOverlapDel);
 	FScriptDelegate	endOverlapDel;
-	endOverlapDel.BindUFunction(this, "OnActorEndOverlap");
-	owner->OnActorEndOverlap.Add(endOverlapDel);
+	endOverlapDel.BindUFunction(this, "OnEndOverlap");
+	tempPrimitive->OnComponentEndOverlap.Add(endOverlapDel);
 }
 
 
@@ -50,7 +56,7 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	}
 }
 
-void	UChemicalComponent::OnActorOverlap(UPrimitiveComponent* overlapComp, AActor* OtherActor, UPrimitiveComponent* otherComp)
+void	UChemicalComponent::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
 	UChemicalComponent*	comp = OtherActor->FindComponentByClass<UChemicalComponent>();
 	if (!comp)
@@ -69,7 +75,7 @@ void	UChemicalComponent::OnActorOverlap(UPrimitiveComponent* overlapComp, AActor
 	}
 }
 
-void	UChemicalComponent::OnActorEndOverlap(UPrimitiveComponent* overlapComp, AActor* OtherActor, UPrimitiveComponent* otherComp)
+void	UChemicalComponent::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	UChemicalComponent*	comp = OtherActor->FindComponentByClass<UChemicalComponent>();
 	if (!comp)

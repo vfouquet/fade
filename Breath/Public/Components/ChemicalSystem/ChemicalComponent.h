@@ -30,10 +30,10 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION(BlueprintCallable)
-		virtual void	OnActorOverlap(UPrimitiveComponent* overlapComp, AActor* OtherActor, UPrimitiveComponent* otherComp);
-	UFUNCTION(BlueprintCallable)
-		virtual void	OnActorEndOverlap(UPrimitiveComponent* overlapComp, AActor* OtherActor, UPrimitiveComponent* otherComp);
+	UFUNCTION()
+	void	OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	UFUNCTION()
+	void	OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION(BlueprintCallable)
 	void	EraseIdentity();
@@ -53,6 +53,8 @@ public:
 	FChemicalStateChanged	stateChangedDelegate;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Transformations")
 	bool	bPersistantTransformation = false;
+	UPROPERTY(EditAnywhere, Category = "Transformations")
+	FComponentReference	AssociatedComponent;
 
 protected:
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const { return EChemicalTransformation::None; }
