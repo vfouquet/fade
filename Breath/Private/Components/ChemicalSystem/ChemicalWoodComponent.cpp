@@ -17,6 +17,7 @@ ChemicalStateChanger&	UChemicalWoodComponent::addStateChanger(EChemicalTransform
 			if (stateChanger.Key == EChemicalTransformation::Burning || stateChanger.Key == EChemicalTransformation::Staining)
 				currentChangers.Remove(stateChanger.Key);
 		}
+		time = toDrench;
 	}
 	else if (transformation == EChemicalTransformation::Burning)
 	{

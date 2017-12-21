@@ -13,7 +13,8 @@ UCLASS(meta = (DisplayName = "Chemical Water", BlueprintSpawnableComponent))
 class BREATH_API UChemicalWaterComponent : public UChemicalComponent
 {
 	GENERATED_BODY()
-	
+
+public:
 	UChemicalWaterComponent();
 
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const override;

@@ -20,7 +20,7 @@ enum class EChemicalType : uint8
 UENUM(BlueprintType)
 enum class EChemicalState : uint8
 {
-	None = 0 UMETA(DisplayName = "None"),
+	None = 0 UMETA(DisplayName = "None"), //FIRE -> BURNING
 	Lit UMETA(DisplayName = "Lit"),
 	Burning UMETA(DisplayName = "Burning"),
 	Scorched UMETA(DisplayName = "Scorched"),

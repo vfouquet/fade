@@ -24,9 +24,12 @@ public:
 	float	litToBurning = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire Values")
 	float	burningToScorched = 4.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water Values")
+	float	toDrench = 0.1f;
 
 private:
-	bool	canBurn() const { return state == EChemicalState::None || state == EChemicalState::Lit || state == EChemicalState::Burning || state == EChemicalState::Stained; }
+	bool	canBurn() const { return state == EChemicalState::None || state == EChemicalState::Lit || 
+		state == EChemicalState::Burning || state == EChemicalState::Stained || state == EChemicalState::Drenched; }
 	bool	canBeStained() const { return state == EChemicalState::Drenched || state == EChemicalState::None; }
 
 	virtual ChemicalStateChanger&		addStateChanger(EChemicalTransformation transformation);

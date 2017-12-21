@@ -17,6 +17,13 @@ class BREATH_API UChemicalFireComponent : public UChemicalComponent
 public:
 	UChemicalFireComponent();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire properties")
+		bool	bExtinguishedAtLaunch = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water Values")
+	float	toExtinguished = 0.5f;
+
+private:
+	virtual ChemicalStateChanger&		addStateChanger(EChemicalTransformation transformation);
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const override;
 	virtual EChemicalTransformation		getPotentialSelfNextTransformation() const override;
 	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const override;
