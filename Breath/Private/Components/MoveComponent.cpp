@@ -39,6 +39,10 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (canRunValidateClimb)
+		validateRunClimbCurrentTime += DeltaTime;
+	//UE_LOG(LogTemp, Warning, TEXT("ValidateRunClimbTime : %f"), validateRunClimbCurrentTime);
+
 	if (isMovingHeavyObject)
 	{
 		if (currentInputValue == FVector2D::ZeroVector)
@@ -172,30 +176,20 @@ void UMoveComponent::MoveRight(float Value)
 
 bool	UMoveComponent::Climb()
 {
-	UBoxClimbComponent*	highestClimbBox = nullptr;
-	for (auto& climbBox : climbBoxes)
-	{
-		if (climbBox->IsOverlappingClimbingSurface() && !highestClimbBox)
-			highestClimbBox = climbBox;
-		else if (climbBox->IsOverlappingOthers())
-			break;
-			
-	}
-	if (!highestClimbBox)
+	computeClimbableBoxes();
+	if (!canClimb)
 		return false;
 
-	if (highestClimbBox->CheckSpaceOver())
-	{
-		ACharacter* character = Cast<ACharacter>(GetOwner());
-		if (!character)
-			return false;
-		UCapsuleComponent*	characterCapsule = character->FindComponentByClass<UCapsuleComponent>();
-		if (!characterCapsule)
-			return false;
-		character->SetActorLocation(highestClimbBox->GetClimbedLocation() + FVector::UpVector * (characterCapsule->GetScaledCapsuleHalfHeight() + 10.0f), false, nullptr, ETeleportType::TeleportPhysics);
-		return true;
-	}
-	return false;
+	//BEGIN SNAP + BLOCK INPUT
+	ACharacter* character = Cast<ACharacter>(GetOwner());
+	if (!character)
+		return false;
+	UCapsuleComponent*	characterCapsule = character->FindComponentByClass<UCapsuleComponent>();
+	if (!characterCapsule)
+		return false;
+	character->SetActorLocation(validClimbableBox->GetClimbedLocation() + FVector::UpVector * (characterCapsule->GetScaledCapsuleHalfHeight() + 10.0f), 
+			false, nullptr, ETeleportType::TeleportPhysics);
+	return true;
 }
 
 float	UMoveComponent::GetCameraTargetDiffAngle() const
@@ -239,4 +233,23 @@ void	UMoveComponent::setJogMode()
 	{
 		Char->GetCharacterMovement()->MaxWalkSpeed = JogSpeed;
 	}
+}
+	
+void	UMoveComponent::computeClimbableBoxes()
+{
+	validClimbableBox = nullptr;
+	canClimb = false;
+	
+	for (auto& climbBox : climbBoxes)
+	{
+		if (climbBox->IsOverlappingClimbingSurface() && !validClimbableBox)
+			validClimbableBox = climbBox;
+		else if (climbBox->IsOverlappingOthers())
+			break;
+
+	}
+	if (validClimbableBox && validClimbableBox->CheckSpaceOver())
+		canClimb = true;
+	else
+		validateRunClimbCurrentTime = 0.0f;
 }

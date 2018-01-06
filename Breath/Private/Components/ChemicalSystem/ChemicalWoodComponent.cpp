@@ -2,6 +2,8 @@
 
 #include "ChemicalWoodComponent.h"
 
+#include "Components/PrimitiveComponent.h"
+
 UChemicalWoodComponent::UChemicalWoodComponent()
 {
 	type = EChemicalType::Wood;
@@ -87,4 +89,27 @@ EChemicalState	UChemicalWoodComponent::getNextState(EChemicalTransformation cons
 	else if (transformation == EChemicalTransformation::Staining && canBeStained())
 		return EChemicalState::Stained;
 	return EChemicalState::None;
+}
+
+bool	UChemicalWoodComponent::computePercussionBreakability(UPrimitiveComponent* other)
+{
+	if (other->GetComponentVelocity().Size() < SpeedThresholdValue)
+		return false;
+	UPrimitiveComponent*	primitive = Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(GetOwner()));
+	float woodMass = primitive->GetMass();
+	UChemicalComponent*	otherComp = findAssociatedChemicalComponent(other);
+	if (!otherComp)
+	{
+		
+		return false;
+	}
+	if (otherComp->GetType() == EChemicalType::Rock)
+	{
+		float	stoneMass = other->GetMass();
+		UE_LOG(LogTemp, Warning, TEXT("Wood mass : %f      Rock mass : %f"), woodMass, stoneMass);
+		if (stoneMass > (woodMass * 0.5f))
+			return true;
+		return false;
+	}
+	return false;
 }

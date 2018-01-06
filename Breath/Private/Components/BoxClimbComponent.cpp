@@ -91,7 +91,11 @@ void	UBoxClimbComponent::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent
 	for (auto&& componentTag : OtherComp->ComponentTags)
 	{
 		if (componentTag == "ClimbSurface")
+		{
 			climbingComponents.Add(OtherComp);
+			boxClimbOverlap.Broadcast();
+			//Call
+		}
 	}
 }
 
@@ -105,6 +109,7 @@ void	UBoxClimbComponent::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, 
 			{
 				climbingComponents[pos] = nullptr;
 				climbingComponents.RemoveAt(pos);
+				boxClimbEndOverlap.Broadcast();
 				break;
 			}
 		}

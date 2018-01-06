@@ -3,6 +3,11 @@
 #include "ChemicalComponent.h"
 
 #include "Components/PrimitiveComponent.h"
+#include "Components/DestructibleComponent.h"
+#include "Engine/DestructibleMesh.h"
+
+float	UChemicalComponent::WeightThresholdValue = 30.0f;
+float	UChemicalComponent::SpeedThresholdValue = 50.0f;
 
 // Sets default values for this component's properties
 UChemicalComponent::UChemicalComponent()
@@ -33,6 +38,9 @@ void UChemicalComponent::BeginPlay()
 	FScriptDelegate	endOverlapDel;
 	endOverlapDel.BindUFunction(this, "OnEndOverlap");
 	tempPrimitive->OnComponentEndOverlap.Add(endOverlapDel);
+	FScriptDelegate	hitOverlap;
+	hitOverlap.BindUFunction(this, "OnHit");
+	tempPrimitive->OnComponentHit.Add(hitOverlap);
 }
 
 
@@ -58,7 +66,7 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 void	UChemicalComponent::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	UChemicalComponent*	comp = OtherActor->FindComponentByClass<UChemicalComponent>();
+	UChemicalComponent*	comp = findAssociatedChemicalComponent(OtherComp);// OtherActor->FindComponentByClass<UChemicalComponent>();
 	if (!comp)
 		return;
 
@@ -77,7 +85,7 @@ void	UChemicalComponent::OnOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 
 void	UChemicalComponent::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	UChemicalComponent*	comp = OtherActor->FindComponentByClass<UChemicalComponent>();
+	UChemicalComponent*	comp = findAssociatedChemicalComponent(OtherComp);	//OtherActor->FindComponentByClass<UChemicalComponent>();
 	if (!comp)
 		return;
 
@@ -93,6 +101,15 @@ void	UChemicalComponent::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, 
 		}
 	}
 }
+	
+void	UChemicalComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (computePercussionBreakability(OtherComp))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Break"));
+		applyChemicalPhysics();
+	}
+}
 
 void	UChemicalComponent::EraseIdentity()
 {
@@ -105,6 +122,38 @@ void	UChemicalComponent::GiveIdentity()
 {
 	state = EChemicalState::None;
 	stateChangedDelegate.Broadcast(EChemicalTransformation::GivingIdentity, EChemicalState::NoIdentity, EChemicalState::None);
+}
+
+ChemicalStateChanger&	UChemicalComponent::addStateChanger(EChemicalTransformation transformation)
+{
+	if (transformation == EChemicalTransformation::Drenching)
+	{
+		for (auto& stateChanger : currentChangers)
+		{
+			if (stateChanger.Key == EChemicalTransformation::Burning || stateChanger.Key == EChemicalTransformation::Staining)
+				currentChangers.Remove(stateChanger.Key);
+		}
+	}
+	ChemicalStateChanger	temp(2.0f);
+	currentChangers.Add(transformation, temp);
+	return currentChangers[transformation];
+}
+	
+UChemicalComponent*	UChemicalComponent::findAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent)
+{
+	AActor* refCompOwner = referenceComponent->GetOwner();
+	if (!refCompOwner)	return nullptr;
+
+	TArray<UActorComponent*>	chemicalComponents = refCompOwner->GetComponentsByClass(UChemicalComponent::StaticClass());
+	for (auto& actorComp : chemicalComponents)
+	{
+		UChemicalComponent*	chemicalComp = Cast<UChemicalComponent>(actorComp);
+		if (!chemicalComp) continue;
+		UPrimitiveComponent* tempPrimitive = Cast<UPrimitiveComponent>(chemicalComp->AssociatedComponent.GetComponent(refCompOwner));
+		if (tempPrimitive == referenceComponent)
+			return chemicalComp;
+	}
+	return nullptr;
 }
 
 void	UChemicalComponent::notifyChemicalStateChanged(EChemicalTransformation previousTransformation, EChemicalState previous, EChemicalState next)
@@ -138,17 +187,10 @@ void	UChemicalComponent::notifyChemicalStateChanged(EChemicalTransformation prev
 	}
 }
 
-ChemicalStateChanger&	UChemicalComponent::addStateChanger(EChemicalTransformation transformation)
+void	UChemicalComponent::applyChemicalPhysics()
 {
-	if (transformation == EChemicalTransformation::Drenching)
-	{
-		for (auto& stateChanger : currentChangers)
-		{
-			if (stateChanger.Key == EChemicalTransformation::Burning || stateChanger.Key == EChemicalTransformation::Staining)
-				currentChangers.Remove(stateChanger.Key);
-		}
-	}
-	ChemicalStateChanger	temp(2.0f);
-	currentChangers.Add(transformation, temp);
-	return currentChangers[transformation];
+	UDestructibleComponent*	destructibleComp = Cast<UDestructibleComponent>(AssociatedComponent.GetComponent(GetOwner()));
+	if (destructibleComp)
+		destructibleComp->ApplyRadiusDamage(destructibleComp->DestructibleMesh->DefaultDestructibleParameters.DamageParameters.DamageThreshold, destructibleComp->GetComponentLocation(), 0.0f, 0.0f, true);
+	DestroyComponent();
 }

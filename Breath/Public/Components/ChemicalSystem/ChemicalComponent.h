@@ -17,6 +17,9 @@ class BREATH_API UChemicalComponent : public UActorComponent
 	GENERATED_BODY()
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FChemicalStateChanged, EChemicalTransformation, transformation, EChemicalState, previous, EChemicalState, next);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FChemicalCollision, UChemicalComponent*, OtherChemical, EChemicalTransformation, EffectOnThis);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChemicalEndCollision, UChemicalComponent*, OtherChemical);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChemicalPercussion, UChemicalComponent*, OtherChemical);
 
 public:
 	// Sets default values for this component's properties
@@ -34,6 +37,8 @@ public:
 	void	OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 	UFUNCTION()
 	void	OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	UFUNCTION()
+	void	OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit );
 
 	UFUNCTION(BlueprintCallable)
 	void	EraseIdentity();
@@ -51,18 +56,27 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FChemicalStateChanged	stateChangedDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FChemicalCollision		chemicalCollisionEvent;
+	UPROPERTY(BlueprintAssignable)
+	FChemicalEndCollision	chemicalEndCollisionEvent;
+	UPROPERTY(BlueprintAssignable)
+	FChemicalPercussion		chemicalPercussionEvent;
+	/**Does a incomplete transformation remain and can be resumed later or object state is reset*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Transformations")
 	bool	bPersistantTransformation = false;
 	UPROPERTY(EditAnywhere, Category = "Transformations")
 	FComponentReference	AssociatedComponent;
+	static	float	WeightThresholdValue;
+	static	float	SpeedThresholdValue;
 
 protected:
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const { return EChemicalTransformation::None; }
 	virtual EChemicalTransformation		getPotentialSelfNextTransformation() const { return EChemicalTransformation::None; }
 	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const { return EChemicalState::None; }
-
-protected:
-	virtual ChemicalStateChanger&	addStateChanger(EChemicalTransformation transformation);
+	virtual ChemicalStateChanger&		addStateChanger(EChemicalTransformation transformation);
+	virtual	bool						computePercussionBreakability(UPrimitiveComponent* other) { return false; }
+	static UChemicalComponent*	findAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent);
 
 protected:
 	TMap<EChemicalTransformation, ChemicalStateChanger>	currentChangers;
@@ -70,5 +84,6 @@ protected:
 	EChemicalState										state = EChemicalState::None;
 
 private:
-	void notifyChemicalStateChanged(EChemicalTransformation transformation, EChemicalState previous, EChemicalState next);
+	void	notifyChemicalStateChanged(EChemicalTransformation transformation, EChemicalState previous, EChemicalState next);
+	void	applyChemicalPhysics();
 };

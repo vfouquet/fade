@@ -56,6 +56,7 @@ public:
 	float	WalkSpeed = 300.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
 	float	JogSpeed = 600.0f;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
 	float	HeavyAngleTolerance = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
@@ -66,15 +67,28 @@ public:
 	/*Use the value for the multiplier**/
 	UPROPERTY(EditAnywhere, Category = "HeavyValues")
 	float	MassGrabMultipliers[3];
+	
 	UPROPERTY(EditAnywhere, Category = "Climb")
 	TArray<FComponentReference>	climbBoxesReferences;
+	/*Time to validate climb by walking**/
+	UPROPERTY(EditAnywhere, Category = "Climb")
+	float	RunClimbValue = 1.0f;
+	/*Character velocity needed to validate a climb**/
+	UPROPERTY(EditAnywhere, Category = "Climb")
+	float	RunClimbVelocityThreshold = 200.0f;
 
 private:
 	void		setWalkMode();
 	void		setJogMode();
 
+	void	computeClimbableBoxes();
 private:
 	TArray<UBoxClimbComponent*>	climbBoxes;
+	UBoxClimbComponent*			validClimbableBox = nullptr;
+	float						validateRunClimbCurrentTime = 0.0f;
+	bool						canClimb = false;
+	bool						canRunValidateClimb = false;
+
 	bool						isBlocked = false;
 	bool						isMovingHeavyObject = false;
 

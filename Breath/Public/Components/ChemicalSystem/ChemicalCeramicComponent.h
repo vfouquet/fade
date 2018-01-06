@@ -19,4 +19,5 @@ class BREATH_API UChemicalCeramicComponent : public UChemicalComponent
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const override;
 	virtual EChemicalTransformation		getPotentialSelfNextTransformation() const override;
 	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const override;
+	virtual	bool						computePercussionBreakability(UPrimitiveComponent* other) override;
 };

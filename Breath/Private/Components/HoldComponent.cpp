@@ -52,12 +52,13 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	TArray<FHitResult>			hitResults;
 	FCollisionShape				shape;
 	FCollisionQueryParams		queryParams;
+	queryParams.AddIgnoredActor(GetOwner());
 	FCollisionResponseParams	responseParam;
 	FQuat						quaternion = characterCapsule->GetComponentQuat();
 	shape.SetCapsule(characterCapsule->GetScaledCapsuleRadius(), characterCapsule->GetScaledCapsuleHalfHeight());
 
-	if (GetWorld()->SweepMultiByChannel(hitResults, handleTargetLocation->GetComponentLocation(),
-		handleTargetLocation->GetComponentLocation() + GetOwner()->GetActorForwardVector() * DetectionOffset, quaternion,
+	if (GetWorld()->SweepMultiByChannel(hitResults, characterCapsule->GetComponentLocation(),
+		characterCapsule->GetComponentLocation() + GetOwner()->GetActorForwardVector() * DetectionOffset, quaternion,
 		ECC_WorldDynamic, shape, queryParams, responseParam))
 	{	
 		for (auto& hitRes : hitResults)

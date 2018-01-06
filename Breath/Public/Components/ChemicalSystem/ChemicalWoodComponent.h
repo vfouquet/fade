@@ -32,8 +32,9 @@ private:
 		state == EChemicalState::Burning || state == EChemicalState::Stained || state == EChemicalState::Drenched; }
 	bool	canBeStained() const { return state == EChemicalState::Drenched || state == EChemicalState::None; }
 
-	virtual ChemicalStateChanger&		addStateChanger(EChemicalTransformation transformation);
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const override;
 	virtual EChemicalTransformation		getPotentialSelfNextTransformation() const override;
 	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const override;
+	virtual ChemicalStateChanger&		addStateChanger(EChemicalTransformation transformation);
+	virtual	bool						computePercussionBreakability(UPrimitiveComponent* other) override;
 };

@@ -14,6 +14,8 @@ class BREATH_API UBoxClimbComponent : public UBoxComponent
 {
 	GENERATED_BODY()
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBoxClimbOverlapDelegate);
+
 public:
 	UBoxClimbComponent() { PrimaryComponentTick.bCanEverTick = true; }
 
@@ -25,6 +27,10 @@ public:
 
 	bool	CheckSpaceOver() const;
 	FVector	GetClimbedLocation() const;
+
+public:
+	FBoxClimbOverlapDelegate	boxClimbOverlap;
+	FBoxClimbOverlapDelegate	boxClimbEndOverlap;
 
 private:
 	UFUNCTION()
