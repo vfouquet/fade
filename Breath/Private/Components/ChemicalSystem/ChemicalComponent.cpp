@@ -189,8 +189,10 @@ void	UChemicalComponent::notifyChemicalStateChanged(EChemicalTransformation prev
 
 void	UChemicalComponent::applyChemicalPhysics()
 {
+	/*
 	UDestructibleComponent*	destructibleComp = Cast<UDestructibleComponent>(AssociatedComponent.GetComponent(GetOwner()));
 	if (destructibleComp)
 		destructibleComp->ApplyRadiusDamage(destructibleComp->DestructibleMesh->DefaultDestructibleParameters.DamageParameters.DamageThreshold, destructibleComp->GetComponentLocation(), 0.0f, 0.0f, true);
+	*/
 	DestroyComponent();
 }
