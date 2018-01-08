@@ -7,9 +7,7 @@
 #include "DrawDebugHelpers.h"
 
 void	UBoxClimbComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
+{ 
 	FScriptDelegate	beginOverlapDelegate;
 	beginOverlapDelegate.BindUFunction(this, "OnBeginOverlap");
 	OnComponentBeginOverlap.AddUnique(beginOverlapDelegate);
@@ -83,7 +81,20 @@ FVector	UBoxClimbComponent::GetClimbedLocation() const
 		UE_LOG(LogTemp, Error, TEXT("Trying to get climbed location but there isn't any climbable surface"));
 		return FVector();
 	}
-	return climbingComponents[0]->GetComponentLocation();
+	/*
+	for (auto&& overlappingComponent : OverlappingComponents)
+	{
+		if (overlappingComponent.OverlapInfo.GetComponent() == climbingComponents[0].Get())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GOTCHA"));
+		}
+	}
+	*/
+	FVector tempLoc;
+	this->GetClosestPointOnCollision(climbingComponents[0]->GetComponentLocation(), tempLoc);
+	DrawDebugSphere(GetWorld(), tempLoc, 1.0f, 50, FColor::Black, true, 10.0f);
+	return tempLoc;
+	//return climbingComponents[0]->GetComponentLocation();
 }
 
 void	UBoxClimbComponent::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)

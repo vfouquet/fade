@@ -29,7 +29,13 @@ void UMoveComponent::BeginPlay()
 	{
 		UBoxClimbComponent*	tempBox = Cast<UBoxClimbComponent>(climbBoxesReference.GetComponent(GetOwner()));
 		if (tempBox)
+		{
 			climbBoxes.Add(tempBox);
+			FScriptDelegate	beginOverlapDel;
+			beginOverlapDel.BindUFunction(this, "computeClimbableBoxes");
+			tempBox->boxClimbOverlap.Add(beginOverlapDel);
+			tempBox->boxClimbEndOverlap.Add(beginOverlapDel);
+		}
 	}
 }
 
@@ -39,9 +45,18 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (canRunValidateClimb)
-		validateRunClimbCurrentTime += DeltaTime;
-	//UE_LOG(LogTemp, Warning, TEXT("ValidateRunClimbTime : %f"), validateRunClimbCurrentTime);
+	if (canClimb)
+	{
+		ACharacter* Char = Cast<ACharacter>(GetOwner());
+		FVector vel = Char->GetCharacterMovement()->Velocity;
+		if (vel.Size() > RunClimbVelocityThreshold)
+			validateRunClimbCurrentTime += DeltaTime;
+		else
+			validateRunClimbCurrentTime = 0.0f;
+	}
+
+	if (validateRunClimbCurrentTime >= RunClimbValue)
+		Climb();
 
 	if (isMovingHeavyObject)
 	{

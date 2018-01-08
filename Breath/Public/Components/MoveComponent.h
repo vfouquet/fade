@@ -81,13 +81,13 @@ private:
 	void		setWalkMode();
 	void		setJogMode();
 
+	UFUNCTION()
 	void	computeClimbableBoxes();
 private:
 	TArray<UBoxClimbComponent*>	climbBoxes;
 	UBoxClimbComponent*			validClimbableBox = nullptr;
 	float						validateRunClimbCurrentTime = 0.0f;
 	bool						canClimb = false;
-	bool						canRunValidateClimb = false;
 
 	bool						isBlocked = false;
 	bool						isMovingHeavyObject = false;
