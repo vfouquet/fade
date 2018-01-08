@@ -45,7 +45,7 @@ struct FCameraSettings
 
 	FCameraSettings()
 	{
-		CameraSpeed = 0.40f;
+		CameraSpeed = 400.f;
 		CameraRotationSpeed = 400.0f;
 		CameraRailOffset = 0.0f;
 		CameraRailDistanceTolerance = 0.0f;

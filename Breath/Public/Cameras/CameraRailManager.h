@@ -30,6 +30,7 @@ public:
 	float	GetInputKeyAtWorldLocation(FVector WorldLocation);
 	float	GetDistanceAlongSplineAtWorldLocation(FVector WorldLocation);
 	float	GetCurrentInputKey();
+	float	GetCurrentDistanceAlongSpline();
 
 	void	AttachCamera(ARailCamera* CameraToAttach);
 	void	AttachCamera(ARailCamera* CameraToAttach, AActor* PlayerActor);
@@ -63,4 +64,5 @@ protected:
 private:
 	bool	bInCameraRailDistanceTolerance;
 	float	CurrentInputKey;
+	float	CurrentDistanceAlongSpline;
 };
