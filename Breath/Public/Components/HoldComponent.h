@@ -75,6 +75,8 @@ public:
 	FComponentReference	LeftHandPhysicalConstraintReference;
 	UPROPERTY(EditAnywhere, Category = "Hold")
 	FComponentReference	RightHandPhysicalConstraintReference;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
+	float	AdditionalThrowAngle = 45.0f;
 
 private:
 	void	releaseLightGrabbedObject();
