@@ -8,6 +8,8 @@
 
 void	UBoxClimbComponent::BeginPlay()
 { 
+	Super::BeginPlay();
+
 	FScriptDelegate	beginOverlapDelegate;
 	beginOverlapDelegate.BindUFunction(this, "OnBeginOverlap");
 	OnComponentBeginOverlap.AddUnique(beginOverlapDelegate);

@@ -66,7 +66,7 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 void	UChemicalComponent::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	UChemicalComponent*	comp = findAssociatedChemicalComponent(OtherComp);// OtherActor->FindComponentByClass<UChemicalComponent>();
+	UChemicalComponent*	comp = FindAssociatedChemicalComponent(OtherComp);// OtherActor->FindComponentByClass<UChemicalComponent>();
 	if (!comp)
 		return;
 
@@ -85,7 +85,7 @@ void	UChemicalComponent::OnOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 
 void	UChemicalComponent::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	UChemicalComponent*	comp = findAssociatedChemicalComponent(OtherComp);	//OtherActor->FindComponentByClass<UChemicalComponent>();
+	UChemicalComponent*	comp = FindAssociatedChemicalComponent(OtherComp);	//OtherActor->FindComponentByClass<UChemicalComponent>();
 	if (!comp)
 		return;
 
@@ -139,7 +139,7 @@ ChemicalStateChanger&	UChemicalComponent::addStateChanger(EChemicalTransformatio
 	return currentChangers[transformation];
 }
 	
-UChemicalComponent*	UChemicalComponent::findAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent)
+UChemicalComponent*	UChemicalComponent::FindAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent)
 {
 	AActor* refCompOwner = referenceComponent->GetOwner();
 	if (!refCompOwner)	return nullptr;

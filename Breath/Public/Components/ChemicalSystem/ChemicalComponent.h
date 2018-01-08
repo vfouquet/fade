@@ -45,6 +45,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	GiveIdentity();
 
+	UFUNCTION(BlueprintPure)
+	static UChemicalComponent*	FindAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent);
 	EChemicalType const&	GetType() const { return type; }
 	UFUNCTION(BlueprintCallable)
 	EChemicalState const&	GetState() const { return state; }
@@ -76,7 +78,6 @@ protected:
 	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const { return EChemicalState::None; }
 	virtual ChemicalStateChanger&		addStateChanger(EChemicalTransformation transformation);
 	virtual	bool						computePercussionBreakability(UPrimitiveComponent* other) { return false; }
-	static UChemicalComponent*	findAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent);
 
 protected:
 	TMap<EChemicalTransformation, ChemicalStateChanger>	currentChangers;

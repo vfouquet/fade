@@ -97,7 +97,7 @@ bool	UChemicalWoodComponent::computePercussionBreakability(UPrimitiveComponent* 
 		return false;
 	UPrimitiveComponent*	primitive = Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(GetOwner()));
 	float woodMass = primitive->GetMass();
-	UChemicalComponent*	otherComp = findAssociatedChemicalComponent(other);
+	UChemicalComponent*	otherComp = FindAssociatedChemicalComponent(other);
 	if (!otherComp)
 	{
 		

@@ -121,7 +121,7 @@ void	UHoldComponent::Grab()
 	if (!closestInteractableObject.IsValid())
 		return;
 
-	if (!closestInteractableObject->CanBeGrabbed)
+	if (!closestInteractableObject->CanBeGrabbed || !closestInteractableObject->HasIdentity())
 		return;
 
 	if (!closestInteractableObject->IsHeavy)

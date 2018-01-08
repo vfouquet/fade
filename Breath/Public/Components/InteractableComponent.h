@@ -34,6 +34,11 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION(BlueprintCallable)
+	void	EraseIdentity() { identityErased = true; }
+	UFUNCTION(BlueprintCallable)
+	void	GiveIdentity() { identityErased = false; }
+
 	UPhysicsConstraintComponent*	AddStickConstraint(UInteractableComponent* hook, UPrimitiveComponent* stickedObject, FName stickedBoneName);
 	UPrimitiveComponent*			CreateLeftConstraintPoint(FVector location);
 	UPrimitiveComponent*			CreateRightConstraintPoint(FVector location);
@@ -44,6 +49,8 @@ public:
 
 	void	SetStickingActivated() { isSticked = true; }
 	bool	IsSticked() const { return isSticked; }
+	UFUNCTION(BlueprintPure)
+	bool	HasIdentity() const { return !identityErased; }
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	CanBeGrabbed = false;
@@ -78,4 +85,5 @@ private:
 	TArray<FStickConstraint>		stickingConstraints;
 
 	bool							isSticked = false;
+	bool							identityErased = false;
 };

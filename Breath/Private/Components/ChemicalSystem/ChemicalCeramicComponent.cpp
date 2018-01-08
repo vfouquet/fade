@@ -47,7 +47,7 @@ EChemicalState	UChemicalCeramicComponent::getNextState(EChemicalTransformation c
 bool	UChemicalCeramicComponent::computePercussionBreakability(UPrimitiveComponent* other)
 {
 	UPrimitiveComponent*	primitive = Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(GetOwner()));	
-	UChemicalComponent*	otherComp = findAssociatedChemicalComponent(other);
+	UChemicalComponent*	otherComp = FindAssociatedChemicalComponent(other);
 	if (!otherComp)
 	{
 
