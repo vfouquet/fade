@@ -20,7 +20,7 @@ public:
 
 public:
 	// Sets default values for this character's properties
-	AMainCharacter();
+	AMainCharacter(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	// Called when the game starts or when spawned

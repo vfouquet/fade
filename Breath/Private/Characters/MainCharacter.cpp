@@ -3,12 +3,14 @@
 #include "MainCharacter.h"
 
 #include "HoldComponent.h"
+#include "MainCharacterMovementComponent.h"
 
 #include "GameFramework/SpringArmComponent.h"
 #include "Cameras/PlayerCameraComponent.h"
 
 // Sets default values
-AMainCharacter::AMainCharacter()
+AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UMainCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
