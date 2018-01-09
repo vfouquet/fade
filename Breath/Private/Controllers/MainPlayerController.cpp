@@ -116,10 +116,7 @@ void	AMainPlayerController::RotateVertical(float Value)
 void AMainPlayerController::Jump()
 {
 	if (MainCharacter != nullptr)
-	{
-		if (!MainCharacter->Climb())
-			MainCharacter->Jump();
-	}
+		MainCharacter->Jump();
 }
 
 void	AMainPlayerController::Action()

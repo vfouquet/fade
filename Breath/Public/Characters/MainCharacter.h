@@ -41,7 +41,7 @@ public:
 	void	StopGrab();
 	void	Throw();
 	void	Stick();
-	bool	Climb();
+	void	Jump() override;
 
 private:
 	UPROPERTY(VisibleAnywhere)

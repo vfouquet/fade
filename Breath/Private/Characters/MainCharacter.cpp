@@ -98,10 +98,15 @@ void	AMainCharacter::Stick()
 	holdComp->Stick();
 }
 
-bool	AMainCharacter::Climb()
+void	AMainCharacter::Jump()
 {
 	UMoveComponent*	moveComp = FindComponentByClass<UMoveComponent>();
 	if (moveComp)
-		return moveComp->Climb();
-	return false;
+	{
+		if (moveComp->IsHoldingObject() || moveComp->IsMovingHeavyObject())
+			return;
+		if (moveComp->Climb())
+			return;
+		Super::Jump();
+	}
 }
