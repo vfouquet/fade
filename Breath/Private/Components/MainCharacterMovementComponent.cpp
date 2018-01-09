@@ -33,3 +33,11 @@ bool UMainCharacterMovementComponent::CheckFall(const FFindFloorResult& OldFloor
 	}
 	return false;
 }
+	
+FVector UMainCharacterMovementComponent::GetAirControl(float DeltaTime, float TickAirControl, const FVector& FallAcceleration)
+{
+	FVector	fallDir;
+	float	fallAccel;
+	FallAcceleration.ToDirectionAndLength(fallDir, fallAccel);
+	return  fallDir * AirControlPower;
+}
