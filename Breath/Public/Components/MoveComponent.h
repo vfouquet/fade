@@ -34,6 +34,7 @@ public:
 	float	GetInputAngle() const { return FMath::RadiansToDegrees(FMath::Atan2(currentInputValue.Y, currentInputValue.X)); };
 	UFUNCTION(BlueprintPure)
 	float	GetCameraTargetDiffAngle() const;
+	bool	IsInAir() const;
 
 	UFUNCTION(BlueprintCallable)
 	void	BlockCharacter() { isBlocked = true; }
@@ -91,6 +92,7 @@ private:
 
 	bool						isBlocked = false;
 	bool						isMovingHeavyObject = false;
+	bool						isHoldingObject = false;
 
 	float						holdingObjectMass = 0.0f;
 	FVector						holdingObjectLocation;

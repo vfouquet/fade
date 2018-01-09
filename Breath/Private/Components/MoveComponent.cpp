@@ -216,6 +216,14 @@ float	UMoveComponent::GetCameraTargetDiffAngle() const
 	return CamRot.Yaw - Char->GetActorRotation().Yaw;
 }
 
+bool	UMoveComponent::IsInAir() const
+{
+	ACharacter* Char = Cast<ACharacter>(GetOwner());
+	if (!Char)
+		return false;
+	return Char->GetCharacterMovement()->IsFalling();
+}
+
 void	UMoveComponent::EnableMovingHeavyObjectMode()
 {
 	isMovingHeavyObject = true;
