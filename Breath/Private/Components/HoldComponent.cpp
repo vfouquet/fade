@@ -137,8 +137,10 @@ void	UHoldComponent::Grab()
 		//MAYBE QLWAYS TRY THE ROOT AS PRIMITIVE
 		holdingPrimitiveComponent =
 			holdingActor->FindComponentByClass<UPrimitiveComponent>();
+		//SET ACTOR ROTATION SAME AS CHARACTER
+		holdingActor->SetActorRotation(characterCapsule->GetComponentRotation().Quaternion());
 		handleComponent->GrabComponentAtLocationWithRotation
-		(holdingPrimitiveComponent, "", holdingActor->GetActorLocation(), holdingActor->GetActorRotation());
+		(holdingPrimitiveComponent, "", holdingActor->GetActorLocation(), FRotator::ZeroRotator);
 	}
 	else
 	{
@@ -202,7 +204,9 @@ void	UHoldComponent::Throw()
 		//DO THIS AT THE END OF ANIMATION (NOTIFY)
 		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
 		releaseLightGrabbedObject();
-		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * ThrowPower * 10000.0f);
+		FRotator	tempRotation = characterCapsule->GetComponentRotation();
+		tempRotation.Pitch += AdditionalThrowAngle;
+		tempPrimitive->AddImpulse(tempRotation.Vector() * ThrowPower * 10000.0f);
 		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
 		currentHoldingState = EHoldingState::None;
 	}
