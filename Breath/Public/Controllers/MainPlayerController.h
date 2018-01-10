@@ -41,8 +41,6 @@ public:
 	void	Action();
 	void	BeginGrab();
 	void	StopGrab();
-	void	Throw();
-	void	Stick();
 
 protected:
 	UPROPERTY(VisibleAnywhere)

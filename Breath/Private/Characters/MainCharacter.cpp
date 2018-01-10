@@ -106,7 +106,10 @@ void	AMainCharacter::Jump()
 	if (moveComp)
 	{
 		if (moveComp->IsHoldingObject() || moveComp->IsMovingHeavyObject())
+		{
+			Throw();
 			return;
+		}
 		if (moveComp->Climb())
 			return;
 		Super::Jump();

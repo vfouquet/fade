@@ -107,11 +107,12 @@ void	UHoldComponent::Action()
 	{
 		if (closestInteractableObject.IsValid() && closestInteractableObject->CanAcceptStick)
 			Stick();
-		else
-			Throw();
+		//else
+		//	Throw();
 	}
-	else if (currentHoldingState == EHoldingState::HeavyGrabbing)
-		Throw();
+	//else if (currentHoldingState == EHoldingState::HeavyGrabbing)
+	//	Throw();
+	//THOSE COMMENTS DEPENDS ON THE INPUT BUTTON FOR THROW
 }
 
 void	UHoldComponent::Grab()
@@ -122,6 +123,9 @@ void	UHoldComponent::Grab()
 		return;
 
 	if (!closestInteractableObject->CanBeGrabbed || !closestInteractableObject->HasIdentity())
+		return;
+
+	if (characterMoveComponent && characterMoveComponent->IsInAir())
 		return;
 
 	if (!closestInteractableObject->IsHeavy)
@@ -141,6 +145,8 @@ void	UHoldComponent::Grab()
 		holdingActor->SetActorRotation(characterCapsule->GetComponentRotation().Quaternion());
 		handleComponent->GrabComponentAtLocationWithRotation
 		(holdingPrimitiveComponent, "", holdingActor->GetActorLocation(), FRotator::ZeroRotator);
+		if (characterMoveComponent)
+			characterMoveComponent->SetHoldingObject();
 	}
 	else
 	{
@@ -181,6 +187,8 @@ void	UHoldComponent::StopGrab()
 		releaseLightGrabbedObject();
 		currentHoldingState = EHoldingState::None;
 		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::None);
+		if (characterMoveComponent)
+			characterMoveComponent->UnsetHoldingObject();
 	}
 	else if (currentHoldingState == EHoldingState::HeavyGrabbing)
 	{

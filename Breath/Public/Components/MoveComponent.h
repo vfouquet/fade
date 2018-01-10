@@ -35,6 +35,8 @@ public:
 	UFUNCTION(BlueprintPure)
 	float	GetCameraTargetDiffAngle() const;
 	bool	IsInAir() const;
+	bool	IsHoldingObject() const { return isHoldingObject; }
+	bool	IsMovingHeavyObject() const { return isMovingHeavyObject; }
 
 	UFUNCTION(BlueprintCallable)
 	void	BlockCharacter() { isBlocked = true; }
@@ -46,6 +48,10 @@ public:
 	void	DisableMovingHeavyObjectMode();
 	UFUNCTION(BlueprintCallable)
 	void	SetHoldingObjectLocationAndMass(FVector const& value, float const mass) { holdingObjectLocation = value; holdingObjectMass = mass; }
+	UFUNCTION(BlueprintCallable)
+	void	SetHoldingObject() { isHoldingObject = true; }
+	UFUNCTION(BlueprintCallable)
+	void	UnsetHoldingObject() { isHoldingObject = false; }
 
 public:
 
@@ -77,6 +83,8 @@ public:
 	/*Character velocity needed to validate a climb**/
 	UPROPERTY(EditAnywhere, Category = "Climb")
 	float	RunClimbVelocityThreshold = 200.0f;
+	UPROPERTY(EditAnywhere, Category = "Climb")
+	float	ClimbAngleTolerence = 45.0f;
 
 private:
 	void		setWalkMode();
@@ -84,6 +92,8 @@ private:
 
 	UFUNCTION()
 	void	computeClimbableBoxes();
+	UFUNCTION(BlueprintPure)
+	bool	isClimbAngleCorrect() const;
 private:
 	TArray<UBoxClimbComponent*>	climbBoxes;
 	UBoxClimbComponent*			validClimbableBox = nullptr;
