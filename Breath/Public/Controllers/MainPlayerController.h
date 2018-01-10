@@ -42,6 +42,10 @@ public:
 	void	BeginGrab();
 	void	StopGrab();
 
+#if WITH_EDITOR
+	void	DebugPauseEditor();
+#endif
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	ACameraActor*		CameraActor;

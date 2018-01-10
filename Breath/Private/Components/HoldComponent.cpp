@@ -7,10 +7,6 @@
 #include "GameFramework/Character.h"
 #include "DrawDebugHelpers.h"
 
-#if WITH_EDITOR
-#include "UnrealEd.h"
-#endif
-
 // Sets default values for this component's properties
 UHoldComponent::UHoldComponent()
 {
@@ -46,39 +42,8 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	closestInteractableObject = nullptr;
 	if (!handleTargetLocation && !characterCapsule && !GetOwner())
 		return;
-	// ...
-	float closestInteractable = FLT_MAX;
 
-	TArray<FHitResult>			hitResults;
-	FCollisionShape				shape;
-	FCollisionQueryParams		queryParams;
-	queryParams.AddIgnoredActor(GetOwner());
-	FCollisionResponseParams	responseParam;
-	FQuat						quaternion = characterCapsule->GetComponentQuat();
-	shape.SetCapsule(characterCapsule->GetScaledCapsuleRadius(), characterCapsule->GetScaledCapsuleHalfHeight());
-
-	if (GetWorld()->SweepMultiByChannel(hitResults, characterCapsule->GetComponentLocation(),
-		characterCapsule->GetComponentLocation() + GetOwner()->GetActorForwardVector() * DetectionOffset, quaternion,
-		ECC_WorldDynamic, shape, queryParams, responseParam))
-	{	
-		for (auto& hitRes : hitResults)
-		{
-			if (!hitRes.Actor.IsValid())
-				continue;
-			UInteractableComponent* interComp = hitRes.Actor->FindComponentByClass<UInteractableComponent>();
-			if (interComp == holdingObject)
-				continue;
-			if (interComp)
-			{
-				float distance = (hitRes.Actor->GetActorLocation() - characterCapsule->GetComponentLocation()).Size();
-				if (distance < closestInteractable)
-				{
-					closestInteractable = distance;
-					closestInteractableObject = interComp;
-				}
-			}
-		}
-	}
+	detectInteractableAround();
 
 	if (currentHoldingState == EHoldingState::LightGrabbing)
 		handleComponent->SetTargetLocation(handleTargetLocation->GetComponentLocation());
@@ -91,14 +56,6 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		if (moveComp)
 			moveComp->SetHoldingObjectLocationAndMass(holdingPrimitiveComponent->GetComponentLocation(), holdingPrimitiveComponent->GetMass());
 	}
-#if WITH_EDITOR
-	ACharacter*	charac = Cast<ACharacter>(GetOwner());
-	if (!charac)
-		return;
-	APlayerController*	cont = Cast<APlayerController>(charac->GetController());
-	if (cont->IsInputKeyDown(EKeys::G))
-		GUnrealEd->PlayWorld->bDebugPauseExecution = true;
-#endif
 }
 
 void	UHoldComponent::Action()
@@ -204,6 +161,8 @@ void	UHoldComponent::StopGrab()
 
 void	UHoldComponent::Throw()
 {
+	if (characterMoveComponent)
+		characterMoveComponent->BlockCharacter();
 	if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
 		currentHoldingState = EHoldingState::Throwing;
@@ -235,6 +194,7 @@ void	UHoldComponent::Throw()
 		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
 		currentHoldingState = EHoldingState::None;
 	}
+	characterMoveComponent->UnblockCharacter();
 }
 
 void	UHoldComponent::Stick()
@@ -298,6 +258,42 @@ void	UHoldComponent::releaseHeavyGrabbedObject()
 		rightHandConstraint->BreakConstraint();
 	holdingObject = nullptr;
 	holdingPrimitiveComponent = nullptr;
+}
+
+void	UHoldComponent::detectInteractableAround()
+{
+	float closestInteractable = FLT_MAX;
+
+	TArray<FHitResult>			hitResults;
+	FCollisionShape				shape;
+	FCollisionQueryParams		queryParams;
+	queryParams.AddIgnoredActor(GetOwner());
+	FCollisionResponseParams	responseParam;
+	FQuat						quaternion = characterCapsule->GetComponentQuat();
+	shape.SetCapsule(characterCapsule->GetScaledCapsuleRadius(), characterCapsule->GetScaledCapsuleHalfHeight());
+
+	if (GetWorld()->SweepMultiByChannel(hitResults, characterCapsule->GetComponentLocation(),
+		characterCapsule->GetComponentLocation() + GetOwner()->GetActorForwardVector() * DetectionOffset, quaternion,
+		ECC_WorldDynamic, shape, queryParams, responseParam))
+	{
+		for (auto& hitRes : hitResults)
+		{
+			if (!hitRes.Actor.IsValid())
+				continue;
+			UInteractableComponent* interComp = hitRes.Actor->FindComponentByClass<UInteractableComponent>();
+			if (interComp == holdingObject)
+				continue;
+			if (interComp)
+			{
+				float distance = (hitRes.Actor->GetActorLocation() - characterCapsule->GetComponentLocation()).Size();
+				if (distance < closestInteractable)
+				{
+					closestInteractable = distance;
+					closestInteractableObject = interComp;
+				}
+			}
+		}
+	}
 }
 
 bool	UHoldComponent::getPushingPoints(FVector& centerPoint, FVector& firstPoint, FVector& secondPoint) const

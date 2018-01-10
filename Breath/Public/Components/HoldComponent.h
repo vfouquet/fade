@@ -83,6 +83,7 @@ private:
 	void	createHandConstraint();
 	void	releaseHeavyGrabbedObject();
 
+	void	detectInteractableAround();
 protected:
 	TWeakObjectPtr<UInteractableComponent>		closestInteractableObject;
 	

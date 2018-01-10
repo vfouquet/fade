@@ -53,6 +53,9 @@ void AMainPlayerController::SetupInputComponent()
 		InputComponent->BindAction("Action", IE_Pressed, this, &AMainPlayerController::Action);
 		InputComponent->BindAction("Grab", IE_Pressed, this, &AMainPlayerController::BeginGrab);
 		InputComponent->BindAction("Grab", IE_Released, this, &AMainPlayerController::StopGrab);
+#if WITH_EDITOR
+		InputComponent->BindAction("DebugPauseEditor", IE_Pressed, this, &AMainPlayerController::DebugPauseEditor);
+#endif
 	}
 }
 
@@ -134,3 +137,11 @@ void	AMainPlayerController::StopGrab()
 	if (MainCharacter != nullptr)
 		MainCharacter->StopGrab();
 }
+	
+#if WITH_EDITOR
+#include "UnrealEd.h"
+void	AMainPlayerController::DebugPauseEditor()
+{
+	GUnrealEd->PlayWorld->bDebugPauseExecution = true;
+}
+#endif
