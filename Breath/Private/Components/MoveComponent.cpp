@@ -7,6 +7,7 @@
 
 #include "BoxClimbComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values for this component's properties
 UMoveComponent::UMoveComponent()
@@ -45,15 +46,18 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (canClimb)
+	if (canClimb && !isHoldingObject && !isMovingHeavyObject)
 	{
 		ACharacter* Char = Cast<ACharacter>(GetOwner());
 		FVector vel = Char->GetCharacterMovement()->Velocity;
+		//isClimbAngleCorrect();
 		if (vel.Size() > RunClimbVelocityThreshold)
 			validateRunClimbCurrentTime += DeltaTime;
 		else
 			validateRunClimbCurrentTime = 0.0f;
 	}
+	else
+		validateRunClimbCurrentTime = 0.0f;
 
 	if (validateRunClimbCurrentTime >= RunClimbValue)
 		Climb();
@@ -275,4 +279,20 @@ void	UMoveComponent::computeClimbableBoxes()
 		canClimb = true;
 	else
 		validateRunClimbCurrentTime = 0.0f;
+}
+
+bool	UMoveComponent::isClimbAngleCorrect() const
+{
+	if (!validClimbableBox)
+		return false;
+	FHitResult	result;
+	FCollisionQueryParams	queryParams;
+	queryParams.AddIgnoredActor(GetOwner());
+	if (!GetWorld()->LineTraceSingleByChannel(result, GetOwner()->GetActorLocation(), GetOwner()->GetActorForwardVector() * 100.0f, ECollisionChannel::ECC_WorldDynamic, queryParams))
+		return false;
+	FVector	character = GetOwner()->GetActorForwardVector() * -1.0f;
+	character.Normalize();
+	float test = FMath::RadiansToDegrees(FVector::DotProduct(character, result.Normal));
+	UE_LOG(LogTemp, Warning, TEXT("Diff : %f"), test);
+	return true;
 }
