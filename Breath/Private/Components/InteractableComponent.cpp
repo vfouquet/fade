@@ -18,6 +18,14 @@ void UInteractableComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (Grab.ComponentProperty != NAME_None)
+	{
+		UPrimitiveComponent* grabComp = Cast<UPrimitiveComponent>(Grab.GetComponent(GetOwner()));
+		FScriptDelegate	hitOverlap;
+		hitOverlap.BindUFunction(this, "OnHit");
+		grabComp->OnComponentHit.Add(hitOverlap);
+	}
+
 	// ...
 	leftConstraintPoint = NewObject<USphereComponent>(this, TEXT("LeftConstraintPoint"));
 	rightConstraintPoint = NewObject<USphereComponent>(this, TEXT("RightConstraintPoint"));
@@ -70,6 +78,21 @@ void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (!thrown)
+		return;
+	if (thrown)
+		thrown = false;
+	if (!OtherActor || isSticked)
+		return;
+	UInteractableComponent*	otherInteractble = OtherActor->FindComponentByClass<UInteractableComponent>();
+	if (!otherInteractble)
+		return;
+	if (otherInteractble->CanAcceptStick)
+		otherInteractble->AddStickConstraint(this, HitComponent, NAME_None);
+}
+
 UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInteractableComponent* hook, UPrimitiveComponent* stickedObject, FName stickedBoneName)
 {
 	AActor* owner = GetOwner();
@@ -95,6 +118,7 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInterac
 	constraint.hook = hook;
 	stickingConstraints.Add(constraint);
 	hook->stickingConstraints.Add(constraint);
+	hook->isSticked = true;
 
 	return stickConstraint;
 }

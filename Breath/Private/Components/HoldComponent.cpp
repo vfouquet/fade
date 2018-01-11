@@ -191,6 +191,7 @@ void	UHoldComponent::EndThrow()
 {
 	if (currentHoldingState == EHoldingState::Throwing)
 	{
+		holdingObject->SetThrown();
 		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
 		releaseLightGrabbedObject();
 		FRotator	tempRotation = characterCapsule->GetComponentRotation();
@@ -231,7 +232,6 @@ void	UHoldComponent::Stick()
 		if (characterMoveComponent)
 			characterMoveComponent->BlockCharacter();
 
-		holdingObject->SetStickingActivated();
 		closestInteractableObject->AddStickConstraint(holdingObject, holdingPrimitiveComponent, TEXT("None"));
 		releaseLightGrabbedObject();
 		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Sticking);

@@ -38,6 +38,8 @@ public:
 	void	EraseIdentity() { identityErased = true; }
 	UFUNCTION(BlueprintCallable)
 	void	GiveIdentity() { identityErased = false; }
+	UFUNCTION()
+	void	OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit );
 
 	UPhysicsConstraintComponent*	AddStickConstraint(UInteractableComponent* hook, UPrimitiveComponent* stickedObject, FName stickedBoneName);
 	UPrimitiveComponent*			CreateLeftConstraintPoint(FVector location);
@@ -48,6 +50,7 @@ public:
 	void							RemoveHookingConstraint(UInteractableComponent* hookToRemove);
 
 	void	SetStickingActivated() { isSticked = true; }
+	void	SetThrown() { thrown = true; }
 	bool	IsSticked() const { return isSticked; }
 	UFUNCTION(BlueprintPure)
 	bool	HasIdentity() const { return !identityErased; }
@@ -84,6 +87,7 @@ protected:
 private:
 	TArray<FStickConstraint>		stickingConstraints;
 
+	bool							thrown = false;
 	bool							isSticked = false;
 	bool							identityErased = false;
 };
