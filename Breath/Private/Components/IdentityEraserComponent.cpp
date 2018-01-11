@@ -30,7 +30,7 @@ void UIdentityEraserComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	for (auto& erasedObject : erasedObjects)
-	{
+	{	
 		if (!erasedObject.decelerating)
 			continue;
 		erasedObject.currentDecelerationTime += DeltaTime;
@@ -41,7 +41,8 @@ void UIdentityEraserComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 			erasedObject.primitiveComponent->SetSimulatePhysics(false);
 		}
 		else
-			erasedObject.primitiveComponent->ComponentVelocity = FMath::Lerp(erasedObject.initialVelocity, FVector::ZeroVector, erasedObject.currentDecelerationTime / DecelerationTime);
+			erasedObject.primitiveComponent->SetPhysicsLinearVelocity(FMath::Lerp(erasedObject.initialVelocity, FVector::ZeroVector, 
+				erasedObject.currentDecelerationTime / DecelerationTime));
 	}
 }
 
