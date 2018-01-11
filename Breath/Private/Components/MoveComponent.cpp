@@ -46,6 +46,40 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (isBlocked)
+	{
+		if (isMovingHeavyObject)
+			return;
+		if (currentInputValue == FVector2D::ZeroVector)
+			return;
+
+		ACharacter* Char = Cast<ACharacter>(GetOwner());
+
+		float	inputAngle = GetInputAngle();
+		APlayerController* CharacterController = Cast<APlayerController>(Char->GetController());
+		FRotator CamRot = CharacterController->PlayerCameraManager->GetCameraRotation();
+		FRotator playerForward = (holdingObjectLocation - Char->GetActorLocation()).Rotation();
+		float cameraDiffAngle = CamRot.Yaw - Char->GetActorRotation().Yaw;
+
+
+		inputAngle += 90.0f;
+		if (inputAngle < 0.0f)
+			inputAngle += 360.0f;
+
+		if (cameraDiffAngle < 0.0f)
+			cameraDiffAngle += 360.0f;
+
+		float difference = inputAngle - cameraDiffAngle;
+
+		if (difference < 0.0f)
+			difference += 360.0f;
+
+		FRotator characterRot = Char->GetActorRotation();
+		characterRot.Yaw += ThrowRotationSpeed * DeltaTime * (difference >= 0.0f && difference < 180.0f) ? 1.0f : -1.0f;
+		Char->SetActorRotation(characterRot);
+		return;
+	}
+
 	if (canClimb && !isHoldingObject && !isMovingHeavyObject)
 	{
 		ACharacter* Char = Cast<ACharacter>(GetOwner());
@@ -147,6 +181,7 @@ void UMoveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 void UMoveComponent::MoveForward(float Value)
 {
+	currentInputValue.Y = Value;
 	if (isBlocked)
 		return;
 
@@ -166,11 +201,11 @@ void UMoveComponent::MoveForward(float Value)
 		else
 			Char->GetCharacterMovement()->AddInputVector(MoveDir);
 	}
-	currentInputValue.Y = Value;
 }
 
 void UMoveComponent::MoveRight(float Value)
 {
+	currentInputValue.X = Value;
 	if (isBlocked)
 		return;
 
@@ -190,7 +225,6 @@ void UMoveComponent::MoveRight(float Value)
 		else
 			Char->GetCharacterMovement()->AddInputVector(MoveDir);;
 	}
-	currentInputValue.X = Value;
 }
 
 bool	UMoveComponent::Climb()

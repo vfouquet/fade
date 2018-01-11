@@ -14,6 +14,7 @@ enum class EHoldingState : uint8
 	LightGrabbing UMETA(DisplayName = "LightGrabbing"),
 	HeavyGrabbing UMETA(DisplayName = "HeavyGrabbing"),
 	Throwing UMETA(DisplayName = "Throwing"),
+	HeavyThrowing UMETA(DisplayName = "HeavyThrowing"),
 	Sticking UMETA(DisplayName = "Sticking"),
 };
 	
@@ -43,6 +44,7 @@ public:
 	void	Grab();
 	void	StopGrab();
 	void	Throw();
+	void	EndThrow();
 	void	Stick();
 
 	UFUNCTION(BlueprintPure)
@@ -77,6 +79,8 @@ public:
 	FComponentReference	RightHandPhysicalConstraintReference;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
 	float	AdditionalThrowAngle = 45.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
+	float	ThrowBlockingTimeDebug = 3.0f;
 
 private:
 	void	releaseLightGrabbedObject();
@@ -95,6 +99,10 @@ protected:
 	UInteractableComponent*			holdingObject;
 	UPrimitiveComponent*			holdingPrimitiveComponent = nullptr;
 	EHoldingState					currentHoldingState = EHoldingState::None;
+
+	//TEMPORARY TO DO : CHANGE TO WORK WITH NOTIFIES
+	float	throwNotifyTime = 0.0;
+	bool	notifyingThrow = false;
 
 	UPhysicsConstraintComponent*	leftHandConstraint = nullptr;
 	UPhysicsConstraintComponent*	rightHandConstraint = nullptr;

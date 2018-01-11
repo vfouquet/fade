@@ -39,13 +39,24 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (notifyingThrow)
+	{
+		throwNotifyTime += DeltaTime;
+		if (throwNotifyTime > ThrowBlockingTimeDebug)
+		{
+			throwNotifyTime = 0.0f;
+			notifyingThrow = false;
+			EndThrow();
+		}
+	}
+
 	closestInteractableObject = nullptr;
 	if (!handleTargetLocation && !characterCapsule && !GetOwner())
 		return;
 
 	detectInteractableAround();
 
-	if (currentHoldingState == EHoldingState::LightGrabbing)
+	if (currentHoldingState == EHoldingState::LightGrabbing || currentHoldingState == EHoldingState::Throwing)
 		handleComponent->SetTargetLocation(handleTargetLocation->GetComponentLocation());
 	else if (currentHoldingState == EHoldingState::HeavyGrabbing)
 	{
@@ -167,22 +178,31 @@ void	UHoldComponent::Throw()
 	{
 		currentHoldingState = EHoldingState::Throwing;
 		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Throwing);
-
-		//DO THIS AT THE END OF ANIMATION (NOTIFY)
-		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
-		releaseLightGrabbedObject();
-		FRotator	tempRotation = characterCapsule->GetComponentRotation();
-		tempRotation.Pitch += AdditionalThrowAngle;
-		tempPrimitive->AddImpulse(tempRotation.Vector() * ThrowPower * 10000.0f);
-		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
-		currentHoldingState = EHoldingState::None;
 	}
 	else if (currentHoldingState == EHoldingState::HeavyGrabbing)
 	{
 		currentHoldingState = EHoldingState::Throwing;
 		holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyGrabbing, EHoldingState::Throwing);
+	}
+	notifyingThrow = true;
+}
 
-		//DO THIS AT THE END OF ANIMATION (NOTIFY)
+void	UHoldComponent::EndThrow()
+{
+	if (currentHoldingState == EHoldingState::Throwing)
+	{
+		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
+		releaseLightGrabbedObject();
+		FRotator	tempRotation = characterCapsule->GetComponentRotation();
+		tempRotation.Pitch += AdditionalThrowAngle;
+		tempPrimitive->AddImpulse(tempRotation.Vector() * ThrowPower * 10000.0f);
+		if (characterMoveComponent)
+			characterMoveComponent->UnsetHoldingObject();
+		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
+		currentHoldingState = EHoldingState::None;
+	}
+	else if (currentHoldingState == EHoldingState::HeavyThrowing)
+	{
 		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
 
 		releaseHeavyGrabbedObject();
@@ -191,7 +211,7 @@ void	UHoldComponent::Throw()
 		if (characterMoveComponent)
 			characterMoveComponent->DisableMovingHeavyObjectMode();
 
-		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
+		holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyThrowing, EHoldingState::None);
 		currentHoldingState = EHoldingState::None;
 	}
 	characterMoveComponent->UnblockCharacter();

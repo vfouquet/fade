@@ -81,10 +81,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Climb")
 	float	RunClimbValue = 1.0f;
 	/*Character velocity needed to validate a climb**/
-	UPROPERTY(EditAnywhere, Category = "Climb")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb")
 	float	RunClimbVelocityThreshold = 200.0f;
-	UPROPERTY(EditAnywhere, Category = "Climb")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb")
 	float	ClimbAngleTolerence = 45.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
+	float	ThrowRotationSpeed = 100.0f;
 
 private:
 	void		setWalkMode();
