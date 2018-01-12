@@ -43,13 +43,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	EraseIdentity();
 	UFUNCTION(BlueprintCallable)
-	void	GiveIdentity();
+	void	GiveIdentity(EChemicalState	previousState);
 
 	UFUNCTION(BlueprintPure)
 	static UChemicalComponent*	FindAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent);
 	EChemicalType const&	GetType() const { return type; }
 	UFUNCTION(BlueprintCallable)
 	EChemicalState const&	GetState() const { return state; }
+	UFUNCTION(BlueprintPure)
+	UPrimitiveComponent* GetAssociatedComponent() const { return associatedComponent; }
 	UFUNCTION(BlueprintCallable)
 	void	SetState(EChemicalState const value) { state = value; }
 	UFUNCTION(BlueprintCallable)
@@ -73,6 +75,7 @@ public:
 	static	float	SpeedThresholdValue;
 
 protected:
+	virtual	void						getStateChangedUselessTransformation(TArray<EChemicalTransformation>& returnValues, EChemicalTransformation previousTransformation) const {}
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const { return EChemicalTransformation::None; }
 	virtual EChemicalTransformation		getPotentialSelfNextTransformation() const { return EChemicalTransformation::None; }
 	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const { return EChemicalState::None; }
@@ -80,11 +83,16 @@ protected:
 	virtual	bool						computePercussionBreakability(UPrimitiveComponent* other) { return false; }
 
 protected:
+	TMap<UChemicalComponent*, float>	hitChemicalComponents;
+
 	TMap<EChemicalTransformation, ChemicalStateChanger>	currentChangers;
+	UPrimitiveComponent*								associatedComponent = nullptr;
 	EChemicalType										type = EChemicalType::None;
 	EChemicalState										state = EChemicalState::None;
 
 private:
 	void	notifyChemicalStateChanged(EChemicalTransformation transformation, EChemicalState previous, EChemicalState next);
+	void	addComponentToChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent);
+	void	removeComponentFromChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent);
 	void	applyChemicalPhysics();
 };

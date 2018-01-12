@@ -17,10 +17,18 @@ class BREATH_API UChemicalFireComponent : public UChemicalComponent
 public:
 	UChemicalFireComponent();
 
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire properties")
-		bool	bExtinguishedAtLaunch = false;
+	bool	bExtinguishedAtLaunch = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water Values")
 	float	toExtinguished = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire Values")
+	float	extinguishedToBurning = 1.0f;
+
+private:
+	bool	canBurn() const { return state == EChemicalState::Extinguished; }
+	bool	canBeStained() const { return false; }
+	bool	canBeDrenched() const { return state == EChemicalState::None; }
 
 private:
 	virtual ChemicalStateChanger&		addStateChanger(EChemicalTransformation transformation);

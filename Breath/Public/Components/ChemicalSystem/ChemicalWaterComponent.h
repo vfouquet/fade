@@ -16,8 +16,4 @@ class BREATH_API UChemicalWaterComponent : public UChemicalComponent
 
 public:
 	UChemicalWaterComponent();
-
-	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const override;
-	virtual EChemicalTransformation		getPotentialSelfNextTransformation() const override;
-	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const override;
 };

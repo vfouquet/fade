@@ -62,6 +62,7 @@ void	UIdentityEraserComponent::OnBeginOverlap(UPrimitiveComponent* OverlappedCom
 	UChemicalComponent*	chemicalComp = UChemicalComponent::FindAssociatedChemicalComponent(OtherComp);
 	if (chemicalComp)
 	{
+		properties.previousChemicalState = chemicalComp->GetState();
 		chemicalComp->EraseIdentity();
 		properties.chemicalComponent = chemicalComp;
 	}
@@ -85,7 +86,7 @@ void	UIdentityEraserComponent::OnEndOverlap(UPrimitiveComponent* OverlappedCompo
 		if (properties.wasSimulatingPhysics)
 			OtherComp->SetSimulatePhysics(true);
 		if (properties.chemicalComponent.IsValid())
-			properties.chemicalComponent->GiveIdentity();
+			properties.chemicalComponent->GiveIdentity(properties.previousChemicalState);
 		erasedObjects.RemoveAt(pos);
 		break;
 	}

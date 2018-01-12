@@ -2,28 +2,36 @@
 
 #include "ChemicalStateChanger.h"
 
-ChemicalStateChanger::ChemicalStateChanger(float value, bool needActorToUpdate)
+#include "Components/PrimitiveComponent.h"
+
+ChemicalStateChanger::ChemicalStateChanger(float value)
 {
 	targetTime = value;
-	actorNeeded = needActorToUpdate;
 }
 
 bool	ChemicalStateChanger::Update(float deltaTime)
 {
-	if (actorNeeded && impactingActors.Num() == 0)
+	//CHECK IF ACTOR EXIST
+	if (impactingComponents.Num() == 0)
 		return false;
 	currentTime += deltaTime;
 	return currentTime >= targetTime;
 }
-
-void	ChemicalStateChanger::AddImpactingActor(AActor* actor)
+	
+bool	ChemicalStateChanger::RemoveIfNeeded(UPrimitiveComponent* mainComp)
 {
-	if (impactingActors.Contains(actor))
-		return;
-	impactingActors.Add(actor);
+	impactingComponents.Remove(mainComp);
+	return (impactingComponents.Num() == 0);
 }
 
-void	ChemicalStateChanger::RemoveImpactingActor(AActor* actor)
+void	ChemicalStateChanger::AddImpactingComponent(UPrimitiveComponent* component)
 {
-	impactingActors.Remove(actor);
+	if (impactingComponents.Contains(component))
+		return;
+	impactingComponents.Add(component);
+}
+
+void	ChemicalStateChanger::RemoveImpactingComponent(UPrimitiveComponent* actor)
+{
+	impactingComponents.Remove(actor);
 }

@@ -29,18 +29,18 @@ void UChemicalComponent::BeginPlay()
 	AActor* owner = GetOwner();
 	if (!owner) return;
 
-	UPrimitiveComponent* tempPrimitive = Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(owner));
-	if (!tempPrimitive) return;
+	associatedComponent = Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(owner));
+	if (!associatedComponent) return;
 	
 	FScriptDelegate	beginOverlapDel;
 	beginOverlapDel.BindUFunction(this, "OnOverlap");
-	tempPrimitive->OnComponentBeginOverlap.Add(beginOverlapDel);
+	associatedComponent->OnComponentBeginOverlap.Add(beginOverlapDel);
 	FScriptDelegate	endOverlapDel;
 	endOverlapDel.BindUFunction(this, "OnEndOverlap");
-	tempPrimitive->OnComponentEndOverlap.Add(endOverlapDel);
+	associatedComponent->OnComponentEndOverlap.Add(endOverlapDel);
 	FScriptDelegate	hitOverlap;
 	hitOverlap.BindUFunction(this, "OnHit");
-	tempPrimitive->OnComponentHit.Add(hitOverlap);
+	associatedComponent->OnComponentHit.Add(hitOverlap);
 }
 
 
@@ -52,12 +52,32 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	// ...
 	for (auto& stateChanger : currentChangers)
 	{
+		for (auto& hitComp : hitChemicalComponents)
+		{
+			float distance = FVector::Distance(associatedComponent->GetComponentLocation(), hitComp.Key->GetAssociatedComponent()->GetComponentLocation());
+			if (distance > hitComp.Value + 25.0f)
+			{
+				hitChemicalComponents.Remove(hitComp.Key);
+				if (stateChanger.Value.RemoveIfNeeded(hitComp.Key->GetAssociatedComponent()) && !bPersistantTransformation)
+				{
+					currentChangers.Remove(stateChanger.Key);
+					continue;
+				}
+			}
+		}
 		if (stateChanger.Value.Update(DeltaTime))
 		{
 			EChemicalState previousState = state;
 			state = getNextState(stateChanger.Key);
 			EChemicalTransformation	previousTransformation = stateChanger.Key;
-			currentChangers.Empty();
+			TArray<EChemicalTransformation>	transformationToRemove;
+			getStateChangedUselessTransformation(transformationToRemove, previousTransformation);
+			currentChangers.Remove(previousTransformation);
+			for (auto& transformation : transformationToRemove)
+			{
+				if (currentChangers.Contains(transformation))
+					currentChangers.Remove(transformation);
+			}
 			notifyChemicalStateChanged(previousTransformation, previousState, state);
 			break;
 		}
@@ -66,40 +86,24 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 void	UChemicalComponent::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	UChemicalComponent*	comp = FindAssociatedChemicalComponent(OtherComp);// OtherActor->FindComponentByClass<UChemicalComponent>();
+	UChemicalComponent*	comp = FindAssociatedChemicalComponent(OtherComp);
 	if (!comp)
 		return;
 
 	EChemicalTransformation transformation = getEffectiveEffect(comp->GetType(), comp->GetState());
 	if (transformation != EChemicalTransformation::None)
-	{
-		if (!currentChangers.Contains(transformation))
-		{
-			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
-			stateChanger.AddImpactingActor(OtherActor);
-		}
-		else
-			currentChangers[transformation].AddImpactingActor(OtherActor);
-	}
+		addComponentToChangers(transformation, OtherComp);
 }
 
 void	UChemicalComponent::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	UChemicalComponent*	comp = FindAssociatedChemicalComponent(OtherComp);	//OtherActor->FindComponentByClass<UChemicalComponent>();
+	UChemicalComponent*	comp = FindAssociatedChemicalComponent(OtherComp);
 	if (!comp)
 		return;
 
 	EChemicalTransformation transformation = getEffectiveEffect(comp->GetType(), comp->GetState());
 	if (transformation != EChemicalTransformation::None)
-	{
-		if (currentChangers.Contains(transformation))
-		{
-			ChemicalStateChanger&	transformationStateChanger = currentChangers[transformation];
-			transformationStateChanger.RemoveImpactingActor(OtherActor);
-			if (transformationStateChanger.GetImpactingActorsNumber() == 0 && !bPersistantTransformation)
-				currentChangers.Remove(transformation);
-		}
-	}
+		removeComponentFromChangers(transformation, OtherComp);
 }
 	
 void	UChemicalComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -108,6 +112,18 @@ void	UChemicalComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherA
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Break"));
 		applyChemicalPhysics();
+	}
+	else
+	{
+		UChemicalComponent*	chemicalComp = FindAssociatedChemicalComponent(OtherComp);
+		if (!chemicalComp)
+			return;
+		EChemicalTransformation transformation = getEffectiveEffect(chemicalComp->GetType(), chemicalComp->GetState());
+		if (transformation != EChemicalTransformation::None)
+		{
+			hitChemicalComponents.Add(chemicalComp, FVector::Distance(HitComponent->GetComponentLocation(), OtherComp->GetComponentLocation()));
+			addComponentToChangers(transformation, OtherComp);
+		}
 	}
 }
 
@@ -118,22 +134,39 @@ void	UChemicalComponent::EraseIdentity()
 	state = EChemicalState::NoIdentity;
 }
 
-void	UChemicalComponent::GiveIdentity()
+void	UChemicalComponent::GiveIdentity(EChemicalState previousState)
 {
-	state = EChemicalState::None;
-	stateChangedDelegate.Broadcast(EChemicalTransformation::GivingIdentity, EChemicalState::NoIdentity, EChemicalState::None);
+	state = previousState;
+	stateChangedDelegate.Broadcast(EChemicalTransformation::GivingIdentity, EChemicalState::NoIdentity, previousState);
+	EChemicalTransformation	transformation = getPotentialSelfNextTransformation();
+	if (transformation != EChemicalTransformation::None)
+	{
+		ChemicalStateChanger& stateChanger = addStateChanger(transformation);
+		stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(GetOwner())));
+	}
+
+	TArray<AActor*>	overlappingChemicalActors;
+	GetOwner()->GetOverlappingActors(overlappingChemicalActors);
+	for (auto It = overlappingChemicalActors.CreateConstIterator(); It; ++It)
+	{
+		UChemicalComponent*	comp = (*It)->FindComponentByClass<UChemicalComponent>();
+		if (!comp)
+			continue;
+		EChemicalTransformation transformation = getEffectiveEffect(comp->GetType(), comp->GetState());
+		if (transformation == EChemicalTransformation::None)
+			continue;
+		if (currentChangers.Contains(transformation))
+			currentChangers[transformation].AddImpactingComponent(Cast<UPrimitiveComponent>(comp->AssociatedComponent.GetComponent(comp->GetOwner())));
+		else
+		{
+			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
+			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(comp->AssociatedComponent.GetComponent(comp->GetOwner())));
+		}
+	}
 }
 
 ChemicalStateChanger&	UChemicalComponent::addStateChanger(EChemicalTransformation transformation)
 {
-	if (transformation == EChemicalTransformation::Drenching)
-	{
-		for (auto& stateChanger : currentChangers)
-		{
-			if (stateChanger.Key == EChemicalTransformation::Burning || stateChanger.Key == EChemicalTransformation::Staining)
-				currentChangers.Remove(stateChanger.Key);
-		}
-	}
 	ChemicalStateChanger	temp(2.0f);
 	currentChangers.Add(transformation, temp);
 	return currentChangers[transformation];
@@ -155,7 +188,7 @@ UChemicalComponent*	UChemicalComponent::FindAssociatedChemicalComponent(UPrimiti
 	}
 	return nullptr;
 }
-
+	
 void	UChemicalComponent::notifyChemicalStateChanged(EChemicalTransformation previousTransformation, EChemicalState previous, EChemicalState next)
 {
 	stateChangedDelegate.Broadcast(previousTransformation, previous, next);
@@ -164,7 +197,7 @@ void	UChemicalComponent::notifyChemicalStateChanged(EChemicalTransformation prev
 	if (transformation != EChemicalTransformation::None)
 	{
 		ChemicalStateChanger& stateChanger = addStateChanger(transformation);
-		stateChanger.AddImpactingActor(GetOwner());
+		stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(GetOwner())));
 	}
 
 	TArray<AActor*>	overlappingChemicalActors;
@@ -178,12 +211,47 @@ void	UChemicalComponent::notifyChemicalStateChanged(EChemicalTransformation prev
 		if (transformation == EChemicalTransformation::None)
 			continue;
 		if (currentChangers.Contains(transformation))
-			currentChangers[transformation].AddImpactingActor(comp->GetOwner());
+			currentChangers[transformation].AddImpactingComponent(Cast<UPrimitiveComponent>(comp->AssociatedComponent.GetComponent(comp->GetOwner())));
 		else
 		{
 			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
-			stateChanger.AddImpactingActor(comp->GetOwner());
+			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(comp->AssociatedComponent.GetComponent(comp->GetOwner())));
 		}
+	}
+	for (auto& hitComp : hitChemicalComponents)
+	{
+		EChemicalTransformation transformation = getEffectiveEffect(hitComp.Key->GetType(), hitComp.Key->GetState());
+		if (transformation == EChemicalTransformation::None)
+			continue;
+		if (currentChangers.Contains(transformation))
+			currentChangers[transformation].AddImpactingComponent(Cast<UPrimitiveComponent>(hitComp.Key->GetAssociatedComponent()));
+		else
+		{
+			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
+			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(hitComp.Key->GetAssociatedComponent()));
+		}
+	}
+}
+
+void	UChemicalComponent::addComponentToChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent)
+{
+	if (!currentChangers.Contains(transformation))
+	{
+		ChemicalStateChanger& stateChanger = addStateChanger(transformation);
+		stateChanger.AddImpactingComponent(primComponent);
+	}
+	else
+		currentChangers[transformation].AddImpactingComponent(primComponent);
+}
+
+void	UChemicalComponent::removeComponentFromChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent)
+{
+	if (currentChangers.Contains(transformation))
+	{
+		ChemicalStateChanger&	transformationStateChanger = currentChangers[transformation];
+		transformationStateChanger.RemoveImpactingComponent(primComponent);
+		if (transformationStateChanger.GetImpactingComponentsNumber() == 0 && !bPersistantTransformation)
+			currentChangers.Remove(transformation);
 	}
 }
 

@@ -13,14 +13,7 @@ ChemicalStateChanger&	UChemicalWoodComponent::addStateChanger(EChemicalTransform
 {
 	float time = 0.0f;
 	if (transformation == EChemicalTransformation::Drenching)
-	{
-		for (auto& stateChanger : currentChangers)
-		{
-			if (stateChanger.Key == EChemicalTransformation::Burning || stateChanger.Key == EChemicalTransformation::Staining)
-				currentChangers.Remove(stateChanger.Key);
-		}
 		time = toDrench;
-	}
 	else if (transformation == EChemicalTransformation::Burning)
 	{
 		if (state == EChemicalState::Drenched)
@@ -32,9 +25,22 @@ ChemicalStateChanger&	UChemicalWoodComponent::addStateChanger(EChemicalTransform
 		else if (state == EChemicalState::Burning)
 			time = burningToScorched;
 	}
+	else if (transformation == EChemicalTransformation::Staining)
+		time = toStained;
 	ChemicalStateChanger	temp(time);
 	currentChangers.Add(transformation, temp);
 	return currentChangers[transformation];
+}
+	
+void	UChemicalWoodComponent::getStateChangedUselessTransformation(TArray<EChemicalTransformation>& returnValues, EChemicalTransformation previousTransformation) const
+{
+	if (previousTransformation == EChemicalTransformation::Drenching)
+	{
+		returnValues.Add(EChemicalTransformation::Burning);
+		returnValues.Add(EChemicalTransformation::Staining);
+	}
+	else if (previousTransformation == EChemicalTransformation::Burning)
+		returnValues.Add(EChemicalTransformation::Staining);
 }
 
 EChemicalTransformation		UChemicalWoodComponent::getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const
@@ -44,18 +50,21 @@ EChemicalTransformation		UChemicalWoodComponent::getEffectiveEffect(EChemicalTyp
 		if (canBurn())
 			return EChemicalTransformation::Burning;
 	}
-	else if (otherType == EChemicalType::Wood && otherState == EChemicalState::Burning)
+	else if ((otherType == EChemicalType::Rock || otherType == EChemicalType::Wood) && otherState == EChemicalState::Burning)
 	{
 		if (canBurn())
 			return EChemicalTransformation::Burning;
 	}
 	else if (otherType == EChemicalType::Water)
 	{
-		if (state == EChemicalState::None || state == EChemicalState::Lit || state == EChemicalState::Burning || state == EChemicalState::Stained)
+		if (canBeDrenched())
 			return EChemicalTransformation::Drenching;
 	}
 	else if (otherType == EChemicalType::Oil && otherState == EChemicalState::None)
-		return EChemicalTransformation::Staining;
+	{
+		if (canBeStained())
+			return EChemicalTransformation::Staining;
+	}
 	return EChemicalTransformation::None;
 }
 
@@ -83,7 +92,7 @@ EChemicalState	UChemicalWoodComponent::getNextState(EChemicalTransformation cons
 	}
 	else if (transformation == EChemicalTransformation::Drenching)
 	{
-		if (state == EChemicalState::None || state == EChemicalState::Lit || state == EChemicalState::Burning)
+		if (state == EChemicalState::None || state == EChemicalState::Lit || state == EChemicalState::Burning || state == EChemicalState::Stained)
 			return EChemicalState::Drenched;
 	}
 	else if (transformation == EChemicalTransformation::Staining && canBeStained())

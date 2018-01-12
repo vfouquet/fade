@@ -5,8 +5,9 @@
 #include "CoreMinimal.h"
 
 #include "Containers/Array.h"
+#include "Containers/Map.h"
 
-class AActor;
+class UPrimitiveComponent;
 
 /**
  * 
@@ -14,19 +15,19 @@ class AActor;
 class BREATH_API ChemicalStateChanger
 {
 public:
-	ChemicalStateChanger(float value, bool needActorToUpdate = true);
+	ChemicalStateChanger(float value);
 	~ChemicalStateChanger() = default;
 
 	bool	Update(float deltaTime);
+	bool	RemoveIfNeeded(UPrimitiveComponent* mainComp);
 
-	void	AddImpactingActor(AActor* actor);
-	void	RemoveImpactingActor(AActor* actor);
+	void	AddImpactingComponent(UPrimitiveComponent* actor);
+	void	RemoveImpactingComponent(UPrimitiveComponent* actor);
 
-	int32	GetImpactingActorsNumber() const { return impactingActors.Num(); }
+	int32	GetImpactingComponentsNumber() const { return impactingComponents.Num(); }
 
 private:
-	TArray<AActor*>	impactingActors;
-	float			targetTime = 0.0f;
-	float			currentTime = 0.0f;
-	bool			actorNeeded = true;
+	TArray<UPrimitiveComponent*>		impactingComponents;
+	float								targetTime = 0.0f;
+	float								currentTime = 0.0f;
 };

@@ -26,12 +26,18 @@ public:
 	float	burningToScorched = 4.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water Values")
 	float	toDrench = 0.1f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Oil Values")
+	float	toStained = 0.1f;
 
 private:
 	bool	canBurn() const { return state == EChemicalState::None || state == EChemicalState::Lit || 
 		state == EChemicalState::Burning || state == EChemicalState::Stained || state == EChemicalState::Drenched; }
-	bool	canBeStained() const { return state == EChemicalState::Drenched || state == EChemicalState::None; }
+	bool	canBeStained() const { return state == EChemicalState::None; }
+	bool	canBeDrenched() const { return state == EChemicalState::None || state == EChemicalState::Lit ||
+			state == EChemicalState::Burning || state == EChemicalState::Stained; }
 
+private:
+	virtual	void						getStateChangedUselessTransformation(TArray<EChemicalTransformation>& returnValues, EChemicalTransformation previousTransformation) const override;
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const override;
 	virtual EChemicalTransformation		getPotentialSelfNextTransformation() const override;
 	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const override;

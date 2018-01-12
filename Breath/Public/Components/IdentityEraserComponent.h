@@ -21,6 +21,7 @@ class BREATH_API UIdentityEraserComponent : public USphereComponent
 		TWeakObjectPtr<UPrimitiveComponent>	primitiveComponent = nullptr;
 		TWeakObjectPtr<UChemicalComponent>	chemicalComponent = nullptr;
 		FVector								initialVelocity;
+		EChemicalState						previousChemicalState;
 		float								currentDecelerationTime = 0.0f;
 		bool								wasSimulatingPhysics = false;
 		bool								decelerating = false;

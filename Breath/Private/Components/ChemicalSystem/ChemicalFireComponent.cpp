@@ -13,7 +13,9 @@ ChemicalStateChanger&	UChemicalFireComponent::addStateChanger(EChemicalTransform
 	float time = 0.0f;
 	if (transformation == EChemicalTransformation::Drenching)
 		time = toExtinguished;
-	
+	else if (transformation == EChemicalTransformation::Burning)
+		time = extinguishedToBurning;
+
 	ChemicalStateChanger	temp(time);
 	currentChangers.Add(transformation, temp);
 	return currentChangers[transformation];
@@ -23,12 +25,17 @@ EChemicalTransformation		UChemicalFireComponent::getEffectiveEffect(EChemicalTyp
 {
 	if (otherType == EChemicalType::Water && otherState == EChemicalState::None)
 	{
-		if (state == EChemicalState::None)
+		if (canBeDrenched())
 			return EChemicalTransformation::Drenching;
 	}
 	else if (otherType == EChemicalType::Fire && otherState == EChemicalState::None)
 	{
-		if (state == EChemicalState::Extinguished)
+		if (canBurn())
+			return EChemicalTransformation::Burning;
+	}
+	else if ((otherType == EChemicalType::Rock || otherType == EChemicalType::Wood) && otherState == EChemicalState::Burning)
+	{
+		if (canBurn())
 			return EChemicalTransformation::Burning;
 	}
 	return EChemicalTransformation::None;
