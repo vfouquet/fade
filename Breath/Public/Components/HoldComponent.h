@@ -5,7 +5,6 @@
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "./Components/CapsuleComponent.h"
 #include "InteractableComponent.h"
-#include "MoveComponent.h"
 
 UENUM(BlueprintType)
 enum class EHoldingState : uint8
@@ -17,6 +16,8 @@ enum class EHoldingState : uint8
 	HeavyThrowing UMETA(DisplayName = "HeavyThrowing"),
 	Sticking UMETA(DisplayName = "Sticking"),
 };
+
+class AMainCharacter;
 	
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -58,8 +59,13 @@ public:
 	UFUNCTION(BlueprintPure)
 	UPhysicsConstraintComponent*	GetRightHandConstraint() const { return rightHandConstraint; }
 
+	bool	IsMovingHeavyObject() const { return currentHoldingState == EHoldingState::HeavyGrabbing; }
+	bool	IsHoldingObject() const { return currentHoldingState == EHoldingState::LightGrabbing; }
+
 	UFUNCTION(BlueprintPure)
 	FVector	GetHoldingObjectLocation() const { return holdingPrimitiveComponent != nullptr ? holdingPrimitiveComponent->GetComponentLocation() : FVector(); }
+	UFUNCTION(BlueprintPure)
+	float	GetHoldingObjectMass() const { return holdingPrimitiveComponent != nullptr ? holdingPrimitiveComponent->GetMass() : 0.0f; }
 
 	//CURRENTLY PUBLIC FOR BLUEPRINT TESTS
 	UFUNCTION(BlueprintPure)
@@ -89,6 +95,7 @@ private:
 
 	void	detectInteractableAround();
 protected:
+	AMainCharacter*								mainCharacter = nullptr;
 	TWeakObjectPtr<UInteractableComponent>		closestInteractableObject;
 	
 	UPhysicsHandleComponent*		handleComponent;
@@ -106,8 +113,6 @@ protected:
 
 	UPhysicsConstraintComponent*	leftHandConstraint = nullptr;
 	UPhysicsConstraintComponent*	rightHandConstraint = nullptr;
-
-	UMoveComponent*					characterMoveComponent = nullptr;
 public:
 	UPROPERTY(BlueprintAssignable)
 	FHoldStateChanged	holdingStateChangedDelegate;

@@ -7,7 +7,6 @@
 #include "MainPlayerController.generated.h"
 
 class AMainCharacter;
-class UMoveComponent;
 class USpringArmComponent;
 
 /**
@@ -42,6 +41,10 @@ public:
 	void	BeginGrab();
 	void	StopGrab();
 
+	float		GetStickLength() const { return FVector2D(this->GetInputAxisValue("MoveRight"), GetInputAxisValue("MoveForward")).Size(); }
+	float		GetInputAngle() const { return FMath::RadiansToDegrees(FMath::Atan2(GetInputAxisValue("MoveForward"), GetInputAxisValue("MoveRight"))); }
+	FRotator	GetCameraRotation() const { return PlayerCameraManager->GetCameraRotation(); }
+
 #if WITH_EDITOR
 	void	DebugPauseEditor();
 #endif
@@ -54,6 +57,5 @@ protected:
 
 private:
 	AMainCharacter*			MainCharacter;
-	UMoveComponent*			MoveComponent;
 	USpringArmComponent*	SpringArmComponent;
 };

@@ -20,6 +20,29 @@ public:
 	virtual bool CheckFall(const FFindFloorResult& OldFloor, const FHitResult& Hit, const FVector& Delta, const FVector& OldLocation, float remainingTime, float timeTick, int32 Iterations, bool bMustJump) override;	
 	virtual FVector GetAirControl(float DeltaTime, float TickAirControl, const FVector& FallAcceleration) override;
 
+	void	ProcessRotateHeavyObject(bool direction, float holdingObjectMass);
+	void	ProcessPushPull(bool direction, float holdingObjectMass, FVector holdingObjectLocation);
+	void	ProcessThrowRotation(float coeff);
+
+	void	SetWalkMode() { MaxWalkSpeed = WalkSpeed; }
+	void	SetJogMode() { MaxWalkSpeed = JogSpeed; }
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
+	float	WalkSpeed = 300.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
+	float	JogSpeed = 600.0f;
+	/*Use the value for a mass threshold**/
+	UPROPERTY(EditAnywhere, Category = "HeavyValues")
+		float	MassGrabValues[3];
+	/*Use the value for the multiplier**/
+	UPROPERTY(EditAnywhere, Category = "HeavyValues")
+		float	MassGrabMultipliers[3];
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
+		float	RotationSpeed = 10.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
+		float	ThrowRotationSpeed = 100.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Movement")
 	float	CoyoteTime = 0.5f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Movement")

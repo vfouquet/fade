@@ -41,3 +41,44 @@ FVector UMainCharacterMovementComponent::GetAirControl(float DeltaTime, float Ti
 	FallAcceleration.ToDirectionAndLength(fallDir, fallAccel);
 	return  fallDir * AirControlPower;
 }
+	
+void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(bool direction, float holdingObjectMass)
+{
+	float	massMult = 0.0f;
+	if (holdingObjectMass <= MassGrabValues[0])
+		massMult = MassGrabMultipliers[0];
+	else if (holdingObjectMass <= MassGrabValues[1])
+		massMult = MassGrabMultipliers[1];
+	else if (holdingObjectMass <= MassGrabValues[2])
+		massMult = MassGrabMultipliers[2];
+
+	FVector MoveDir = GetCharacterOwner()->GetActorRotation().Vector();
+	AddInputVector(MoveDir * massMult * (direction ? 1.0f : -1.0f));
+}
+
+void	UMainCharacterMovementComponent::ProcessPushPull(bool direction, float holdingObjectMass, FVector holdingObjectLocation)
+{
+	float	massMult = 0.0f;
+	if (holdingObjectMass <= MassGrabValues[0])
+		massMult = MassGrabMultipliers[0];
+	else if (holdingObjectMass <= MassGrabValues[1])
+		massMult = MassGrabMultipliers[1];
+	else if (holdingObjectMass <= MassGrabValues[2])
+		massMult = MassGrabMultipliers[2];
+	float angle = RotationSpeed * GetWorld()->GetDeltaSeconds() * massMult;
+	angle *= direction ? -1.0f : 1.0f;
+	//MAYBE USE OBJECT WEIGHT
+	FRotator	rotation = FQuat(FVector::UpVector, FMath::DegreesToRadians(angle)).Rotator();
+	FVector		holdingToCharac = GetActorLocation() - holdingObjectLocation;
+	FVector		holdingToNewLoc = rotation.RotateVector(holdingToCharac);
+	FVector		finalLocation = holdingToNewLoc + holdingObjectLocation;
+	FRotator	finalRotation = rotation + GetCharacterOwner()->GetActorRotation();
+	GetCharacterOwner()->SetActorLocationAndRotation(finalLocation, finalRotation.Quaternion(), true, nullptr, ETeleportType::None);
+}
+
+void	UMainCharacterMovementComponent::ProcessThrowRotation(float coeff)
+{
+	FRotator characterRot = GetCharacterOwner()->GetActorRotation();
+	characterRot.Yaw += ThrowRotationSpeed * coeff;
+	GetCharacterOwner()->SetActorRotation(characterRot);
+}

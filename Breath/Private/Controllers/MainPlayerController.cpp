@@ -8,7 +8,6 @@
 #include "Cameras/CameraRailManager.h"
 
 #include "MainCharacter.h"
-#include "MoveComponent.h"
 
 #include "Camera/CameraActor.h"
 
@@ -29,8 +28,6 @@ void AMainPlayerController::BeginPlay()
 	CameraActor->SetActorLabel(TEXT("RailCamera"));
 #endif
 	this->SetViewTarget(CameraActor);
-
-	
 }
 
 ACameraActor* AMainPlayerController::GetCameraActor()
@@ -66,10 +63,7 @@ void AMainPlayerController::Possess(APawn* aPawn)
 	MainCharacter = Cast<AMainCharacter>(aPawn);
 
 	if (MainCharacter != nullptr)
-	{
-		MoveComponent = MainCharacter->FindComponentByClass<UMoveComponent>();
 		SpringArmComponent = MainCharacter->FindComponentByClass<USpringArmComponent>();
-	}
 }
 
 void AMainPlayerController::UnPossess()
@@ -77,47 +71,43 @@ void AMainPlayerController::UnPossess()
 	Super::UnPossess();
 
 	SpringArmComponent = nullptr;
-	MoveComponent = nullptr;
 	MainCharacter = nullptr;
 }
 
 
 void	AMainPlayerController::MoveForward(float Value)
 {
-	if (MoveComponent != nullptr)
-	{
-		MoveComponent->MoveForward(Value);
-	}
+	if (MainCharacter != nullptr)
+		MainCharacter->MoveForward(Value);
 }
 
 void	AMainPlayerController::MoveRight(float Value)
 {
-	if (MoveComponent != nullptr)
-	{
-		MoveComponent->MoveRight(Value);
-	}
+	if (MainCharacter != nullptr)
+		MainCharacter->MoveRight(Value);
 }
 
 void	AMainPlayerController::RotateHorizontal(float Value)
 {
 	if (MainCharacter != nullptr)
-	{
 		MainCharacter->RotateHorizontal(Value);
-	}
 }
 
 void	AMainPlayerController::RotateVertical(float Value)
 {
 	if (MainCharacter != nullptr)
-	{
 		MainCharacter->RotateVertical(Value);
-	}
 }
 
 void AMainPlayerController::Jump()
 {
 	if (MainCharacter != nullptr)
-		MainCharacter->Jump();
+	{
+		if (MainCharacter->CanThrow())
+			MainCharacter->Throw();
+		else
+			MainCharacter->Jump();
+	}
 }
 
 void	AMainPlayerController::Action()
@@ -137,7 +127,7 @@ void	AMainPlayerController::StopGrab()
 	if (MainCharacter != nullptr)
 		MainCharacter->StopGrab();
 }
-	
+
 #if WITH_EDITOR
 #include "UnrealEd.h"
 void	AMainPlayerController::DebugPauseEditor()
