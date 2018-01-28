@@ -198,3 +198,20 @@ void	UInteractableComponent::RemoveHookingConstraint(UInteractableComponent* hoo
 		}
 	}
 }
+
+UInteractableComponent* UInteractableComponent::FindAssociatedInteractableComponent(UPrimitiveComponent* referenceComponent)
+{
+	AActor* refCompOwner = referenceComponent->GetOwner();
+	if (!refCompOwner)	return nullptr;
+
+	TArray<UActorComponent*>	interactableComponents = refCompOwner->GetComponentsByClass(UInteractableComponent::StaticClass());
+	for (auto& actorComp : interactableComponents)
+	{
+		UInteractableComponent*	interactableComp = Cast<UInteractableComponent>(actorComp);
+		if (!interactableComp) continue;
+		UPrimitiveComponent* tempPrimitive = Cast<UPrimitiveComponent>(interactableComp->Grab.GetComponent(refCompOwner));
+		if (tempPrimitive == referenceComponent)
+			return interactableComp;
+	}
+	return nullptr;
+}

@@ -49,6 +49,8 @@ public:
 	void							Unstick();
 	void							RemoveHookingConstraint(UInteractableComponent* hookToRemove);
 
+	static UInteractableComponent* UInteractableComponent::FindAssociatedInteractableComponent(UPrimitiveComponent* referenceComponent);
+
 	void	SetStickingActivated() { isSticked = true; }
 	void	SetThrown() { thrown = true; }
 	bool	IsSticked() const { return isSticked; }

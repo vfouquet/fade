@@ -11,7 +11,7 @@
 #include "ChemicalComponent.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup=(Custom))
 class BREATH_API UChemicalComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -41,9 +41,17 @@ public:
 	void	OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit );
 
 	UFUNCTION(BlueprintCallable)
+	/*Called when entering erase zone**/
 	void	EraseIdentity();
 	UFUNCTION(BlueprintCallable)
+	/*Called when exiting erase zone**/
 	void	GiveIdentity(EChemicalState	previousState);
+	UFUNCTION(BlueprintCallable)
+	/*Called when entering memory zone**/
+	void	GiveMemory();
+	UFUNCTION(BlueprintCallable)
+	/*Called when exiting memory zone**/
+	void	EraseMemory();
 
 	UFUNCTION(BlueprintPure)
 	static UChemicalComponent*	FindAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent);
@@ -52,6 +60,7 @@ public:
 	EChemicalState const&	GetState() const { return state; }
 	UFUNCTION(BlueprintPure)
 	UPrimitiveComponent* GetAssociatedComponent() const { return associatedComponent; }
+
 	UFUNCTION(BlueprintCallable)
 	void	SetState(EChemicalState const value) { state = value; }
 	UFUNCTION(BlueprintCallable)

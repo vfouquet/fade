@@ -131,11 +131,12 @@ void	UChemicalComponent::EraseIdentity()
 {
 	currentChangers.Empty();
 	stateChangedDelegate.Broadcast(EChemicalTransformation::Erasing, state, EChemicalState::NoIdentity);
-	state = EChemicalState::NoIdentity;
 }
 
 void	UChemicalComponent::GiveIdentity(EChemicalState previousState)
 {
+	if (state != EChemicalState::NoIdentity)
+		return;
 	state = previousState;
 	stateChangedDelegate.Broadcast(EChemicalTransformation::GivingIdentity, EChemicalState::NoIdentity, previousState);
 	EChemicalTransformation	transformation = getPotentialSelfNextTransformation();
@@ -163,6 +164,31 @@ void	UChemicalComponent::GiveIdentity(EChemicalState previousState)
 			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(comp->AssociatedComponent.GetComponent(comp->GetOwner())));
 		}
 	}
+	for (auto& hitComp : hitChemicalComponents)
+	{
+		EChemicalTransformation transformation = getEffectiveEffect(hitComp.Key->GetType(), hitComp.Key->GetState());
+		if (transformation == EChemicalTransformation::None)
+			continue;
+		if (currentChangers.Contains(transformation))
+			currentChangers[transformation].AddImpactingComponent(Cast<UPrimitiveComponent>(hitComp.Key->GetAssociatedComponent()));
+		else
+		{
+			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
+			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(hitComp.Key->GetAssociatedComponent()));
+		}
+	}
+}
+
+void	UChemicalComponent::GiveMemory()
+{
+	//IF ERASED
+	//GIVEIDENTITYBACK
+}
+
+void	UChemicalComponent::EraseMemory()
+{
+	//IF IN ZONE< UPDATE VALUES IN ERASE ZONE
+	//ELSE NOTHING
 }
 
 ChemicalStateChanger&	UChemicalComponent::addStateChanger(EChemicalTransformation transformation)
