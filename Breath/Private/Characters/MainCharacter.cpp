@@ -74,7 +74,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	{
 		FVector vel = GetCharacterMovement()->Velocity;
 		//isClimbAngleCorrect();
-		if (vel.Size() > RunClimbVelocityThreshold)
+		if (vel.Size() > 0.0f)
 			validateRunClimbCurrentTime += DeltaTime;
 		else
 			validateRunClimbCurrentTime = 0.0f;

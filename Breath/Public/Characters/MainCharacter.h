@@ -58,7 +58,7 @@ public:
 	void	EnableMovingHeavyObjectMode() { mainCharacterMovement->bOrientRotationToMovement = false; }
 	void	DisableMovingHeavyObjectMode() { mainCharacterMovement->bOrientRotationToMovement = true; }
 
-	//UPROPERTY(BlueprintPure)
+	UFUNCTION(BlueprintPure)
 	bool	CanThrow() const;
 	bool	IsInAir() const;
 	AMainPlayerController*	GetMainPlayerController() const;
@@ -76,9 +76,6 @@ public:
 	/*Time to validate climb by walking**/
 	UPROPERTY(EditAnywhere, Category = "Climb")
 		float	RunClimbValue = 1.0f;
-	/*Character velocity needed to validate a climb**/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb")
-		float	RunClimbVelocityThreshold = 200.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb")
 		float	ClimbAngleTolerence = 45.0f;
 
