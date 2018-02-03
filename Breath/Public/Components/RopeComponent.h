@@ -5,6 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
@@ -34,13 +35,23 @@ public:
 	float	Length = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
 	UStaticMesh*	mesh = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
+	UClass*	BeginChild = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
+	UClass*	EndChild = nullptr;
 
 private:
 	void	createSplineMeshes();
+	void	createConstraints();
 	void	updateSplineMeshes();
+	void	updateSplinePoints();
 
 private:
-	TArray<USphereComponent*>		spheres;
-	TArray<USplineMeshComponent*>	splineMeshes;
-	USplineComponent*				spline = nullptr;
+	TArray<USphereComponent*>				spheres;
+	TArray<USplineMeshComponent*>			splineMeshes;
+	TArray<FVector>							splinePoints;
+	TArray<UPhysicsConstraintComponent*>	constraints;
+	USplineComponent*						spline = nullptr;
+	UChildActorComponent*					beginActor = nullptr;
+	UChildActorComponent*					endActor = nullptr;
 };
