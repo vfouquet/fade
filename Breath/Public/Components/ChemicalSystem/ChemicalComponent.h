@@ -46,12 +46,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	/*Called when exiting erase zone**/
 	void	GiveIdentity(EChemicalState	previousState);
-	UFUNCTION(BlueprintCallable)
-	/*Called when entering memory zone**/
-	void	GiveMemory();
-	UFUNCTION(BlueprintCallable)
-	/*Called when exiting memory zone**/
-	void	EraseMemory();
 
 	UFUNCTION(BlueprintPure)
 	static UChemicalComponent*	FindAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent);
@@ -103,5 +97,6 @@ private:
 	void	notifyChemicalStateChanged(EChemicalTransformation transformation, EChemicalState previous, EChemicalState next);
 	void	addComponentToChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent);
 	void	removeComponentFromChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent);
+	void	refreshChangersWithCurrentInteractions();
 	void	applyChemicalPhysics();
 };

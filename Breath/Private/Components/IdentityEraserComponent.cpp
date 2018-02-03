@@ -8,60 +8,44 @@
 
 void	UIdentityEraserComponent::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	FErasedObjectProperties outProperty;
+	bool isPropertyExisting = false;
 	int id = 0;
-	if (containsErasedObjectProperties(OtherComp, outProperty, id))
-		outProperty.erasedZoneNbr++;
+	FErasedObjectProperties* outProperty = containsErasedObjectProperties(OtherComp, isPropertyExisting, id);
+	if (isPropertyExisting)
+	{
+		if (outProperty->erasedZoneNbr == 0)
+			updateObjectProperties(*outProperty, DecelerationTime);
+		outProperty->erasedZoneNbr++;
+	}
 	else
 	{
 		if (Cast<ACharacter>(OtherActor))
 			return;
-		FErasedObjectProperties	properties;
-		properties.primitiveComponent = OtherComp;
-		properties.bWasSimulatingPhysics = OtherComp->IsSimulatingPhysics();
-		if (properties.bWasSimulatingPhysics)
-		{
-			properties.initialVelocity = OtherComp->GetComponentVelocity();
-			properties.bDecelerating = true;
-		}
-
-		UChemicalComponent*	chemicalComp = UChemicalComponent::FindAssociatedChemicalComponent(OtherComp);
-		if (chemicalComp)
-		{
-			properties.previousChemicalState = chemicalComp->GetState();
-			chemicalComp->EraseIdentity();
-			properties.chemicalComponent = chemicalComp;
-		}
-		UInteractableComponent* interactableComp = UInteractableComponent::FindAssociatedInteractableComponent(OtherComp);
-		if (interactableComp)
-		{
-			properties.interactableComponent = interactableComp;
-			interactableComp->EraseIdentity();
-		}
+		FErasedObjectProperties&	properties = createNewProperties(OtherComp, DecelerationTime);
 		properties.erasedZoneNbr = 1;
-		affectedObjects.Add(properties);
 	}
 }
 
 void	UIdentityEraserComponent::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	FErasedObjectProperties outProperty;
+	bool isPropertyExisting = false;
 	int id = 0;
-	if (containsErasedObjectProperties(OtherComp, outProperty, id))
+	FErasedObjectProperties* outProperty = containsErasedObjectProperties(OtherComp, isPropertyExisting, id);
+	if (isPropertyExisting)
 	{
-		if (outProperty.memoryZoneNbr != 0)
-			outProperty.erasedZoneNbr--;
-		else if (outProperty.erasedZoneNbr == 1)
+		if (outProperty->memoryZoneNbr != 0)
+			outProperty->erasedZoneNbr--;
+		else if (outProperty->erasedZoneNbr == 1)
 		{
-			if (outProperty.bWasSimulatingPhysics)
+			if (outProperty->bWasSimulatingPhysics)
 				OtherComp->SetSimulatePhysics(true);
-			if (outProperty.chemicalComponent.IsValid())
-				outProperty.chemicalComponent->GiveIdentity(outProperty.previousChemicalState);
-			if (outProperty.interactableComponent.IsValid())
-				outProperty.interactableComponent->GiveIdentity();
+			if (outProperty->chemicalComponent.IsValid())
+				outProperty->chemicalComponent->GiveIdentity(outProperty->previousChemicalState);
+			if (outProperty->interactableComponent.IsValid())
+				outProperty->interactableComponent->GiveIdentity();
 			affectedObjects.RemoveAt(id);
 		}
 		else
-			outProperty.erasedZoneNbr--;
+			outProperty->erasedZoneNbr--;
 	}
 }

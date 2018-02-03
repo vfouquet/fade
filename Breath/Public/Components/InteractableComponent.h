@@ -65,6 +65,8 @@ public:
 	bool	CanAcceptStick = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	IsHeavy = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
+	bool	MemoryInteractable = false;
 
 	UPROPERTY(VisibleAnywhere, Category = "Shitty Stuff")
 	UPhysicsConstraintComponent*	leftConstraint = nullptr;

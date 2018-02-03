@@ -139,56 +139,7 @@ void	UChemicalComponent::GiveIdentity(EChemicalState previousState)
 		return;
 	state = previousState;
 	stateChangedDelegate.Broadcast(EChemicalTransformation::GivingIdentity, EChemicalState::NoIdentity, previousState);
-	EChemicalTransformation	transformation = getPotentialSelfNextTransformation();
-	if (transformation != EChemicalTransformation::None)
-	{
-		ChemicalStateChanger& stateChanger = addStateChanger(transformation);
-		stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(GetOwner())));
-	}
-
-	TArray<AActor*>	overlappingChemicalActors;
-	GetOwner()->GetOverlappingActors(overlappingChemicalActors);
-	for (auto It = overlappingChemicalActors.CreateConstIterator(); It; ++It)
-	{
-		UChemicalComponent*	comp = (*It)->FindComponentByClass<UChemicalComponent>();
-		if (!comp)
-			continue;
-		EChemicalTransformation transformation = getEffectiveEffect(comp->GetType(), comp->GetState());
-		if (transformation == EChemicalTransformation::None)
-			continue;
-		if (currentChangers.Contains(transformation))
-			currentChangers[transformation].AddImpactingComponent(Cast<UPrimitiveComponent>(comp->AssociatedComponent.GetComponent(comp->GetOwner())));
-		else
-		{
-			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
-			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(comp->AssociatedComponent.GetComponent(comp->GetOwner())));
-		}
-	}
-	for (auto& hitComp : hitChemicalComponents)
-	{
-		EChemicalTransformation transformation = getEffectiveEffect(hitComp.Key->GetType(), hitComp.Key->GetState());
-		if (transformation == EChemicalTransformation::None)
-			continue;
-		if (currentChangers.Contains(transformation))
-			currentChangers[transformation].AddImpactingComponent(Cast<UPrimitiveComponent>(hitComp.Key->GetAssociatedComponent()));
-		else
-		{
-			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
-			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(hitComp.Key->GetAssociatedComponent()));
-		}
-	}
-}
-
-void	UChemicalComponent::GiveMemory()
-{
-	//IF ERASED
-	//GIVEIDENTITYBACK
-}
-
-void	UChemicalComponent::EraseMemory()
-{
-	//IF IN ZONE< UPDATE VALUES IN ERASE ZONE
-	//ELSE NOTHING
+	refreshChangersWithCurrentInteractions();
 }
 
 ChemicalStateChanger&	UChemicalComponent::addStateChanger(EChemicalTransformation transformation)
@@ -218,7 +169,33 @@ UChemicalComponent*	UChemicalComponent::FindAssociatedChemicalComponent(UPrimiti
 void	UChemicalComponent::notifyChemicalStateChanged(EChemicalTransformation previousTransformation, EChemicalState previous, EChemicalState next)
 {
 	stateChangedDelegate.Broadcast(previousTransformation, previous, next);
+	refreshChangersWithCurrentInteractions();
+}
 
+void	UChemicalComponent::addComponentToChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent)
+{
+	if (!currentChangers.Contains(transformation))
+	{
+		ChemicalStateChanger& stateChanger = addStateChanger(transformation);
+		stateChanger.AddImpactingComponent(primComponent);
+	}
+	else
+		currentChangers[transformation].AddImpactingComponent(primComponent);
+}
+
+void	UChemicalComponent::removeComponentFromChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent)
+{
+	if (currentChangers.Contains(transformation))
+	{
+		ChemicalStateChanger&	transformationStateChanger = currentChangers[transformation];
+		transformationStateChanger.RemoveImpactingComponent(primComponent);
+		if (transformationStateChanger.GetImpactingComponentsNumber() == 0 && !bPersistantTransformation)
+			currentChangers.Remove(transformation);
+	}
+}
+	
+void	UChemicalComponent::refreshChangersWithCurrentInteractions()
+{
 	EChemicalTransformation	transformation = getPotentialSelfNextTransformation();
 	if (transformation != EChemicalTransformation::None)
 	{
@@ -256,28 +233,6 @@ void	UChemicalComponent::notifyChemicalStateChanged(EChemicalTransformation prev
 			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
 			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(hitComp.Key->GetAssociatedComponent()));
 		}
-	}
-}
-
-void	UChemicalComponent::addComponentToChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent)
-{
-	if (!currentChangers.Contains(transformation))
-	{
-		ChemicalStateChanger& stateChanger = addStateChanger(transformation);
-		stateChanger.AddImpactingComponent(primComponent);
-	}
-	else
-		currentChangers[transformation].AddImpactingComponent(primComponent);
-}
-
-void	UChemicalComponent::removeComponentFromChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent)
-{
-	if (currentChangers.Contains(transformation))
-	{
-		ChemicalStateChanger&	transformationStateChanger = currentChangers[transformation];
-		transformationStateChanger.RemoveImpactingComponent(primComponent);
-		if (transformationStateChanger.GetImpactingComponentsNumber() == 0 && !bPersistantTransformation)
-			currentChangers.Remove(transformation);
 	}
 }
 

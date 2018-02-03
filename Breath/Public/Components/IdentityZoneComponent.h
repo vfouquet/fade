@@ -49,7 +49,10 @@ protected:
 	};
 	
 	
-	static bool	containsErasedObjectProperties(UPrimitiveComponent* reference, FErasedObjectProperties& outProperties, int& outId);
+	static FErasedObjectProperties&	createNewProperties(UPrimitiveComponent* primitiveComponent, float decelerationTime = 0.0f);
+	static FErasedObjectProperties*	containsErasedObjectProperties(UPrimitiveComponent* reference, bool& foundSomething, int& outID);
+	static void	updateObjectProperties(FErasedObjectProperties& properties);
+	static void	updateObjectProperties(FErasedObjectProperties& properties, float decelerationTime);
 
 protected:
 	static TArray<FErasedObjectProperties>	affectedObjects;
