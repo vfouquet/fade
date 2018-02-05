@@ -57,8 +57,21 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	detectInteractableAround();
 
-	if (currentHoldingState == EHoldingState::LightGrabbing || currentHoldingState == EHoldingState::Throwing)
+	if (currentHoldingState == EHoldingState::LightGrabbing)
+	{
 		handleComponent->SetTargetLocation(handleTargetLocation->GetComponentLocation());
+		FVector dist = handleTargetLocation->GetComponentLocation() - holdingPrimitiveComponent->GetComponentLocation();
+		
+		if (releaseCurrentTime < ReleaseTimeTolerence)
+			releaseCurrentTime += DeltaTime;
+		else
+		{
+			if (dist.Size() >= ReleaseDistanceThreshold)
+				StopGrab();
+		}
+	}
+	else
+		releaseCurrentTime = 0.0f;
 }
 
 void	UHoldComponent::Action()
@@ -109,7 +122,7 @@ void	UHoldComponent::Grab()
 		ACharacter* character = Cast<ACharacter>(characterCapsule->GetOwner());	
 		holdingObject = closestInteractableObject.Get();
 		AActor* holdingActor = holdingObject->GetOwner();
-		holdingPrimitiveComponent = closestInteractableObject->GetGrabComp();
+		holdingPrimitiveComponent = closestInteractableObject->GetAssociatedComponent();
 		if (!holdingPrimitiveComponent)
 			holdingPrimitiveComponent = holdingActor->FindComponentByClass<UPrimitiveComponent>();
 

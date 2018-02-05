@@ -27,6 +27,7 @@ void UInteractableComponent::BeginPlay()
 	}
 
 	// ...
+	/*
 	leftConstraintPoint = NewObject<USphereComponent>(this, TEXT("LeftConstraintPoint"));
 	rightConstraintPoint = NewObject<USphereComponent>(this, TEXT("RightConstraintPoint"));
 	leftConstraintPoint->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
@@ -69,6 +70,7 @@ void UInteractableComponent::BeginPlay()
 	
 	leftConstraintPoint->SetMassOverrideInKg("None", halfMass, true);
 	rightConstraintPoint->SetMassOverrideInKg("None", halfMass, true);
+	*/
 }
 
 
@@ -123,6 +125,7 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInterac
 	return stickConstraint;
 }
 
+/*
 UPrimitiveComponent*	UInteractableComponent::CreateLeftConstraintPoint(FVector location)
 {
 	UPrimitiveComponent*	primitiveComp = GetOwner()->FindComponentByClass<UPrimitiveComponent>();
@@ -155,6 +158,7 @@ void	UInteractableComponent::ReleaseLeftRightConstraintPoint()
 	rightConstraint->BreakConstraint();
 	rightConstraintPoint->SetActive(false);
 	rightConstraint->SetActive(false);
+*/
 	/*
 	if (leftConstraintPoint)
 	{
@@ -167,7 +171,8 @@ void	UInteractableComponent::ReleaseLeftRightConstraintPoint()
 		rightConstraintPoint = nullptr;
 	}
 	*/
-}
+//}
+
 
 void	UInteractableComponent::Unstick()
 {

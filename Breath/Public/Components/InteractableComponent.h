@@ -42,9 +42,9 @@ public:
 	void	OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit );
 
 	UPhysicsConstraintComponent*	AddStickConstraint(UInteractableComponent* hook, UPrimitiveComponent* stickedObject, FName stickedBoneName);
-	UPrimitiveComponent*			CreateLeftConstraintPoint(FVector location);
-	UPrimitiveComponent*			CreateRightConstraintPoint(FVector location);
-	void							ReleaseLeftRightConstraintPoint();
+	//UPrimitiveComponent*			CreateLeftConstraintPoint(FVector location);
+	//UPrimitiveComponent*			CreateRightConstraintPoint(FVector location);
+	//void							ReleaseLeftRightConstraintPoint();
 	
 	void							Unstick();
 	void							RemoveHookingConstraint(UInteractableComponent* hookToRemove);
@@ -58,6 +58,7 @@ public:
 	bool	HasIdentity() const { return !identityErased; }
 	UFUNCTION(BlueprintPure)
 	UPrimitiveComponent* GetAssociatedComponent() const { return associatedComponent; }
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	CanBeGrabbed = false;
@@ -70,25 +71,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	MemoryInteractable = false;
 
+	/*
 	UPROPERTY(VisibleAnywhere, Category = "Shitty Stuff")
 	UPhysicsConstraintComponent*	leftConstraint = nullptr;
 	UPROPERTY(VisibleAnywhere, Category = "Shitty Stuff")
 	UPhysicsConstraintComponent*	rightConstraint = nullptr;
-	UPROPERTY(EditAnywhere, Category = "ShittyStuff")
+	*/
+	UPROPERTY(EditAnywhere, Category = "Interactions Settings")
 	FComponentReference	Grab;
 
-	UPrimitiveComponent*	GetGrabComp() const {
-		auto* actor = GetOwner();
-		if (!actor)
-			return nullptr;
-		return Cast<UPrimitiveComponent>(Grab.GetComponent(actor));
-	}
-
 protected:
+	/*
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent*				leftConstraintPoint = nullptr;
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent*				rightConstraintPoint = nullptr;
+	*/
 
 private:
 	TArray<FStickConstraint>		stickingConstraints;

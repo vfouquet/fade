@@ -89,6 +89,10 @@ public:
 	float	AdditionalThrowAngle = 45.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
 	float	ThrowBlockingTimeDebug = 3.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hold")
+	float	ReleaseDistanceThreshold = 75.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hold")
+	float	ReleaseTimeTolerence = 0.5f;
 
 private:
 	void	releaseLightGrabbedObject();
@@ -112,6 +116,8 @@ protected:
 	//TEMPORARY TO DO : CHANGE TO WORK WITH NOTIFIES
 	float	throwNotifyTime = 0.0;
 	bool	notifyingThrow = false;
+
+	float	releaseCurrentTime = 0.0f;
 
 	UPhysicsConstraintComponent*	leftHandConstraint = nullptr;
 	UPhysicsConstraintComponent*	rightHandConstraint = nullptr;

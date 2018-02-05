@@ -2,7 +2,7 @@
 
 #include "RopeComponent.h"
 
-
+#include "InteractableComponent.h"
 
 // Sets default values for this component's properties
 URopeComponent::URopeComponent()
@@ -40,7 +40,7 @@ void URopeComponent::BeginPlay()
 		sphere->SetWorldLocation(ownerLocation + owner->GetActorForwardVector() * tempLength);
 		sphere->SetSimulatePhysics(true);
 		sphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		sphere->SetCollisionProfileName("PhysicsActor");
+		sphere->SetCollisionProfileName("SmallInteractable");
 		sphere->SetEnableGravity(true);
 
 		tempLength += Thickness;
@@ -115,7 +115,6 @@ void URopeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	updateSplinePoints();
 	updateSplineMeshes();
-
 }
 
 void	URopeComponent::createSplineMeshes()
