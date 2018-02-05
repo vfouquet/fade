@@ -20,10 +20,10 @@ void UInteractableComponent::BeginPlay()
 
 	if (Grab.ComponentProperty != NAME_None)
 	{
-		UPrimitiveComponent* grabComp = Cast<UPrimitiveComponent>(Grab.GetComponent(GetOwner()));
+		associatedComponent = Cast<UPrimitiveComponent>(Grab.GetComponent(GetOwner()));
 		FScriptDelegate	hitOverlap;
 		hitOverlap.BindUFunction(this, "OnHit");
-		grabComp->OnComponentHit.Add(hitOverlap);
+		associatedComponent->OnComponentHit.Add(hitOverlap);
 	}
 
 	// ...

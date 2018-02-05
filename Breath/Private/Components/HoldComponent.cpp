@@ -96,15 +96,11 @@ void	UHoldComponent::Grab()
 		holdingObject = closestInteractableObject.Get();
 		if (holdingObject->IsSticked())
 			holdingObject->Unstick();
-		AActor*	holdingActor = holdingObject->GetOwner();
 
-		//MAYBE QLWAYS TRY THE ROOT AS PRIMITIVE
-		holdingPrimitiveComponent =
-			holdingActor->FindComponentByClass<UPrimitiveComponent>();
-		//SET ACTOR ROTATION SAME AS CHARACTER
-		holdingActor->SetActorRotation(characterCapsule->GetComponentRotation().Quaternion());
+		holdingPrimitiveComponent = holdingObject->GetAssociatedComponent();
+		holdingPrimitiveComponent->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());
 		handleComponent->GrabComponentAtLocationWithRotation
-		(holdingPrimitiveComponent, "", holdingActor->GetActorLocation(), FRotator::ZeroRotator);
+			(holdingPrimitiveComponent, "", holdingPrimitiveComponent->GetComponentLocation(), FRotator::ZeroRotator);
 	}
 	else
 	{
@@ -278,9 +274,9 @@ void	UHoldComponent::detectInteractableAround()
 	{
 		for (auto& hitRes : hitResults)
 		{
-			if (!hitRes.Actor.IsValid())
+			if (!hitRes.Component.IsValid())
 				continue;
-			UInteractableComponent* interComp = hitRes.Actor->FindComponentByClass<UInteractableComponent>();
+			UInteractableComponent* interComp = UInteractableComponent::FindAssociatedInteractableComponent(hitRes.Component.Get());
 			if (interComp == holdingObject)
 				continue;
 			if (interComp)

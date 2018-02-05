@@ -56,6 +56,8 @@ public:
 	bool	IsSticked() const { return isSticked; }
 	UFUNCTION(BlueprintPure)
 	bool	HasIdentity() const { return !identityErased; }
+	UFUNCTION(BlueprintPure)
+	UPrimitiveComponent* GetAssociatedComponent() const { return associatedComponent; }
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	CanBeGrabbed = false;
@@ -90,6 +92,7 @@ protected:
 
 private:
 	TArray<FStickConstraint>		stickingConstraints;
+	UPrimitiveComponent*			associatedComponent = nullptr;
 
 	bool							thrown = false;
 	bool							isSticked = false;
