@@ -54,21 +54,56 @@ void URopeComponent::BeginPlay()
 
 	if (BeginChild)
 	{
-		beginActor = NewObject<UChildActorComponent>(this);
-		beginActor->SetupAttachment(this);
-		beginActor->SetRelativeTransform(FTransform());
-		beginActor->RegisterComponent();
-		beginActor->SetChildActorClass(BeginChild);
-		beginActor->CreateChildActor();
+		UChildActorComponent* beginChildActorComp = NewObject<UChildActorComponent>(this);
+		beginChildActorComp->SetupAttachment(this);
+		beginChildActorComp->RegisterComponent();
+		beginChildActorComp->SetChildActorClass(BeginChild);
+		beginChildActorComp->CreateChildActor();
+
+		beginActor = beginChildActorComp->GetChildActor();
+		FVector actorBoundsLoc, actorBoxExtent;
+		beginActor->GetActorBounds(true, actorBoundsLoc, actorBoxExtent);
+
+		USceneComponent* componentToAttach = BeginPrimitiveComponentReference.GetComponent(beginActor);
+		UPrimitiveComponent* primToAttach = Cast<UPrimitiveComponent>(componentToAttach);
+		primToAttach->SetWorldLocation(ownerLocation - owner->GetActorForwardVector() * (Thickness * 0.5f + actorBoxExtent.Size() * 0.5f));
+
+		if (spheres.Num() != 0 && primToAttach)
+		{
+			UPhysicsConstraintComponent* constraint = NewObject<UPhysicsConstraintComponent>(this);
+			constraint->SetupAttachment(this);
+			constraint->RegisterComponent();
+			constraint->SetWorldLocation(ownerLocation - owner->GetActorForwardVector() * Thickness * 0.5f);
+			constraint->SetConstrainedComponents(primToAttach, NAME_None, spheres[0], NAME_None);
+			constraints.Add(constraint);
+		}
 	}
+
 	if (EndChild)
 	{
-		endActor = NewObject<UChildActorComponent>(this);
-		endActor->SetupAttachment(this);
-		endActor->SetRelativeTransform(FTransform());
-		endActor->RegisterComponent();
-		endActor->SetChildActorClass(EndChild);
-		endActor->CreateChildActor();
+		UChildActorComponent* endChildActorComp = NewObject<UChildActorComponent>(this);
+		endChildActorComp->SetupAttachment(this);
+		endChildActorComp->RegisterComponent();
+		endChildActorComp->SetChildActorClass(EndChild);
+		endChildActorComp->CreateChildActor();
+
+		endActor = endChildActorComp->GetChildActor();
+		FVector actorBoundsLoc, actorBoxExtent;
+		endActor->GetActorBounds(true, actorBoundsLoc, actorBoxExtent);
+
+		USceneComponent* componentToAttach = EndPrimitiveComponentReference.GetComponent(endActor);
+		UPrimitiveComponent* primToAttach = Cast<UPrimitiveComponent>(componentToAttach);
+		primToAttach->SetWorldLocation(ownerLocation + owner->GetActorForwardVector() * (Length - Thickness * 0.5f + actorBoxExtent.Size() * 0.5f));
+
+		if (spheres.Num() != 0 && primToAttach)
+		{
+			UPhysicsConstraintComponent* constraint = NewObject<UPhysicsConstraintComponent>(this);
+			constraint->SetupAttachment(this);
+			constraint->RegisterComponent();
+			constraint->SetWorldLocation(ownerLocation + owner->GetActorForwardVector() * (Length - Thickness * 0.5f));
+			constraint->SetConstrainedComponents(primToAttach, NAME_None, spheres.Last(), NAME_None);
+			constraints.Add(constraint);
+		}
 	}
 }
 
@@ -85,11 +120,10 @@ void URopeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 void	URopeComponent::createSplineMeshes()
 {
-	for (int pos = 0; pos < splinePoints.Num() - 2; pos++)
+	for (int pos = 0; pos < splinePoints.Num() - 1; pos++)
 	{
 		USplineMeshComponent*	splineMesh = NewObject<USplineMeshComponent>(this);
 		splineMesh->SetupAttachment(this);
-		splineMesh->SetRelativeTransform(FTransform());
 		splineMesh->RegisterComponent();
 		FVector	startPoint;
 		FVector	endPoint;
@@ -107,11 +141,10 @@ void	URopeComponent::createConstraints()
 {
 	AActor*	owner = GetOwner();
 	FVector	ownerLocation = GetOwner()->GetActorLocation();
-	for (int pos = 0; pos < splinePoints.Num() - 2; pos++)
+	for (int pos = 0; pos < splinePoints.Num() - 1; pos++)
 	{
 		UPhysicsConstraintComponent* constraint = NewObject<UPhysicsConstraintComponent>(this);
 		constraint->SetupAttachment(this);
-		constraint->SetRelativeTransform(FTransform());
 		constraint->RegisterComponent();
 		constraint->SetWorldLocation(ownerLocation + owner->GetActorForwardVector() * Thickness * (pos + 1));
 		constraint->SetConstrainedComponents(spheres[pos], NAME_None, spheres[pos + 1], NAME_None);
@@ -121,7 +154,7 @@ void	URopeComponent::createConstraints()
 
 void	URopeComponent::updateSplineMeshes()
 {
-	for (int pos = 0; pos < splinePoints.Num() - 2; pos++)
+	for (int pos = 0; pos < splinePoints.Num() - 1; pos++)
 	{
 		FVector	startPoint;
 		FVector	endPoint;

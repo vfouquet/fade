@@ -39,6 +39,10 @@ public:
 	UClass*	BeginChild = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
 	UClass*	EndChild = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Rope")
+	FComponentReference	BeginPrimitiveComponentReference;
+	UPROPERTY(EditAnywhere, Category = "Rope")
+	FComponentReference	EndPrimitiveComponentReference;
 
 private:
 	void	createSplineMeshes();
@@ -52,6 +56,6 @@ private:
 	TArray<FVector>							splinePoints;
 	TArray<UPhysicsConstraintComponent*>	constraints;
 	USplineComponent*						spline = nullptr;
-	UChildActorComponent*					beginActor = nullptr;
-	UChildActorComponent*					endActor = nullptr;
+	AActor*									beginActor = nullptr;
+	AActor*									endActor = nullptr;
 };
