@@ -281,7 +281,7 @@ void	UHoldComponent::detectInteractableAround()
 				continue;
 			if (interComp)
 			{
-				float distance = (hitRes.Actor->GetActorLocation() - characterCapsule->GetComponentLocation()).Size();
+				float distance = (hitRes.Component->GetComponentLocation() - characterCapsule->GetComponentLocation()).Size();
 				if (distance < closestInteractable)
 				{
 					closestInteractable = distance;
