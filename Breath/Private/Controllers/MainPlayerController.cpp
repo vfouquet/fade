@@ -78,13 +78,44 @@ void AMainPlayerController::UnPossess()
 void	AMainPlayerController::MoveForward(float Value)
 {
 	if (MainCharacter != nullptr)
-		MainCharacter->MoveForward(Value);
+	{
+		updateCharacterValues();
+
+		if (Value < WalkStickThreshold && Value > -WalkStickThreshold)
+		{
+			MainCharacter->Move(FVector::ZeroVector);
+			return;
+		}
+
+		FRotator CamRot = GetCameraRotation();
+		CamRot.Pitch = 0.0f;
+		FVector MoveDir = CamRot.Vector();
+		if (Value < 0.0f)
+			MainCharacter->Move(MoveDir * -1.0f);
+		else
+			MainCharacter->Move(MoveDir);
+	}
 }
 
 void	AMainPlayerController::MoveRight(float Value)
 {
 	if (MainCharacter != nullptr)
-		MainCharacter->MoveRight(Value);
+	{
+		updateCharacterValues();
+		if (Value < WalkStickThreshold && Value > -WalkStickThreshold)
+		{
+			MainCharacter->Move(FVector::ZeroVector);
+			return;
+		}
+
+		FRotator CamRot = GetCameraRotation();
+		CamRot.Pitch = 0.0f;
+		FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
+		if (Value < 0.0f)
+			MainCharacter->Move(MoveDir * -1.0f);
+		else
+			MainCharacter->Move(MoveDir);
+	}
 }
 
 void	AMainPlayerController::RotateHorizontal(float Value)
@@ -135,3 +166,54 @@ void	AMainPlayerController::DebugPauseEditor()
 	GUnrealEd->PlayWorld->bDebugPauseExecution = true;
 }
 #endif
+	
+void	AMainPlayerController::updateCharacterValues()
+{
+	float stickLength = getStickLength();
+	if (stickLength <= JogStickThreshold)
+		MainCharacter->SetWalkMode();
+	else
+		MainCharacter->SetJogMode();
+
+	if (FMath::IsNearlyZero(stickLength))
+	{
+		MainCharacter->SetRotatingLeft(false);
+		MainCharacter->SetRotatingRight(false);
+		MainCharacter->SetPushingAxis(0.0f);
+		return;
+	}
+
+	float	inputAngle = FMath::RadiansToDegrees(FMath::Atan2(GetInputAxisValue("MoveForward"), GetInputAxisValue("MoveRight")));
+	float cameraDiffAngle = GetCameraRotation().Yaw - MainCharacter->GetActorRotation().Yaw;
+
+	inputAngle += 90.0f;
+	if (inputAngle < 0.0f)
+		inputAngle += 360.0f;
+
+	if (cameraDiffAngle < 0.0f)
+		cameraDiffAngle += 360.0f;
+
+	float difference = inputAngle - cameraDiffAngle;
+
+	if (difference < 0.0f)
+		difference += 360.0f;
+
+	if (difference >= 180.0f - HeavyAngleTolerance && difference <= 180.0f + HeavyAngleTolerance)
+	{
+		MainCharacter->SetRotatingLeft(false);
+		MainCharacter->SetRotatingRight(false);
+		MainCharacter->SetPushingAxis(1.0f);
+	}
+	else if (difference >= 360.0f - HeavyAngleTolerance || difference <= HeavyAngleTolerance)
+	{
+		MainCharacter->SetRotatingLeft(false);
+		MainCharacter->SetRotatingRight(false);
+		MainCharacter->SetPushingAxis(-1.0f);
+	}
+	else
+	{
+		MainCharacter->SetRotatingRight(difference > HeavyAngleTolerance && difference < 180.0f - HeavyAngleTolerance);
+		MainCharacter->SetRotatingLeft(difference > 180.0f + HeavyAngleTolerance && difference < 360.0f - HeavyAngleTolerance);
+		MainCharacter->SetPushingAxis(0.0f);
+	}
+}

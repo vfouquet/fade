@@ -41,13 +41,26 @@ public:
 	void	BeginGrab();
 	void	StopGrab();
 
-	float		GetStickLength() const { return FVector2D(this->GetInputAxisValue("MoveRight"), GetInputAxisValue("MoveForward")).Size(); }
 	float		GetInputAngle() const { return FMath::RadiansToDegrees(FMath::Atan2(GetInputAxisValue("MoveForward"), GetInputAxisValue("MoveRight"))); }
 	FRotator	GetCameraRotation() const { return PlayerCameraManager->GetCameraRotation(); }
 
 #if WITH_EDITOR
 	void	DebugPauseEditor();
 #endif
+
+private:
+	void	updateCharacterValues();
+	float	getStickLength() const { return FVector2D(this->GetInputAxisValue("MoveRight"), GetInputAxisValue("MoveForward")).Size(); }
+
+public:
+	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Speed")
+	float	WalkStickThreshold = 0.1f;
+	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Speed")
+	float	JogStickThreshold = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
+		float	HeavyAngleTolerance = 15.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb")
+		float	ClimbAngleTolerence = 45.0f;
 
 protected:
 	UPROPERTY(VisibleAnywhere)

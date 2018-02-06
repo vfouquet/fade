@@ -15,13 +15,11 @@ class BREATH_API UMainCharacterMovementComponent : public UCharacterMovementComp
 	GENERATED_BODY()
 	
 public:
-	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
-	
 	virtual bool CheckFall(const FFindFloorResult& OldFloor, const FHitResult& Hit, const FVector& Delta, const FVector& OldLocation, float remainingTime, float timeTick, int32 Iterations, bool bMustJump) override;	
 	virtual FVector GetAirControl(float DeltaTime, float TickAirControl, const FVector& FallAcceleration) override;
 
-	void	ProcessRotateHeavyObject(bool direction, float holdingObjectMass);
-	void	ProcessPushPull(bool direction, float holdingObjectMass, FVector holdingObjectLocation);
+	void	ProcessPushAndPull(float const& coeff, float holdingObjectMass);
+	void	ProcessRotateHeavyObject(bool direction, float holdingObjectMass, FVector holdingObjectLocation);
 	void	ProcessThrowRotation(float coeff);
 
 	void	SetWalkMode() { MaxWalkSpeed = WalkSpeed; }

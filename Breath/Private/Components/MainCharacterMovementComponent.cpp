@@ -4,11 +4,6 @@
 
 #include "GameFramework/Character.h"
 
-void	UMainCharacterMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
-
 bool UMainCharacterMovementComponent::CheckFall(const FFindFloorResult& OldFloor, const FHitResult& Hit, const FVector& Delta, const FVector& OldLocation, float remainingTime, float timeTick, int32 Iterations, bool bMustJump)
 {
 	if (!HasValidData())
@@ -42,7 +37,7 @@ FVector UMainCharacterMovementComponent::GetAirControl(float DeltaTime, float Ti
 	return  fallDir * AirControlPower;
 }
 	
-void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(bool direction, float holdingObjectMass)
+void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, float holdingObjectMass)
 {
 	float	massMult = 0.0f;
 	if (holdingObjectMass <= MassGrabValues[0])
@@ -53,10 +48,10 @@ void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(bool direction, f
 		massMult = MassGrabMultipliers[2];
 
 	FVector MoveDir = GetCharacterOwner()->GetActorRotation().Vector();
-	AddInputVector(MoveDir * massMult * (direction ? 1.0f : -1.0f));
+	AddInputVector(MoveDir * massMult * coeff);
 }
 
-void	UMainCharacterMovementComponent::ProcessPushPull(bool direction, float holdingObjectMass, FVector holdingObjectLocation)
+void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(bool direction, float holdingObjectMass, FVector holdingObjectLocation)
 {
 	float	massMult = 0.0f;
 	if (holdingObjectMass <= MassGrabValues[0])

@@ -70,8 +70,23 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 				StopGrab();
 		}
 	}
+	else if (currentHoldingState == EHoldingState::Throwing)
+		handleComponent->SetTargetLocation(handleTargetLocation->GetComponentLocation());
 	else
 		releaseCurrentTime = 0.0f;
+}
+
+void	UHoldComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
+{
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
+
+	if (mainCharacter)
+	{
+		mainCharacter->UnblockCharacter();
+		mainCharacter->DisableMovingHeavyObjectMode();
+		mainCharacter->SetThrowingObject(false);
+		mainCharacter->SetHoldingObject(false);
+	}
 }
 
 void	UHoldComponent::Action()
@@ -108,6 +123,8 @@ void	UHoldComponent::Grab()
 		holdingPrimitiveComponent->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());
 		handleComponent->GrabComponentAtLocationWithRotation
 			(holdingPrimitiveComponent, "", holdingPrimitiveComponent->GetComponentLocation(), FRotator::ZeroRotator);
+
+		mainCharacter->SetHoldingObject(true);
 	}
 	else
 	{
@@ -145,6 +162,7 @@ void	UHoldComponent::StopGrab()
 	if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
 		releaseLightGrabbedObject();
+		mainCharacter->SetHoldingObject(false);
 		currentHoldingState = EHoldingState::None;
 		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::None);
 	}
@@ -161,7 +179,7 @@ void	UHoldComponent::StopGrab()
 
 void	UHoldComponent::Throw()
 {
-	mainCharacter->BlockCharacter();
+	mainCharacter->SetThrowingObject(true);
 	if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
 		currentHoldingState = EHoldingState::Throwing;
@@ -185,6 +203,8 @@ void	UHoldComponent::EndThrow()
 		FRotator	tempRotation = characterCapsule->GetComponentRotation();
 		tempRotation.Pitch += AdditionalThrowAngle;
 		tempPrimitive->AddImpulse(tempRotation.Vector() * ThrowPower * 10000.0f);
+		
+		mainCharacter->SetHoldingObject(false);
 		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
 		currentHoldingState = EHoldingState::None;
 	}
@@ -200,7 +220,7 @@ void	UHoldComponent::EndThrow()
 		holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyThrowing, EHoldingState::None);
 		currentHoldingState = EHoldingState::None;
 	}
-	mainCharacter->UnblockCharacter();
+	mainCharacter->SetThrowingObject(false);
 }
 
 void	UHoldComponent::Stick()

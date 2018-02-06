@@ -57,20 +57,30 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	AMainPlayerController*	mainController = GetMainPlayerController();
 
 	if (bBlocked)
-	{
-		if ((holdComponent && holdComponent->IsMovingHeavyObject()) || mainController->GetStickLength() == 0.0f)
-			return;
-		float difference = GetCameraStickAngleDifference();
-		float coeff = (difference >= 0.0f && difference < 180.0f) ? 1.0f : -1.0f;
-		mainCharacterMovement->ProcessThrowRotation(DeltaTime * coeff);
-		return;
-	}
+		return;	
 
-	if (canClimb && holdComponent && 
-		!holdComponent->IsHoldingObject() && !holdComponent->IsMovingHeavyObject())
+	if (bHoldingObject && bThrowingObject)
+	{
+		if (rotatingLeft)
+			mainCharacterMovement->ProcessThrowRotation(DeltaTime * -1.0f);
+		else if (rotatingRight)
+			mainCharacterMovement->ProcessThrowRotation(DeltaTime * 1.0f);
+	}
+	else if (bMovingHeavyObject)
+	{
+		if (holdComponent)
+		{
+			if (rotatingLeft)
+				mainCharacterMovement->ProcessRotateHeavyObject(false, holdComponent->GetHoldingObjectMass(), holdComponent->GetHoldingObjectLocation());
+			else if (rotatingRight)
+				mainCharacterMovement->ProcessRotateHeavyObject(true, holdComponent->GetHoldingObjectMass(), holdComponent->GetHoldingObjectLocation());
+			else if (!FMath::IsNearlyZero(pushingAxis))
+				mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetHoldingObjectMass());
+		}
+	}
+	else if (canClimb && !bHoldingObject)
 	{
 		FVector vel = GetCharacterMovement()->Velocity;
 		//isClimbAngleCorrect();
@@ -84,27 +94,6 @@ void AMainCharacter::Tick(float DeltaTime)
 
 	if (validateRunClimbCurrentTime >= RunClimbValue)
 		Climb();
-
-	if (holdComponent && holdComponent->IsMovingHeavyObject())
-	{
-		if (mainController->GetStickLength() == 0.0f)
-			return;
-		float difference = GetCameraStickAngleDifference();
-
-		if (difference >= 180.0f - HeavyAngleTolerance && difference <= 180.0f + HeavyAngleTolerance)
-			mainCharacterMovement->ProcessRotateHeavyObject(true, holdComponent->GetHoldingObjectMass());
-		else if (difference >= 360.0f - HeavyAngleTolerance || difference <= HeavyAngleTolerance)
-			mainCharacterMovement->ProcessRotateHeavyObject(false, holdComponent->GetHoldingObjectMass());
-		else
-			mainCharacterMovement->ProcessPushPull((difference >= 0.0f && difference < 180.0f), holdComponent->GetHoldingObjectMass(), holdComponent->GetHoldingObjectLocation());
-	}
-	else
-	{
-		if (mainController->GetStickLength() < JogStickThreshold)
-			mainCharacterMovement->SetWalkMode();
-		else
-			mainCharacterMovement->SetJogMode();
-	}
 }
 
 // Called to bind functionality to input
@@ -114,42 +103,12 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 }
 
-void	AMainCharacter::MoveForward(float Value)
+void	AMainCharacter::Move(FVector Value)
 {
-	if (bBlocked)
+	if (bBlocked || bMovingHeavyObject || bThrowingObject)
 		return;
-	if (holdComponent && !holdComponent->IsMovingHeavyObject())
-	{
-		if (Value <= WalkStickThreshold && Value >= -WalkStickThreshold)
-			return;
-		FRotator CamRot = ((AMainPlayerController*)Controller)->GetCameraRotation();
-		CamRot.Pitch = 0.0f;
-		FVector MoveDir = CamRot.Vector();
-		if (Value < 0.0f)
-			GetCharacterMovement()->AddInputVector(MoveDir * -1.0f);
-		else
-			GetCharacterMovement()->AddInputVector(MoveDir);
-	}
-}
-
-void	AMainCharacter::MoveRight(float Value)
-{
-	if (bBlocked)
-		return;
-
-	if (holdComponent && !holdComponent->IsMovingHeavyObject())
-	{
-		if (Value <= WalkStickThreshold && Value >= -WalkStickThreshold)
-			return;
-
-		FRotator CamRot = ((AMainPlayerController*)Controller)->GetCameraRotation();
-		CamRot.Pitch = 0.0f;
-		FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
-		if (Value < 0.0f)
-			GetCharacterMovement()->AddInputVector(MoveDir * -1.0f);
-		else
-			GetCharacterMovement()->AddInputVector(MoveDir);
-	}
+	if (!bMovingHeavyObject)
+		GetCharacterMovement()->AddInputVector(Value);
 }
 
 void AMainCharacter::RotateHorizontal(float Value)
@@ -211,34 +170,21 @@ bool	AMainCharacter::CanThrow() const
 	return holdComponent && (holdComponent->IsHoldingObject() || holdComponent->IsMovingHeavyObject());
 }
 	
+void	AMainCharacter::EnableMovingHeavyObjectMode() 
+{ 
+	mainCharacterMovement->bOrientRotationToMovement = false;
+	bMovingHeavyObject = true;
+}
+
+void	AMainCharacter::DisableMovingHeavyObjectMode()
+{ 
+	mainCharacterMovement->bOrientRotationToMovement = true; 
+	bMovingHeavyObject = false;
+}
+
 bool	AMainCharacter::IsInAir() const
 {
 	return mainCharacterMovement->IsFalling();
-}
-
-AMainPlayerController*	AMainCharacter::GetMainPlayerController() const
-{ 
-	return Cast<AMainPlayerController>(this->Controller); 
-}
-
-float	AMainCharacter::GetCameraStickAngleDifference() const
-{
-	AMainPlayerController* mainController = GetMainPlayerController();
-	float	inputAngle = mainController->GetInputAngle();
-	float cameraDiffAngle = GetMainPlayerController()->GetCameraRotation().Yaw - GetActorRotation().Yaw;
-
-	inputAngle += 90.0f;
-	if (inputAngle < 0.0f)
-		inputAngle += 360.0f;
-
-	if (cameraDiffAngle < 0.0f)
-		cameraDiffAngle += 360.0f;
-
-	float difference = inputAngle - cameraDiffAngle;
-
-	if (difference < 0.0f)
-		difference += 360.0f;
-	return difference;
 }
 
 void	AMainCharacter::computeClimbableBoxes()
