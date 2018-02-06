@@ -122,7 +122,7 @@ void	URopeComponent::createSplineMeshes()
 	for (int pos = 0; pos < splinePoints.Num() - 1; pos++)
 	{
 		USplineMeshComponent*	splineMesh = NewObject<USplineMeshComponent>(this);
-		splineMesh->SetupAttachment(this);
+		//splineMesh->SetupAttachment(this);
 		splineMesh->RegisterComponent();
 		FVector	startPoint;
 		FVector	endPoint;
