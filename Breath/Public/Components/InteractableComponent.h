@@ -59,6 +59,8 @@ public:
 	UFUNCTION(BlueprintPure)
 	UPrimitiveComponent* GetAssociatedComponent() const { return associatedComponent; }
 
+	bool	IsGrabable() const { return CanBeGrabbed && !identityErased && associatedComponent; }
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	CanBeGrabbed = false;

@@ -90,15 +90,9 @@ void	UHoldComponent::Action()
 
 void	UHoldComponent::Grab()
 {
-	if (currentHoldingState != EHoldingState::None)
+	if (currentHoldingState != EHoldingState::None || mainCharacter->IsInAir())
 		return;
-	if (!closestInteractableObject.IsValid())
-		return;
-
-	if (!closestInteractableObject->CanBeGrabbed || !closestInteractableObject->HasIdentity())
-		return;
-
-	if (mainCharacter->IsInAir())
+	if (!closestInteractableObject.IsValid() || !closestInteractableObject->IsGrabable())
 		return;
 
 	if (!closestInteractableObject->IsHeavy)
