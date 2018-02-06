@@ -15,5 +15,5 @@ class BREATH_API UChemicalWaterComponent : public UChemicalComponent
 	GENERATED_BODY()
 
 public:
-	UChemicalWaterComponent();
+	void	InitializeComponent() override;
 };

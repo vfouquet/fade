@@ -2,8 +2,9 @@
 
 #include "ChemicalOilComponent.h"
 
-UChemicalOilComponent::UChemicalOilComponent()
+void UChemicalOilComponent::InitializeComponent()
 {
+	Super::InitializeComponent();
 	type = EChemicalType::Oil;
 }
 

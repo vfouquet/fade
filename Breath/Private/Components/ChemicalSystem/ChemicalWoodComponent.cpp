@@ -4,8 +4,9 @@
 
 #include "Components/PrimitiveComponent.h"
 
-UChemicalWoodComponent::UChemicalWoodComponent()
+void UChemicalWoodComponent::InitializeComponent()
 {
+	Super::InitializeComponent();
 	type = EChemicalType::Wood;
 }
 

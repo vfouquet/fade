@@ -20,10 +20,9 @@ public:
 
 	bool	Update(float deltaTime);
 	bool	RemoveIfNeeded(UPrimitiveComponent* mainComp);
-
 	void	AddImpactingComponent(UPrimitiveComponent* actor);
-	void	RemoveImpactingComponent(UPrimitiveComponent* actor);
 
+	bool	Contains(UPrimitiveComponent* prim) const { return impactingComponents.Contains(prim); }
 	int32	GetImpactingComponentsNumber() const { return impactingComponents.Num(); }
 
 private:

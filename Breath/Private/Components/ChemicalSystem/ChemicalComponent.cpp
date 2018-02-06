@@ -15,7 +15,7 @@ UChemicalComponent::UChemicalComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
+	bWantsInitializeComponent = true;
 	// ...
 }
 
@@ -41,6 +41,11 @@ void UChemicalComponent::BeginPlay()
 	FScriptDelegate	hitOverlap;
 	hitOverlap.BindUFunction(this, "OnHit");
 	associatedComponent->OnComponentHit.Add(hitOverlap);
+
+	TArray<UPrimitiveComponent*>	primitives;
+	associatedComponent->GetOverlappingComponents(primitives);
+	for (auto& prim : primitives)
+		OnOverlap(associatedComponent, prim->GetOwner(), prim, 0, false, FHitResult());	//DANGEROUS SHIT
 }
 
 
@@ -188,12 +193,27 @@ void	UChemicalComponent::removeComponentFromChangers(EChemicalTransformation tra
 	if (currentChangers.Contains(transformation))
 	{
 		ChemicalStateChanger&	transformationStateChanger = currentChangers[transformation];
-		transformationStateChanger.RemoveImpactingComponent(primComponent);
-		if (transformationStateChanger.GetImpactingComponentsNumber() == 0 && !bPersistantTransformation)
+		if (transformationStateChanger.RemoveIfNeeded(primComponent) && !bPersistantTransformation)
 			currentChangers.Remove(transformation);
 	}
 }
 	
+void	UChemicalComponent::updateImpact(UChemicalComponent* otherChemical, UPrimitiveComponent* otherPrimitive)
+{
+	EChemicalTransformation	newTransformation = getEffectiveEffect(otherChemical->GetType(), otherChemical->GetState());
+
+	if (newTransformation != EChemicalTransformation::None)
+		addComponentToChangers(newTransformation, otherPrimitive);
+
+	for (auto& changer : currentChangers)
+	{
+		if (changer.Key == newTransformation)
+			continue;
+		if (changer.Value.RemoveIfNeeded(otherPrimitive) && !bPersistantTransformation)
+			currentChangers.Remove(changer.Key);
+	}
+}
+
 void	UChemicalComponent::refreshChangersWithCurrentInteractions()
 {
 	EChemicalTransformation	transformation = getPotentialSelfNextTransformation();
@@ -203,13 +223,14 @@ void	UChemicalComponent::refreshChangersWithCurrentInteractions()
 		stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(GetOwner())));
 	}
 
-	TArray<AActor*>	overlappingChemicalActors;
-	GetOwner()->GetOverlappingActors(overlappingChemicalActors);
-	for (auto It = overlappingChemicalActors.CreateConstIterator(); It; ++It)
+	TArray<UPrimitiveComponent*>	overlappingPrimitives;
+	associatedComponent->GetOverlappingComponents(overlappingPrimitives);
+	for (auto It = overlappingPrimitives.CreateConstIterator(); It; ++It)
 	{
-		UChemicalComponent*	comp = (*It)->FindComponentByClass<UChemicalComponent>();
+		UChemicalComponent*	comp = FindAssociatedChemicalComponent(*It);
 		if (!comp)
 			continue;
+		comp->updateImpact(this, associatedComponent);
 		EChemicalTransformation transformation = getEffectiveEffect(comp->GetType(), comp->GetState());
 		if (transformation == EChemicalTransformation::None)
 			continue;
@@ -223,6 +244,7 @@ void	UChemicalComponent::refreshChangersWithCurrentInteractions()
 	}
 	for (auto& hitComp : hitChemicalComponents)
 	{
+		hitComp.Key->updateImpact(this, associatedComponent);
 		EChemicalTransformation transformation = getEffectiveEffect(hitComp.Key->GetType(), hitComp.Key->GetState());
 		if (transformation == EChemicalTransformation::None)
 			continue;

@@ -2,8 +2,9 @@
 
 #include "ChemicalFireComponent.h"
 
-UChemicalFireComponent::UChemicalFireComponent()
+void UChemicalFireComponent::InitializeComponent()
 {
+	Super::InitializeComponent();
 	type = EChemicalType::Fire;
 	state = bExtinguishedAtLaunch ? EChemicalState::Extinguished : EChemicalState::None;
 }

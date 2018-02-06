@@ -14,7 +14,7 @@ class BREATH_API UChemicalWoodComponent : public UChemicalComponent
 {
 	GENERATED_BODY()
 public:	
-	UChemicalWoodComponent();
+	void	InitializeComponent() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire Values")
 	float	drenchToNormal = 3.0f;

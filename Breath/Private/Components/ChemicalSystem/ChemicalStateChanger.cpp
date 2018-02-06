@@ -30,8 +30,3 @@ void	ChemicalStateChanger::AddImpactingComponent(UPrimitiveComponent* component)
 		return;
 	impactingComponents.Add(component);
 }
-
-void	ChemicalStateChanger::RemoveImpactingComponent(UPrimitiveComponent* actor)
-{
-	impactingComponents.Remove(actor);
-}

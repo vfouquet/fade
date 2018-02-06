@@ -3,8 +3,9 @@
 #include "ChemicalCeramicComponent.h"
 #include "Components/PrimitiveComponent.h"
 
-UChemicalCeramicComponent::UChemicalCeramicComponent()
+void UChemicalCeramicComponent::InitializeComponent()
 {
+	Super::InitializeComponent();
 	type = EChemicalType::Ceramic;
 }
 

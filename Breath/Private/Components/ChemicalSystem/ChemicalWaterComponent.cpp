@@ -2,7 +2,8 @@
 
 #include "ChemicalWaterComponent.h"
 
-UChemicalWaterComponent::UChemicalWaterComponent()
+void UChemicalWaterComponent::InitializeComponent()
 {
+	Super::InitializeComponent();
 	type = EChemicalType::Water;
 }

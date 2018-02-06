@@ -2,8 +2,9 @@
 
 #include "ChemicalRockComponent.h"
 
-UChemicalRockComponent::UChemicalRockComponent()
+void UChemicalRockComponent::InitializeComponent()
 {
+	Super::InitializeComponent();
 	type = EChemicalType::Rock;
 }
 

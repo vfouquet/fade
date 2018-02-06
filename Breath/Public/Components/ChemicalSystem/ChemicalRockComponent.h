@@ -14,7 +14,7 @@ class BREATH_API UChemicalRockComponent : public UChemicalComponent
 {
 	GENERATED_BODY()
 public:
-	UChemicalRockComponent();
+	void	InitializeComponent() override;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire Values")

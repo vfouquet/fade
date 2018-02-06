@@ -97,6 +97,7 @@ private:
 	void	notifyChemicalStateChanged(EChemicalTransformation transformation, EChemicalState previous, EChemicalState next);
 	void	addComponentToChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent);
 	void	removeComponentFromChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent);
+	void	updateImpact(UChemicalComponent* chemical, UPrimitiveComponent* primtive);
 	void	refreshChangersWithCurrentInteractions();
 	void	applyChemicalPhysics();
 };

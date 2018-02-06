@@ -15,7 +15,7 @@ class BREATH_API UChemicalOilComponent : public UChemicalComponent
 	GENERATED_BODY()
 	
 public:
-	UChemicalOilComponent();
+	void	InitializeComponent() override;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water Values")

@@ -13,8 +13,9 @@ UCLASS(meta = (DisplayName = "Chemical Ceramic", BlueprintSpawnableComponent))
 class BREATH_API UChemicalCeramicComponent : public UChemicalComponent
 {
 	GENERATED_BODY()
-	
-	UChemicalCeramicComponent();
+
+public:
+	void	InitializeComponent() override;
 
 private:
 	virtual	bool						computePercussionBreakability(UPrimitiveComponent* other) override;
