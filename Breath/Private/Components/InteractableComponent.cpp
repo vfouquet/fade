@@ -3,6 +3,7 @@
 #include "InteractableComponent.h"
 
 #include "GameFramework/Actor.h"
+#include "HoldComponent.h"
 
 // Sets default values for this component's properties
 UInteractableComponent::UInteractableComponent()
@@ -95,13 +96,37 @@ void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* Ot
 		otherInteractble->AddStickConstraint(this, HitComponent, NAME_None);
 }
 
+void	UInteractableComponent::OnComponentDestroyed(bool bDestroyHierarchy)
+{
+	Super::OnComponentDestroyed(bDestroyHierarchy);
+
+	if (holder)
+	{
+		holder->UniversalRelease();
+		holder = nullptr;
+	}
+	for (auto& constraint : stickingConstraints)
+	{
+		constraint.physicConstraint->BreakConstraint();
+		constraint.physicConstraint->DestroyComponent();
+		constraint.carrier->RemoveHookingConstraint(this);
+	}
+	stickingConstraints.Empty();
+}
+
+void	UInteractableComponent::EraseIdentity()
+{
+	identityErased = true;
+	if (holder)
+	{
+		holder->UniversalRelease();
+		holder = nullptr;
+	}
+}
+
 UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInteractableComponent* hook, UPrimitiveComponent* stickedObject, FName stickedBoneName)
 {
-	AActor* owner = GetOwner();
-	if (!owner)
-		return nullptr;
-	UPrimitiveComponent* objectPrim = owner->FindComponentByClass<UPrimitiveComponent>();
-	if (!objectPrim && !stickedObject)
+	if (!associatedComponent && !stickedObject)
 		return nullptr;
 	UPhysicsConstraintComponent* stickConstraint = NewObject<UPhysicsConstraintComponent>(this, TEXT("CustomPhysicConstraint"));
 	if (!stickConstraint)
@@ -109,9 +134,9 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInterac
 		UE_LOG(LogTemp, Error, TEXT("Could not create physical constraint"));
 		return nullptr;
 	}
-	stickConstraint->SetupAttachment(owner->GetRootComponent());
+	stickConstraint->SetupAttachment(this);
 	stickConstraint->RegisterComponent();
-	stickConstraint->SetConstrainedComponents(objectPrim, FName("None"), stickedObject, stickedBoneName);
+	stickConstraint->SetConstrainedComponents(associatedComponent, FName("None"), stickedObject, stickedBoneName);
 	//stickConstraint->SetDisableCollision(true);
 	
 	FStickConstraint	constraint;

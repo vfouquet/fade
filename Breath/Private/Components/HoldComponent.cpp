@@ -137,6 +137,7 @@ void	UHoldComponent::Grab()
 		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::LightGrabbing);
 
 		holdingObject = closestInteractableObject.Get();
+		holdingObject->SetHoldComponent(this);
 		if (holdingObject->IsSticked())
 			holdingObject->Unstick();
 
@@ -153,6 +154,7 @@ void	UHoldComponent::Grab()
 
 		ACharacter* character = Cast<ACharacter>(characterCapsule->GetOwner());	
 		holdingObject = closestInteractableObject.Get();
+		holdingObject->SetHoldComponent(this);
 		AActor* holdingActor = holdingObject->GetOwner();
 		holdingPrimitiveComponent = closestInteractableObject->GetAssociatedComponent();
 		if (!holdingPrimitiveComponent)
@@ -291,12 +293,14 @@ void	UHoldComponent::UniversalRelease()
 		releaseHeavyGrabbedObject();
 		mainCharacter->DisableMovingHeavyObjectMode();
 	}
+	currentHoldingState = EHoldingState::None;
 	holdingStateChangedDelegate.Broadcast(currentHoldingState, EHoldingState::None);
 }
 
 void	UHoldComponent::releaseLightGrabbedObject()
 {
 	handleComponent->ReleaseComponent();
+	holdingObject->SetHoldComponent(nullptr);
 	holdingObject = nullptr;
 	holdingPrimitiveComponent = nullptr;
 }
@@ -327,6 +331,7 @@ void	UHoldComponent::releaseHeavyGrabbedObject()
 		leftHandConstraint->BreakConstraint();
 	if (rightHandConstraint)
 		rightHandConstraint->BreakConstraint();
+	holdingObject->SetHoldComponent(nullptr);
 	holdingObject = nullptr;
 	holdingPrimitiveComponent = nullptr;
 }

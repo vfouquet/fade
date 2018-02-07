@@ -9,6 +9,8 @@
 #include "Components/ActorComponent.h"
 #include "InteractableComponent.generated.h"
 
+class UHoldComponent;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BREATH_API UInteractableComponent : public USceneComponent
 {
@@ -33,9 +35,10 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void OnComponentDestroyed(bool destroyedHierarchy) override;
 
 	UFUNCTION(BlueprintCallable)
-	void	EraseIdentity() { identityErased = true; }
+	void	EraseIdentity();
 	UFUNCTION(BlueprintCallable)
 	void	GiveIdentity() { identityErased = false; }
 	UFUNCTION()
@@ -51,6 +54,7 @@ public:
 
 	static UInteractableComponent* UInteractableComponent::FindAssociatedInteractableComponent(UPrimitiveComponent* referenceComponent);
 
+	void	SetHoldComponent(UHoldComponent* value = nullptr) { holder = value; }
 	void	SetStickingActivated() { isSticked = true; }
 	void	SetThrown() { thrown = true; }
 	bool	IsSticked() const { return isSticked; }
@@ -93,6 +97,7 @@ protected:
 private:
 	TArray<FStickConstraint>		stickingConstraints;
 	UPrimitiveComponent*			associatedComponent = nullptr;
+	UHoldComponent*					holder = nullptr;
 
 	bool							thrown = false;
 	bool							isSticked = false;

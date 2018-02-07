@@ -52,6 +52,8 @@ void UIdentityZoneComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 			erasedObject.bDecelerating = false;
 			erasedObject.primitiveComponent->ComponentVelocity = FVector::ZeroVector;
 			erasedObject.primitiveComponent->SetSimulatePhysics(false);
+			if (erasedObject.interactableComponent.IsValid())
+				erasedObject.interactableComponent->EraseIdentity();
 		}
 		else
 			erasedObject.primitiveComponent->SetPhysicsLinearVelocity(FMath::Lerp(erasedObject.initialVelocity, FVector::ZeroVector,
@@ -65,7 +67,7 @@ UIdentityZoneComponent::FErasedObjectProperties&	UIdentityZoneComponent::createN
 	properties.primitiveComponent = primitiveComponent;
 	
 	UInteractableComponent* interactableComp = UInteractableComponent::FindAssociatedInteractableComponent(primitiveComponent);
-	if (interactableComp && interactableComp->MemoryInteractable)
+	if (interactableComp)
 	{
 		properties.interactableComponent = interactableComp;
 		if (interactableComp->MemoryInteractable)
@@ -73,7 +75,6 @@ UIdentityZoneComponent::FErasedObjectProperties&	UIdentityZoneComponent::createN
 			int32 idx = affectedObjects.Add(properties);
 			return affectedObjects[idx];
 		}
-		interactableComp->EraseIdentity();
 	}
 
 	properties.bWasSimulatingPhysics = primitiveComponent->IsSimulatingPhysics();
