@@ -61,6 +61,12 @@ public:
 	float const getCurrentDamageTime() const { return currentDamageTime; }
 	UFUNCTION(BlueprintPure)
 	int	const getCurrentFireZoneCount() const { return fireCount; }
+	UFUNCTION(BlueprintPure)
+	int const getCurrentEraserZoneCount() const { return eraseZoneCount; }
+	UFUNCTION(BlueprintPure)
+	int const getCurrentMemoryZoneCount() const { return memoryZoneCount; }
+	UFUNCTION(BlueprintPure)
+	bool const isAffectedByFire() const { return eraseZoneCount == 0 || (eraseZoneCount > 0 && memoryZoneCount > 0); }
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire")
@@ -98,4 +104,6 @@ private:
 	float	jumpZOffset = 0.0f;
 
 	int	fireCount = 0;
+	int	eraseZoneCount = 0;
+	int	memoryZoneCount = 0;
 };

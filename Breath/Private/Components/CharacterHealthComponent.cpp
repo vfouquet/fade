@@ -6,6 +6,8 @@
 #include "Components/CapsuleComponent.h"
 #include "ChemicalComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "MemoryZoneComponent.h"
+#include "IdentityEraserComponent.h"
 
 #include "MainCharacterMovementComponent.h"
 
@@ -59,7 +61,7 @@ void UCharacterHealthComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	else
 		jumpZOffset = 0.0f;
 
-	if (currentCondition != ECharacterCondition::None)
+	if (currentCondition != ECharacterCondition::None && isAffectedByFire())
 	{
 		currentFireTime += DeltaTime;
 		if (currentFireTime >= (currentCondition == ECharacterCondition::Scalding? ScaldingToBurning : BurningToDeath))
@@ -82,6 +84,14 @@ void UCharacterHealthComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 void	UCharacterHealthComponent::OnCapsuleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
+	UIdentityEraserComponent* identityEraser = Cast<UIdentityEraserComponent>(OtherComp);
+	if (identityEraser)
+		eraseZoneCount++;
+
+	UMemoryZoneComponent* memoryZoneEraser = Cast<UMemoryZoneComponent>(OtherComp);
+	if (memoryZoneEraser)
+		memoryZoneCount++;
+
 	UChemicalComponent*	comp = UChemicalComponent::FindAssociatedChemicalComponent(OtherComp);
 	if (!comp)
 		return;
@@ -97,6 +107,14 @@ void	UCharacterHealthComponent::OnCapsuleOverlap(UPrimitiveComponent* Overlapped
 
 void	UCharacterHealthComponent::OnCapsuleEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	UIdentityEraserComponent* identityEraser = Cast<UIdentityEraserComponent>(OtherComp);
+	if (identityEraser)
+		eraseZoneCount--;
+
+	UMemoryZoneComponent* memoryZoneEraser = Cast<UMemoryZoneComponent>(OtherComp);
+	if (memoryZoneEraser)
+		memoryZoneCount--;
+
 	UChemicalComponent*	comp = UChemicalComponent::FindAssociatedChemicalComponent(OtherComp);
 	if (!comp)
 		return;
