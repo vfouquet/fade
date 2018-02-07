@@ -61,6 +61,13 @@ void AMainCharacter::Tick(float DeltaTime)
 	if (bBlocked)
 		return;	
 
+	if (bHoldingObject || bMovingHeavyObject || bThrowingObject)
+	{
+		bool ascending = false;
+		if (mainCharacterMovement->IsFalling(ascending) && !ascending)
+			OnDamage();
+	}
+
 	if (bHoldingObject && bThrowingObject)
 	{
 		if (rotatingLeft)
@@ -165,9 +172,15 @@ void	AMainCharacter::Jump()
 	Super::Jump();
 }
 
+void	AMainCharacter::OnDamage()
+{
+	if (holdComponent)
+		holdComponent->UniversalRelease();
+}
+
 bool	AMainCharacter::CanThrow() const
 {
-	return holdComponent && (holdComponent->IsHoldingObject() || holdComponent->IsMovingHeavyObject());
+	return bHoldingObject;
 }
 	
 void	AMainCharacter::EnableMovingHeavyObjectMode() 

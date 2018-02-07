@@ -7,6 +7,9 @@
 #include "Components/ActorComponent.h"
 #include "CharacterHealthComponent.generated.h"
 
+class AMainCharacter;
+class UMainCharacterMovementComponent;
+
 UENUM(BlueprintType)
 enum class ECharacterCondition : uint8
 {
@@ -95,6 +98,9 @@ private:
 	void	die(FVector	impact = FVector::ZeroVector, FVector impactLocation = FVector::ZeroVector, FName boneName = NAME_None);
 
 private:
+	AMainCharacter*						mainCharacter = nullptr;
+	UMainCharacterMovementComponent*	moveComponent = nullptr;
+
 	ECharacterCondition		currentCondition = ECharacterCondition::None;
 	ECharacterDamageState	currentDamageState = ECharacterDamageState::None;
 

@@ -48,11 +48,12 @@ public:
 	void	Throw();
 	void	EndThrow();
 	void	Stick();
+	void	UniversalRelease();
 
 	UFUNCTION(BlueprintPure)
 	UInteractableComponent*			GetClosestInteractableObject() const { return closestInteractableObject.IsValid() ? closestInteractableObject.Get() : nullptr; }
 	UFUNCTION(BlueprintPure)
-	UInteractableComponent*			GetCurrentHeldObject() const { return holdingObject; }
+	UInteractableComponent*			GetCurrentHeldObject() const { return holdingObject.Get(); }
 	UFUNCTION(BlueprintPure)
 	EHoldingState					GetCurrentState() const { return currentHoldingState; }
 	UFUNCTION(BlueprintPure)
@@ -110,9 +111,9 @@ protected:
 	UCapsuleComponent*				characterCapsule = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
-	UInteractableComponent*			holdingObject;
-	UPrimitiveComponent*			holdingPrimitiveComponent = nullptr;
-	EHoldingState					currentHoldingState = EHoldingState::None;
+	TWeakObjectPtr<UInteractableComponent>	holdingObject;
+	UPrimitiveComponent*					holdingPrimitiveComponent = nullptr;
+	EHoldingState							currentHoldingState = EHoldingState::None;
 
 	//TEMPORARY TO DO : CHANGE TO WORK WITH NOTIFIES
 	float	throwNotifyTime = 0.0;

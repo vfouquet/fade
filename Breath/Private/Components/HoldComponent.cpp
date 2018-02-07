@@ -57,8 +57,29 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	detectInteractableAround();
 
+	/*
+	if (holdingObject.IsStale())
+	{
+		holdingStateChangedDelegate.Broadcast(currentHoldingState, EHoldingState::None);
+		holdingObject.Reset();
+
+		if (mainCharacter)
+		{
+			mainCharacter->UnblockCharacter();
+			mainCharacter->DisableMovingHeavyObjectMode();
+			mainCharacter->SetThrowingObject(false);
+			mainCharacter->SetHoldingObject(false);
+		}
+	}
+	*/
 	if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
+		if (!holdingObject.IsValid())
+		{
+			UniversalRelease();
+			return;
+		}
+
 		handleComponent->SetTargetLocation(handleTargetLocation->GetComponentLocation());
 		FVector dist = handleTargetLocation->GetComponentLocation() - holdingPrimitiveComponent->GetComponentLocation();
 		
@@ -225,7 +246,7 @@ void	UHoldComponent::EndThrow()
 
 void	UHoldComponent::Stick()
 {
-	if (!holdingObject || !closestInteractableObject.IsValid())
+	if (!holdingObject.IsValid() || !closestInteractableObject.IsValid())
 		return;
 	//ATTACH CONSTRAINT TO OTHER OBJECT
 	if (currentHoldingState == EHoldingState::LightGrabbing)
@@ -236,7 +257,7 @@ void	UHoldComponent::Stick()
 		currentHoldingState = EHoldingState::Sticking;
 		mainCharacter->BlockCharacter();
 
-		closestInteractableObject->AddStickConstraint(holdingObject, holdingPrimitiveComponent, TEXT("None"));
+		closestInteractableObject->AddStickConstraint(holdingObject.Get(), holdingPrimitiveComponent, TEXT("None"));
 		releaseLightGrabbedObject();
 		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Sticking);
 
@@ -244,6 +265,33 @@ void	UHoldComponent::Stick()
 		currentHoldingState = EHoldingState::None;
 		holdingStateChangedDelegate.Broadcast(EHoldingState::Sticking, EHoldingState::None);
 	}
+}
+
+void	UHoldComponent::UniversalRelease()
+{
+	if (currentHoldingState == EHoldingState::Throwing)
+	{
+		releaseLightGrabbedObject();
+		mainCharacter->SetHoldingObject(false);
+		mainCharacter->SetThrowingObject(false);
+	}
+	else if (currentHoldingState == EHoldingState::HeavyThrowing)
+	{
+		releaseHeavyGrabbedObject();
+		mainCharacter->DisableMovingHeavyObjectMode();
+		mainCharacter->SetThrowingObject(false);
+	}
+	else if (currentHoldingState == EHoldingState::LightGrabbing)
+	{
+		releaseLightGrabbedObject();
+		mainCharacter->SetHoldingObject(false);
+	}
+	else if (currentHoldingState == EHoldingState::HeavyGrabbing)
+	{
+		releaseHeavyGrabbedObject();
+		mainCharacter->DisableMovingHeavyObjectMode();
+	}
+	holdingStateChangedDelegate.Broadcast(currentHoldingState, EHoldingState::None);
 }
 
 void	UHoldComponent::releaseLightGrabbedObject()

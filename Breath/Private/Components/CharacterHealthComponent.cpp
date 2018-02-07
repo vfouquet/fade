@@ -28,10 +28,12 @@ void UCharacterHealthComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	ACharacter*	character = Cast<ACharacter>(GetOwner());
-	if (!character)
+	mainCharacter = Cast<AMainCharacter>(GetOwner());
+	if (!mainCharacter)
 		return;
-	UCapsuleComponent* capsule = character->GetCapsuleComponent();
+	moveComponent = Cast<UMainCharacterMovementComponent>(mainCharacter->GetCharacterMovement());
+
+	UCapsuleComponent* capsule = mainCharacter->GetCapsuleComponent();
 	
 	FScriptDelegate	beginOverlapDel;
 	beginOverlapDel.BindUFunction(this, "OnCapsuleOverlap");
@@ -50,11 +52,11 @@ void UCharacterHealthComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	UMainCharacterMovementComponent*	characterMovement = GetOwner()->FindComponentByClass<UMainCharacterMovementComponent>();
+
 	bool ascending = false;
-	if (characterMovement->IsFalling(ascending) && !ascending)
+	if (moveComponent && moveComponent->IsFalling(ascending) && !ascending)
 	{
-		jumpZOffset -= characterMovement->GetLastMovementOffset().Z;
+		jumpZOffset -= moveComponent->GetLastMovementOffset().Z;
 		if (jumpZOffset >= FatalJumpHeight)
 			die();
 	}
@@ -132,6 +134,8 @@ void	UCharacterHealthComponent::OnCapsuleHit(UPrimitiveComponent* HitComponent, 
 			die(Hit.ImpactNormal * ImpactMeshForce, Hit.Location, Hit.BoneName);
 		else
 		{
+			if (mainCharacter)
+				mainCharacter->OnDamage();
 			currentDamageState = ECharacterDamageState::Wounded;
 			onDamageStateChanged.Broadcast(ECharacterDamageState::None, ECharacterDamageState::Wounded);
 		}
@@ -152,6 +156,8 @@ void	UCharacterHealthComponent::takeFireDamage()
 {
 	if (currentCondition == ECharacterCondition::None)
 	{
+		if (mainCharacter)
+			mainCharacter->OnDamage();
 		currentCondition = ECharacterCondition::Scalding;
 		onConditionChanged.Broadcast(ECharacterCondition::None, ECharacterCondition::Scalding);
 	}
@@ -194,11 +200,10 @@ void	UCharacterHealthComponent::applyWaterEffect()
 
 void	UCharacterHealthComponent::die(FVector impact, FVector impactLocation, FName boneName)
 {
-	AMainCharacter*	character = Cast<AMainCharacter>(GetOwner());
-	if (!character)
+	if (!mainCharacter)
 		return;
-	character->BlockCharacter();
-	USkeletalMeshComponent*	skeletal = character->GetMesh();
+	mainCharacter->BlockCharacter();
+	USkeletalMeshComponent*	skeletal = mainCharacter->GetMesh();
 	if (!skeletal)
 		return;
 	skeletal->SetSimulatePhysics(true);

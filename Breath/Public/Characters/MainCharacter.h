@@ -52,6 +52,8 @@ public:
 	void	Jump() override;
 	bool	Climb();
 
+	void	OnDamage();
+
 	void	SetWalkMode() { mainCharacterMovement->SetWalkMode(); }
 	void	SetJogMode() { mainCharacterMovement->SetJogMode(); }
 
