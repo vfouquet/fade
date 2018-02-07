@@ -3,6 +3,13 @@
 #include "MainCharacterMovementComponent.h"
 
 #include "GameFramework/Character.h"
+	
+void UMainCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	FVector last = LastUpdateLocation;
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	lastOffsetLocation = LastUpdateLocation - last;
+}
 
 bool UMainCharacterMovementComponent::CheckFall(const FFindFloorResult& OldFloor, const FHitResult& Hit, const FVector& Delta, const FVector& OldLocation, float remainingTime, float timeTick, int32 Iterations, bool bMustJump)
 {
@@ -76,4 +83,10 @@ void	UMainCharacterMovementComponent::ProcessThrowRotation(float coeff)
 	FRotator characterRot = GetCharacterOwner()->GetActorRotation();
 	characterRot.Yaw += ThrowRotationSpeed * coeff;
 	GetCharacterOwner()->SetActorRotation(characterRot);
+}
+	
+bool	UMainCharacterMovementComponent::IsFalling(bool& ascending)
+{
+	ascending = Velocity.Z >= 0.0f;
+	return Super::IsFalling();
 }

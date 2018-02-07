@@ -184,7 +184,8 @@ void	AMainCharacter::DisableMovingHeavyObjectMode()
 
 bool	AMainCharacter::IsInAir() const
 {
-	return mainCharacterMovement->IsFalling();
+	bool ascending = false;
+	return mainCharacterMovement->IsFalling(ascending);
 }
 
 void	AMainCharacter::computeClimbableBoxes()

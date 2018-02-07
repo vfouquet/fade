@@ -15,6 +15,7 @@ class BREATH_API UMainCharacterMovementComponent : public UCharacterMovementComp
 	GENERATED_BODY()
 	
 public:
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual bool CheckFall(const FFindFloorResult& OldFloor, const FHitResult& Hit, const FVector& Delta, const FVector& OldLocation, float remainingTime, float timeTick, int32 Iterations, bool bMustJump) override;	
 	virtual FVector GetAirControl(float DeltaTime, float TickAirControl, const FVector& FallAcceleration) override;
 
@@ -25,6 +26,9 @@ public:
 	void	SetWalkMode() { MaxWalkSpeed = WalkSpeed; }
 	void	SetJogMode() { MaxWalkSpeed = JogSpeed; }
 
+	bool	IsFalling(bool& ascending);
+	FVector const& 	GetLastMovementOffset() const { return lastOffsetLocation; }
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
 	float	WalkSpeed = 300.0f;
@@ -32,14 +36,14 @@ public:
 	float	JogSpeed = 600.0f;
 	/*Use the value for a mass threshold**/
 	UPROPERTY(EditAnywhere, Category = "HeavyValues")
-		float	MassGrabValues[3];
+	float	MassGrabValues[3];
 	/*Use the value for the multiplier**/
 	UPROPERTY(EditAnywhere, Category = "HeavyValues")
-		float	MassGrabMultipliers[3];
+	float	MassGrabMultipliers[3];
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
-		float	RotationSpeed = 10.0f;
+	float	RotationSpeed = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
-		float	ThrowRotationSpeed = 100.0f;
+	float	ThrowRotationSpeed = 100.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Movement")
 	float	CoyoteTime = 0.5f;
@@ -47,4 +51,5 @@ public:
 	float	AirControlPower = 500.0f;
 private:
 	float	currentCoyoteTime = 0.0f;
+	FVector	lastOffsetLocation = FVector::ZeroVector;
 };
