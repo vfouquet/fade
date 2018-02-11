@@ -52,6 +52,8 @@ void UCharacterHealthComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (bIsDead)
+		return;
 
 	bool ascending = false;
 	if (moveComponent && moveComponent->IsFalling(ascending) && !ascending)
@@ -86,6 +88,9 @@ void UCharacterHealthComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 void	UCharacterHealthComponent::OnCapsuleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
+	if (bIsDead)
+		return;
+
 	UIdentityEraserComponent* identityEraser = Cast<UIdentityEraserComponent>(OtherComp);
 	if (identityEraser)
 		eraseZoneCount++;
@@ -109,6 +114,9 @@ void	UCharacterHealthComponent::OnCapsuleOverlap(UPrimitiveComponent* Overlapped
 
 void	UCharacterHealthComponent::OnCapsuleEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	if (bIsDead)
+		return;
+
 	UIdentityEraserComponent* identityEraser = Cast<UIdentityEraserComponent>(OtherComp);
 	if (identityEraser)
 		eraseZoneCount--;
@@ -127,7 +135,24 @@ void	UCharacterHealthComponent::OnCapsuleEndOverlap(UPrimitiveComponent* Overlap
 
 void	UCharacterHealthComponent::OnCapsuleHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	float impactForce = NormalImpulse.Size();
+	if (bIsDead)
+		return;
+
+	UChemicalComponent*	comp = UChemicalComponent::FindAssociatedChemicalComponent(OtherComp);
+	if (comp)
+	{
+		if ((comp->GetType() == EChemicalType::Fire && comp->GetState() == EChemicalState::None) ||
+			((comp->GetType() == EChemicalType::Rock || comp->GetType() == EChemicalType::Wood) && comp->GetState() == EChemicalState::Burning))
+			takeFireDamage();
+	}
+
+	FVector velocity = OtherComp->GetComponentVelocity();
+	FVector	relSpeed = Hit.ImpactPoint - OtherComp->GetComponentLocation();
+	FVector	project = velocity.ProjectOnTo(relSpeed);
+	float factor = project.Size() / velocity.Size();
+
+	float impactForce = velocity.Size() * OtherComp->GetMass() * factor;
+	UE_LOG(LogTemp, Warning, TEXT("Force : %f"), impactForce);
 	if (impactForce >= ImpactForce2Threshold && impactForce < ImpactForce3Threshold)
 	{
 		if (currentDamageState == ECharacterDamageState::Wounded)
@@ -141,15 +166,7 @@ void	UCharacterHealthComponent::OnCapsuleHit(UPrimitiveComponent* HitComponent, 
 		}
 	}
 	else if (impactForce >= ImpactForce3Threshold)
-	{
 		die(Hit.ImpactNormal * ImpactMeshForce, Hit.Location, Hit.BoneName);
-	}
-	UChemicalComponent*	comp = UChemicalComponent::FindAssociatedChemicalComponent(OtherComp);
-	if (!comp)
-		return;
-	if ((comp->GetType() == EChemicalType::Fire && comp->GetState() == EChemicalState::None) ||
-			((comp->GetType() == EChemicalType::Rock || comp->GetType() == EChemicalType::Wood) && comp->GetState() == EChemicalState::Burning))
-		takeFireDamage();
 }
 
 void	UCharacterHealthComponent::takeFireDamage()
@@ -206,6 +223,7 @@ void	UCharacterHealthComponent::die(FVector impact, FVector impactLocation, FNam
 	USkeletalMeshComponent*	skeletal = mainCharacter->GetMesh();
 	if (!skeletal)
 		return;
+	skeletal->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	skeletal->SetSimulatePhysics(true);
 	skeletal->WakeAllRigidBodies();
 	if (boneName != NAME_None)
@@ -214,4 +232,5 @@ void	UCharacterHealthComponent::die(FVector impact, FVector impactLocation, FNam
 	{
 		skeletal->AddImpulseAtLocation(impact, impactLocation);
 	}
+	bIsDead = true;
 }

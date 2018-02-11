@@ -23,7 +23,6 @@ enum class ECharacterDamageState : uint8
 {
 	None = 0 UMETA(DisplayName = "None"),
 	Wounded = 1 UMETA(DisplayName = "Wounded"),
-	Dead = 2 UMETA(DisplayName = "Dead")
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -112,4 +111,5 @@ private:
 	int	fireCount = 0;
 	int	eraseZoneCount = 0;
 	int	memoryZoneCount = 0;
+	bool	bIsDead = false;
 };

@@ -145,6 +145,7 @@ void	UHoldComponent::Grab()
 		holdingPrimitiveComponent->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());
 		handleComponent->GrabComponentAtLocationWithRotation
 			(holdingPrimitiveComponent, "", holdingPrimitiveComponent->GetComponentLocation(), FRotator::ZeroRotator);
+		holdingPrimitiveComponent->SetCollisionProfileName("OverlapAllDynamic");
 
 		mainCharacter->SetHoldingObject(true);
 	}
@@ -300,6 +301,7 @@ void	UHoldComponent::UniversalRelease()
 void	UHoldComponent::releaseLightGrabbedObject()
 {
 	handleComponent->ReleaseComponent();
+	holdingPrimitiveComponent->SetCollisionProfileName("SmallInteractable");
 	holdingObject->SetHoldComponent(nullptr);
 	holdingObject = nullptr;
 	holdingPrimitiveComponent = nullptr;
