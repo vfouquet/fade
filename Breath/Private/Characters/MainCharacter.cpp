@@ -182,7 +182,31 @@ bool	AMainCharacter::CanThrow() const
 {
 	return bHoldingObject;
 }
-	
+
+void	AMainCharacter::SetWalkMode()
+{
+	if (!bCustomSpeedEnabled)
+		mainCharacterMovement->SetWalkMode();
+}
+
+void	AMainCharacter::SetJogMode()
+{
+	if (!bCustomSpeedEnabled)
+		mainCharacterMovement->SetJogMode();
+}
+
+void	AMainCharacter::SetCustomSpeed(bool customSpeed, float newSpeed)
+{
+	bCustomSpeedEnabled = true;
+	mainCharacterMovement->MaxWalkSpeed = customSpeed? newSpeed : mainCharacterMovement->WalkSpeed;
+}
+
+void	AMainCharacter::UnsetCustomSpeed()
+{
+	bCustomSpeedEnabled = false;
+	mainCharacterMovement->SetWalkMode();
+}
+
 void	AMainCharacter::EnableMovingHeavyObjectMode() 
 { 
 	mainCharacterMovement->bOrientRotationToMovement = false;

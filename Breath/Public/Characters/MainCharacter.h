@@ -54,13 +54,19 @@ public:
 
 	void	OnDamage();
 
-	void	SetWalkMode() { mainCharacterMovement->SetWalkMode(); }
-	void	SetJogMode() { mainCharacterMovement->SetJogMode(); }
+	void	SetWalkMode();
+	void	SetJogMode();
 
 	void	SetRotatingLeft(bool const value) { rotatingLeft = value; }
 	void	SetRotatingRight(bool const value) { rotatingRight = value; }
-	void	SetPushingAxis(float const& value) { pushingAxis = value; }
+	void	SetPushingAxis(float const& value) { pushingAxis = value; }	
+	UFUNCTION(BlueprintCallable)
+	void	SetCustomSpeed(bool customSpeed, float newSpeed = 0.0f);
+	UFUNCTION(BlueprintCallable)
+	void	UnsetCustomSpeed();
+	UFUNCTION(BlueprintCallable)
 	void	BlockCharacter() { bBlocked = true; }
+	UFUNCTION(BlueprintCallable)
 	void	UnblockCharacter() { bBlocked = false; }
 	void	EnableMovingHeavyObjectMode();
 	void	DisableMovingHeavyObjectMode();
@@ -91,6 +97,7 @@ private:
 	UHoldComponent*						holdComponent = nullptr;
 	UMainCharacterMovementComponent*	mainCharacterMovement = nullptr;
 
+	bool						bCustomSpeedEnabled = false;
 	bool						bBlocked = false;
 	bool						bMovingHeavyObject = false;
 	bool						bThrowingObject = false;
