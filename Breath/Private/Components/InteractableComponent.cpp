@@ -5,6 +5,9 @@
 #include "GameFramework/Actor.h"
 #include "HoldComponent.h"
 
+#include "DrawDebugHelpers.h"
+#include "Engine/World.h"
+
 // Sets default values for this component's properties
 UInteractableComponent::UInteractableComponent()
 {
@@ -25,6 +28,8 @@ void UInteractableComponent::BeginPlay()
 		FScriptDelegate	hitOverlap;
 		hitOverlap.BindUFunction(this, "OnHit");
 		associatedComponent->OnComponentHit.Add(hitOverlap);
+
+		tempExtent = associatedComponent->Bounds.BoxExtent;
 	}
 
 	// ...
@@ -79,6 +84,141 @@ void UInteractableComponent::BeginPlay()
 void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
+bool	UInteractableComponent::GetDebugLeft()
+{
+	if (!associatedComponent)
+		return false;
+
+	FVector tempExtent2 = tempExtent * 1.0f;
+
+	FCollisionShape shape = FCollisionShape::MakeBox(FVector(tempExtent2.X, 10.0f, tempExtent2.Z));
+	FHitResult hitResult;
+
+	FVector leftCenter = associatedComponent->GetComponentLocation() + associatedComponent->GetRightVector() * -tempExtent.Y;
+	FCollisionQueryParams	params;
+	params.AddIgnoredActor(GetOwner());
+	DrawDebugBox(GetWorld(), leftCenter, FVector(tempExtent2.X, 10.0f, tempExtent2.Z), associatedComponent->GetComponentRotation().Quaternion(), FColor::Blue);
+	bool res = GetWorld()->SweepSingleByChannel(hitResult, leftCenter, leftCenter, associatedComponent->GetComponentRotation().Quaternion(), ECollisionChannel::ECC_Visibility, shape, params);
+	return res;
+}
+
+bool	UInteractableComponent::CanRotateLeft(FVector characterForward)
+{
+	if (!associatedComponent)
+		return false;
+	bool res = false;
+	float dotRes = FVector::DotProduct(characterForward, associatedComponent->GetForwardVector());
+	if (FMath::IsNearlyEqual(dotRes, 1.0f, 0.1f))
+		res = !GetDebugLeft();
+	else if (FMath::IsNearlyEqual(dotRes, -1.0f, 0.1f))
+		res = !GetDebugRight();
+	else
+	{
+		float dotResRight = FVector::DotProduct(characterForward, associatedComponent->GetRightVector());
+		if (FMath::IsNearlyEqual(dotResRight, 1.0f, 0.1f))
+			res = !GetDebugCenter();
+		else if (FMath::IsNearlyEqual(dotResRight, -1.0f, 0.1f))
+			res = !GetDebugBack();
+	}
+	return res;
+}
+
+bool	UInteractableComponent::CanRotateRight(FVector characterForward)
+{
+	if (!associatedComponent)
+		return false;
+	bool res = false;
+	float dotRes = FVector::DotProduct(characterForward, associatedComponent->GetForwardVector());
+	if (FMath::IsNearlyEqual(dotRes, 1.0f, 0.1f))
+		res = !GetDebugRight();
+	else if (FMath::IsNearlyEqual(dotRes, -1.0f, 0.1f))
+		res = !GetDebugLeft();
+	else
+	{
+		float dotResRight = FVector::DotProduct(characterForward, associatedComponent->GetRightVector());
+		if (FMath::IsNearlyEqual(dotResRight, 1.0f, 0.1f))
+			res = !GetDebugBack();
+		else if (FMath::IsNearlyEqual(dotResRight, -1.0f, 0.1f))
+			res = !GetDebugCenter();
+	}
+	return res;
+}
+
+bool	UInteractableComponent::CanPushForward(FVector characterForward)
+{
+	if (!associatedComponent)
+		return false;
+	bool res = false;
+	float dotRes = FVector::DotProduct(characterForward, associatedComponent->GetForwardVector());
+	if (FMath::IsNearlyEqual(dotRes, 1.0f, 0.1f))
+		res = !GetDebugCenter();
+	else if (FMath::IsNearlyEqual(dotRes, -1.0f, 0.1f))
+		res = !GetDebugBack();
+	else
+	{
+		float dotResRight = FVector::DotProduct(characterForward, associatedComponent->GetRightVector());
+		if (FMath::IsNearlyEqual(dotResRight, 1.0f, 0.1f))
+			res = !GetDebugRight();
+		else if (FMath::IsNearlyEqual(dotResRight, -1.0f, 0.1f))
+			res = !GetDebugLeft();
+	}
+	return res;
+}
+
+bool	UInteractableComponent::GetDebugRight()
+{
+	if (!associatedComponent)
+		return false;
+
+	FVector	tempExtent2 = tempExtent * 1.0f;
+
+	FCollisionShape shape = FCollisionShape::MakeBox(FVector(tempExtent2.X, 10.0f, tempExtent2.Z));
+	FHitResult hitResult;
+
+	FVector rightCenter = associatedComponent->GetComponentLocation() + associatedComponent->GetRightVector() * tempExtent.Y;
+	FCollisionQueryParams	params;
+	params.AddIgnoredActor(GetOwner());
+	DrawDebugBox(GetWorld(), rightCenter, FVector(tempExtent2.X, 10.0f, tempExtent2.Z), associatedComponent->GetComponentRotation().Quaternion(), FColor::Blue);
+	bool res = GetWorld()->SweepSingleByChannel(hitResult, rightCenter, rightCenter, associatedComponent->GetComponentRotation().Quaternion(), ECollisionChannel::ECC_Visibility, shape, params);
+	return res;
+}
+
+bool	UInteractableComponent::GetDebugCenter()
+{
+	if (!associatedComponent)
+		return false;
+
+	FVector	tempExtent2 = tempExtent * 1.0f;
+
+	FCollisionShape shape = FCollisionShape::MakeBox(FVector(10.0f, tempExtent2.Y, tempExtent2.Z));
+	FHitResult hitResult;
+
+	FVector forwardCenter = associatedComponent->GetComponentLocation() + associatedComponent->GetForwardVector() * tempExtent.X;
+	FCollisionQueryParams	params;
+	params.AddIgnoredActor(GetOwner());
+	DrawDebugBox(GetWorld(), forwardCenter, FVector(10.0f, tempExtent2.Y, tempExtent2.Z), associatedComponent->GetComponentRotation().Quaternion(), FColor::Blue);
+	bool res = GetWorld()->SweepSingleByChannel(hitResult, forwardCenter, forwardCenter, associatedComponent->GetComponentRotation().Quaternion(), ECollisionChannel::ECC_Visibility, shape, params);
+	return res;
+}
+
+bool	UInteractableComponent::GetDebugBack()
+{
+	if (!associatedComponent)
+		return false;
+
+	FVector	tempExtent2 = tempExtent * 1.0f;
+
+	FCollisionShape shape = FCollisionShape::MakeBox(FVector(10.0f, tempExtent2.Y, tempExtent2.Z));
+	FHitResult hitResult;
+
+	FVector forwardCenter = associatedComponent->GetComponentLocation() - associatedComponent->GetForwardVector() * tempExtent.X;
+	FCollisionQueryParams	params;
+	params.AddIgnoredActor(GetOwner());
+	DrawDebugBox(GetWorld(), forwardCenter, FVector(10.0f, tempExtent2.Y, tempExtent2.Z), associatedComponent->GetComponentRotation().Quaternion(), FColor::Blue);
+	bool res = GetWorld()->SweepSingleByChannel(hitResult, forwardCenter, forwardCenter, associatedComponent->GetComponentRotation().Quaternion(), ECollisionChannel::ECC_Visibility, shape, params);
+	return res;
 }
 
 void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

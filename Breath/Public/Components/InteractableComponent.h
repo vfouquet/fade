@@ -61,9 +61,26 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool	HasIdentity() const { return !identityErased; }
 	UFUNCTION(BlueprintPure)
+	FVector&	GetTempExtent() { return tempExtent; }
+	UFUNCTION(BlueprintPure)
 	UPrimitiveComponent* GetAssociatedComponent() const { return associatedComponent; }
 
 	bool	IsGrabable() const { return CanBeGrabbed && !identityErased && associatedComponent; }
+	
+	UFUNCTION(BlueprintCallable)
+	bool	CanRotateLeft(FVector characterForward);
+	UFUNCTION(BlueprintCallable)
+	bool	CanRotateRight(FVector characterForward);
+	UFUNCTION(BlueprintCallable)
+	bool	CanPushForward(FVector characterForward);
+	UFUNCTION(BlueprintCallable)
+	bool	GetDebugLeft();
+	UFUNCTION(BlueprintCallable)
+	bool	GetDebugCenter();
+	UFUNCTION(BlueprintCallable)
+	bool	GetDebugRight();
+	UFUNCTION(BlueprintCallable)
+	bool	GetDebugBack();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
@@ -99,6 +116,7 @@ private:
 	UPrimitiveComponent*			associatedComponent = nullptr;
 	UHoldComponent*					holder = nullptr;
 
+	FVector							tempExtent;
 	bool							thrown = false;
 	bool							isSticked = false;
 	bool							identityErased = false;

@@ -152,7 +152,11 @@ void	UCharacterHealthComponent::OnCapsuleHit(UPrimitiveComponent* HitComponent, 
 	float factor = project.Size() / velocity.Size();
 
 	float impactForce = velocity.Size() * OtherComp->GetMass() * factor;
-	UE_LOG(LogTemp, Warning, TEXT("Force : %f"), impactForce);
+	//UE_LOG(LogTemp, Warning, TEXT("Force : %f"), impactForce);
+	//UE_LOG(LogTemp, Warning, TEXT("Project : %s"), *project.ToString());
+	float dot = FVector::DotProduct(relSpeed, project);
+	//UE_LOG(LogTemp, Warning, TEXT("Dot : %f"), dot);
+
 	if (impactForce >= ImpactForce2Threshold && impactForce < ImpactForce3Threshold)
 	{
 		if (currentDamageState == ECharacterDamageState::Wounded)

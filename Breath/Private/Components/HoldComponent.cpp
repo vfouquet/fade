@@ -158,14 +158,14 @@ void	UHoldComponent::Grab()
 		holdingObject->SetHoldComponent(this);
 		AActor* holdingActor = holdingObject->GetOwner();
 		holdingPrimitiveComponent = closestInteractableObject->GetAssociatedComponent();
-		if (!holdingPrimitiveComponent)
-			holdingPrimitiveComponent = holdingActor->FindComponentByClass<UPrimitiveComponent>();
 
 		FHitResult	hitRes;
 		FCollisionQueryParams	queryParams;
 		queryParams.AddIgnoredActor(character);
 		GetWorld()->LineTraceSingleByChannel(hitRes, character->GetActorLocation(), holdingPrimitiveComponent->GetComponentLocation(), ECollisionChannel::ECC_PhysicsBody, queryParams);
 		FRotator newRot = (hitRes.Normal * -1.0f).Rotation();
+		newRot.Pitch = 0.0f;
+		newRot.Roll = 0.0f;
 		FVector	holdPrimExtent = holdingPrimitiveComponent->Bounds.BoxExtent;
 		holdPrimExtent.Z = 0.0f;
 		FVector	holdingPoint = holdingPrimitiveComponent->GetComponentLocation() + (holdPrimExtent + HoldSnapOffset) * hitRes.Normal;
@@ -173,10 +173,8 @@ void	UHoldComponent::Grab()
 
 		character->SetActorLocationAndRotation(holdingPoint, newRot, true);
 
-		mainCharacter->EnableMovingHeavyObjectMode();
-	
+		mainCharacter->EnableMovingHeavyObjectMode();	
 		createHandConstraint();
-
 		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::HeavyGrabbing);
 	}
 }
@@ -302,7 +300,8 @@ void	UHoldComponent::releaseLightGrabbedObject()
 {
 	handleComponent->ReleaseComponent();
 	holdingPrimitiveComponent->SetCollisionProfileName("SmallInteractable");
-	holdingObject->SetHoldComponent(nullptr);
+	if (holdingObject.IsValid())
+		holdingObject->SetHoldComponent(nullptr);
 	holdingObject = nullptr;
 	holdingPrimitiveComponent = nullptr;
 }
@@ -333,7 +332,8 @@ void	UHoldComponent::releaseHeavyGrabbedObject()
 		leftHandConstraint->BreakConstraint();
 	if (rightHandConstraint)
 		rightHandConstraint->BreakConstraint();
-	holdingObject->SetHoldComponent(nullptr);
+	if (holdingObject.IsValid())
+		holdingObject->SetHoldComponent(nullptr);
 	holdingObject = nullptr;
 	holdingPrimitiveComponent = nullptr;
 }
@@ -386,4 +386,20 @@ bool	UHoldComponent::getPushingPoints(FVector& centerPoint, FVector& firstPoint,
 	DrawDebugSphere(GetWorld(), firstPoint, 10.0f, 12, FColor::Emerald, true, 5.0f);
 	DrawDebugSphere(GetWorld(), secondPoint, 10.0f, 12, FColor::Turquoise, true, 5.0f);
 	return true;
+}
+	
+void	UHoldComponent::DebugInteractableDetection(FColor beginColor, FColor endColor, float lifetime)
+{
+	DrawDebugCapsule(GetWorld(), characterCapsule->GetComponentLocation(), 
+		characterCapsule->GetScaledCapsuleHalfHeight(), 
+		characterCapsule->GetScaledCapsuleRadius(), FQuat::Identity, 
+		beginColor, false, lifetime);
+
+	FVector destination = characterCapsule->GetComponentLocation() + 
+		GetOwner()->GetActorForwardVector() * 
+		((currentHoldingState == EHoldingState::LightGrabbing) ? HoldingDetectionOffset : DetectionOffset);
+	DrawDebugCapsule(GetWorld(), destination,
+		characterCapsule->GetScaledCapsuleHalfHeight(),
+		characterCapsule->GetScaledCapsuleRadius(), FQuat::Identity,
+		endColor, false, lifetime);
 }

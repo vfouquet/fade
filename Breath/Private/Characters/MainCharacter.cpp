@@ -65,7 +65,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	{
 		bool ascending = false;
 		if (mainCharacterMovement->IsFalling(ascending) && !ascending)
-			OnDamage();
+			OnDamage(); //DO THAT SHIT TO JUST TO RELEASE BECAUSE IT GOT THE SAME CONSEQUENCES THAN DAMAGE
 	}
 
 	if (bHoldingObject && bThrowingObject)
@@ -79,12 +79,17 @@ void AMainCharacter::Tick(float DeltaTime)
 	{
 		if (holdComponent)
 		{
-			if (rotatingLeft)
+			if (rotatingLeft && holdComponent->CanRotateLeft(GetActorForwardVector()))
 				mainCharacterMovement->ProcessRotateHeavyObject(false, holdComponent->GetHoldingObjectMass(), holdComponent->GetHoldingObjectLocation());
-			else if (rotatingRight)
+			else if (rotatingRight && holdComponent->CanRotateRight(GetActorForwardVector()))
 				mainCharacterMovement->ProcessRotateHeavyObject(true, holdComponent->GetHoldingObjectMass(), holdComponent->GetHoldingObjectLocation());
 			else if (!FMath::IsNearlyZero(pushingAxis))
-				mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetHoldingObjectMass());
+			{
+				if (pushingAxis == 1.0f && holdComponent->CanPushForward(GetActorForwardVector()))
+					mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetHoldingObjectMass());
+				else if (pushingAxis == -1.0f)
+					mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetHoldingObjectMass());
+			}
 		}
 	}
 	else if (canClimb && !bHoldingObject)
@@ -180,7 +185,7 @@ void	AMainCharacter::OnDamage()
 
 bool	AMainCharacter::CanThrow() const
 {
-	return bHoldingObject;
+	return bHoldingObject || bMovingHeavyObject;
 }
 
 void	AMainCharacter::SetWalkMode()

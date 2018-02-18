@@ -61,6 +61,10 @@ public:
 	UFUNCTION(BlueprintPure)
 	UPhysicsConstraintComponent*	GetRightHandConstraint() const { return rightHandConstraint; }
 
+	bool	CanRotateLeft(FVector characterForward) { return holdingObject.IsValid() && holdingObject->CanRotateLeft(characterForward); }
+	bool	CanRotateRight(FVector characterForward) { return holdingObject.IsValid() && holdingObject->CanRotateRight(characterForward); }
+	bool	CanPushForward(FVector characterForward) { return holdingObject.IsValid() && holdingObject->CanPushForward(characterForward); }
+
 	bool	IsMovingHeavyObject() const { return currentHoldingState == EHoldingState::HeavyGrabbing; }
 	bool	IsHoldingObject() const { return currentHoldingState == EHoldingState::LightGrabbing; }
 
@@ -72,6 +76,10 @@ public:
 	//CURRENTLY PUBLIC FOR BLUEPRINT TESTS
 	UFUNCTION(BlueprintPure)
 	bool							getPushingPoints(FVector& centerPoint, FVector& leftPoint, FVector& rightPoint) const;
+
+	//DEBUG
+	UFUNCTION(BlueprintCallable)
+	void	DebugInteractableDetection(FColor beginColor, FColor endColor, float lifetime);
 public:
 	UPROPERTY(EditAnywhere, Category = "Detection")
 	float	DetectionOffset = 60.0f;
