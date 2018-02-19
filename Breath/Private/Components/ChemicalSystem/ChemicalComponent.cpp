@@ -136,6 +136,7 @@ void	UChemicalComponent::EraseIdentity()
 {
 	currentChangers.Empty();
 	stateChangedDelegate.Broadcast(EChemicalTransformation::Erasing, state, EChemicalState::NoIdentity);
+	state = EChemicalState::NoIdentity;
 }
 
 void	UChemicalComponent::GiveIdentity(EChemicalState previousState)
