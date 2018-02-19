@@ -81,7 +81,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	AttachToRail(ACameraRailManager* CameraRailManager);
 	UFUNCTION(BlueprintCallable)
-	void	AttachToRailWithPlayer(ACameraRailManager* CameraRailManager, AActor* PlayerActor);
+	void	AttachToRailWithPlayer(ACameraRailManager* CameraRailManager, AActor* PlayerActor, bool bTeleport = false);
 
 protected:
 	UPROPERTY(VisibleAnywhere)

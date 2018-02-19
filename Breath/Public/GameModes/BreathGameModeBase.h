@@ -18,20 +18,23 @@ class BREATH_API ABreathGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	virtual void RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot) override;
+	ABreathGameModeBase(const FObjectInitializer& ObjectInitializer);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool	bGameStarted;
 
 	UFUNCTION(exec)
 	void	SaveGame();
 	UFUNCTION(exec)
 	void	LoadGame();
-
-	virtual void RestartPlayer(AController* NewPlayer) override;
-
-
-
-	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+	UFUNCTION(exec)
+	void	LoadGameToChapter(FString ChapterToLoad);
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TAssetPtr<UStoryChapter>	CurrentChapter;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TAssetPtr<UWorld>	PersistentLevel;
+
 };

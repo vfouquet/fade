@@ -11,6 +11,7 @@
 #include "Camera/CameraActor.h"
 #include "BoxClimbComponent.h"
 
+
 // Sets default values
 AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UMainCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -20,14 +21,6 @@ AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer)
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(this->GetRootComponent());
-
-#if WITH_EDITOR
-	if (bIsThirdPersonCamera == true)
-	{
-		CameraComponent = CreateDefaultSubobject<UPlayerCameraComponent>(TEXT("PlayerCameraComponent"));
-		CameraComponent->SetupAttachment(SpringArmComponent);
-	}
-#endif
 
 }
 
@@ -51,6 +44,13 @@ void AMainCharacter::BeginPlay()
 		}
 	}
 
+#if WITH_EDITOR
+	if (bIsThirdPersonCamera == true)
+	{
+		CameraComponent = NewObject<UPlayerCameraComponent>(this, UPlayerCameraComponent::StaticClass());
+		CameraComponent->SetupAttachment(SpringArmComponent);
+	}
+#endif
 }
 
 // Called every frame

@@ -2,35 +2,24 @@
 
 #include "BreathGameModeBase.h"
 
+#include "Engine/World.h"
+#include "Engine/StreamableManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Misc/StringAssetReference.h"
 
 #include "MainPlayerStart.h"
 #include "Controllers/MainPlayerController.h"
 #include "Cameras/CameraRailManager.h"
 #include "Cameras/RailCamera.h"
-#include "BreathSaveGame.h"
+#include "Systems/BreathSaveGame.h"
 #include "Story/StoryChapter.h"
+#include "Gameplay/MainPlayerStart.h"
 
 
-void ABreathGameModeBase::RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot)
+ABreathGameModeBase::ABreathGameModeBase(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
-	Super::RestartPlayerAtPlayerStart(NewPlayer, StartSpot);
-
-	AMainPlayerController*	PC = Cast<AMainPlayerController>(NewPlayer);
-	AMainPlayerStart* MainPlayerStart = Cast<AMainPlayerStart>(StartSpot);
-
-	if (PC != nullptr && PC->GetCameraActor() != nullptr)
-	{
-		if (MainPlayerStart != nullptr && MainPlayerStart->StartCameraRailManager.IsValid())
-		{
-			ARailCamera* RailCamera = Cast<ARailCamera>(PC->GetCameraActor());
-
-			if (RailCamera != nullptr)
-			{
-				RailCamera->AttachToRailWithPlayer(MainPlayerStart->StartCameraRailManager.Get(), PC->GetPawn());
-			}
-		}
-	}
+	this->bStartPlayersAsSpectators = true;
 }
 
 void ABreathGameModeBase::SaveGame()
@@ -47,11 +36,10 @@ void ABreathGameModeBase::SaveGame()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to save game!"));
 	}
-	
 }
 
 void ABreathGameModeBase::LoadGame()
-{
+{ 
 	UBreathSaveGame* LoadGameInstance = LoadGameInstance = Cast<UBreathSaveGame>(UGameplayStatics::LoadGameFromSlot("MainSlot", 0));;
 	
 	if (LoadGameInstance != nullptr)
@@ -73,12 +61,52 @@ void ABreathGameModeBase::LoadGame()
 	}
 }
 
-void ABreathGameModeBase::RestartPlayer(AController* NewPlayer)
+void ABreathGameModeBase::LoadGameToChapter(FString ChapterToLoad)
 {
-	Super::RestartPlayer(NewPlayer);
-}
+	UE_LOG(LogTemp, Warning, TEXT("Loading Chapter: %s"), *ChapterToLoad);
+	FStreamableManager AssetLoader;
+	FStringAssetReference MyAssetPath("/Game/Gameplay/Story/Chapters/" + ChapterToLoad);
+	UObject* MyAsset = MyAssetPath.TryLoad();
+	UStoryChapter*	Chapter = Cast<UStoryChapter>(MyAsset);
 
-void ABreathGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
-{
-	Super::InitGame(MapName, Options, ErrorMessage);
+	if (Chapter != nullptr)
+	{
+		if (Chapter->Spawn.IsValid())
+		{
+			AMainPlayerController*  PC = Cast<AMainPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+
+			if (PC != nullptr)
+			{
+				APawn* PlayerPawn = PC->GetPawnOrSpectator();
+				PC->UnPossess();
+
+				if (PlayerPawn != nullptr)
+				{
+					PlayerPawn->Destroy();
+				}
+
+				if (Chapter->Spawn != nullptr)
+				{
+					PlayerPawn = this->GetWorld()->SpawnActor<APawn>(this->DefaultPawnClass, Chapter->Spawn->GetTransform());
+					PC->Possess(PlayerPawn);
+					/*TArray<AActor*>	OutActors;
+					UGameplayStatics::GetAllActorsOfClass(PC, AMainPlayerStart::StaticClass(), OutActors);
+
+					for (AActor* actor : OutActors)
+					{
+						if (actor != nullptr)
+						{
+							actor->UpdateOverlaps(true);
+						}
+					}*/
+
+					UE_LOG(LogTemp, Warning, TEXT("Chapter loaded."), *ChapterToLoad);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("Failed to find spawn!"));
+				}
+			}
+		}
+	}
 }

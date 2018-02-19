@@ -28,6 +28,10 @@ USceneComponent* ARailCamera::GetCameraArm()
 void ARailCamera::BeginPlay()
 {
 	Super::BeginPlay();
+
+#if WITH_EDITOR
+	this->SetActorLabel(TEXT("RailCamera"));
+#endif
 }
 
 void ARailCamera::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -50,37 +54,32 @@ void ARailCamera::NotifyActorBeginOverlap(AActor* OtherActor)
 
 void ARailCamera::AttachToRail(ACameraRailManager* CameraRailManager)
 {
-	if (CurrentRailManager != CameraRailManager)
+
+	if (CurrentRailManager != nullptr)
 	{
-		if (CurrentRailManager != nullptr)
-		{
-			CurrentRailManager->DetachCamera();
-		}
+		CurrentRailManager->DetachCamera();
+	}
 
-		CurrentRailManager = CameraRailManager;
+	CurrentRailManager = CameraRailManager;
 
-		if (CurrentRailManager != nullptr)
-		{
-			CurrentRailManager->AttachCamera(this);
-		}
+	if (CurrentRailManager != nullptr)
+	{
+		CurrentRailManager->AttachCamera(this);
 	}
 }
 
-void ARailCamera::AttachToRailWithPlayer(ACameraRailManager* CameraRailManager, AActor* PlayerActor)
+void ARailCamera::AttachToRailWithPlayer(ACameraRailManager* CameraRailManager, AActor* PlayerActor, bool bTeleport)
 {
-	if (CurrentRailManager != CameraRailManager)
+	if (CurrentRailManager != nullptr)
 	{
-		if (CurrentRailManager != nullptr)
-		{
-			CurrentRailManager->DetachCamera();
-		}
+		CurrentRailManager->DetachCamera();
+	}
 
-		CurrentRailManager = CameraRailManager;
+	CurrentRailManager = CameraRailManager;
 
-		if (CurrentRailManager != nullptr)
-		{
-			CurrentRailManager->AttachCamera(this, PlayerActor);
-		}
+	if (CurrentRailManager != nullptr)
+	{
+		CurrentRailManager->AttachCamera(this, PlayerActor, bTeleport);
 	}
 }
 

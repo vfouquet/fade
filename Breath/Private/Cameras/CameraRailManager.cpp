@@ -70,13 +70,19 @@ void ACameraRailManager::AttachCamera(ARailCamera* CameraToAttach)
 	}
 }
 
-void ACameraRailManager::AttachCamera(ARailCamera* CameraToAttach, AActor* PlayerActor)
+void ACameraRailManager::AttachCamera(ARailCamera* CameraToAttach, AActor* PlayerActor, bool bTeleport)
 {
-	if (CameraToAttach != nullptr, PlayerActor != nullptr)
+	if (CameraToAttach != nullptr && PlayerActor != nullptr)
 	{
 		this->PlayerActor = PlayerActor;
 		this->RailCamera = CameraToAttach;
 		CurrentInputKey = FlatSplineComponent->FindInputKeyClosestToWorldLocation(PlayerActor->GetActorLocation());
+
+		if (bTeleport == true)
+		{
+			this->RailCamera->SetActorLocation(SplineComponent->GetWorldLocationAtDistanceAlongSpline(CurrentInputKey));
+		}
+
 		this->SetActorTickEnabled(true);
 	}
 }
@@ -137,14 +143,17 @@ void ACameraRailManager::BeginPlay()
 
 	UpdateSpline();
 
-	AMainPlayerController* PC = Cast<AMainPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	/*AMainPlayerController* PC = Cast<AMainPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
 	if (PC != nullptr)
 	{
 		PlayerActor = PC->GetPawn();
-	}
+	}*/
 
-	this->SetActorTickEnabled(false);
+	if (this->RailCamera == nullptr)
+	{
+		this->SetActorTickEnabled(false);
+	}
 }
 //#endif
 
@@ -177,7 +186,7 @@ void ACameraRailManager::Tick(float DeltaSeconds)
 			}
 		}
 
-		CentroidRelativeLocFromPlayer /= RailCamera->CameraSettings.InterestPoints.Num() + 1; // 1 represents the player weight and it's weight never changes.
+		CentroidRelativeLocFromPlayer /= RailCamera->CameraSettings.InterestPoints.Num() + 1; // 1 represents the player weight.
 
 		FVector LookAtDir;
 

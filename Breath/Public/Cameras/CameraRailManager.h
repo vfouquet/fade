@@ -33,7 +33,7 @@ public:
 	float	GetCurrentDistanceAlongSpline();
 
 	void	AttachCamera(ARailCamera* CameraToAttach);
-	void	AttachCamera(ARailCamera* CameraToAttach, AActor* PlayerActor);
+	void	AttachCamera(ARailCamera* CameraToAttach, AActor* PlayerActor, bool bTeleport = false);
 	void	DetachCamera();
 
 protected:

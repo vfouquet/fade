@@ -7,6 +7,8 @@
 #include "Cameras/RailCamera.h"
 #include "StoryChapter.generated.h"
 
+class AMainPlayerStart;
+
 /**
  * 
  */
@@ -26,6 +28,6 @@ public:
 	bool	bAvailableToSelection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Game")
-	TAssetPtr<AActor>	Spawn;
+	TAssetPtr<AMainPlayerStart>	Spawn;
 
 };

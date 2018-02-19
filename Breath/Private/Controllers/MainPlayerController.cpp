@@ -15,6 +15,8 @@ void AMainPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	this->bAutoManageActiveCameraTarget = true;
+
 	if (CameraActorClass != nullptr)
 	{
 		CameraActor = GetWorld()->SpawnActor<ACameraActor>(CameraActorClass, this->GetActorTransform());
@@ -28,6 +30,7 @@ void AMainPlayerController::BeginPlay()
 	CameraActor->SetActorLabel(TEXT("RailCamera"));
 #endif
 	this->SetViewTarget(CameraActor);
+
 }
 
 ACameraActor* AMainPlayerController::GetCameraActor()
@@ -63,7 +66,11 @@ void AMainPlayerController::Possess(APawn* aPawn)
 	MainCharacter = Cast<AMainCharacter>(aPawn);
 
 	if (MainCharacter != nullptr)
+	{
+		this->SetViewTarget(CameraActor);
+
 		SpringArmComponent = MainCharacter->FindComponentByClass<USpringArmComponent>();
+	}
 }
 
 void AMainPlayerController::UnPossess()
