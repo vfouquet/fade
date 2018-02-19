@@ -20,9 +20,11 @@ class BREATH_API AMainCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDeathDelegate);
 public:
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-		bool	bIsThirdPersonCamera;
+	bool	bIsThirdPersonCamera;
 
 public:
 	// Sets default values for this character's properties
@@ -53,6 +55,7 @@ public:
 	bool	Climb();
 
 	void	OnDamage();
+	void	Die() { OnDie.Broadcast(); }
 
 	void	SetWalkMode();
 	void	SetJogMode();
@@ -84,6 +87,8 @@ public:
 	/*Time to validate climb by walking**/
 	UPROPERTY(EditAnywhere, Category = "Climb")
 		float	RunClimbValue = 1.0f;
+	UPROPERTY(BlueprintAssignable)
+	FDeathDelegate	OnDie;
 private:
 	UFUNCTION()
 	void	computeClimbableBoxes();

@@ -146,6 +146,7 @@ void	UCharacterHealthComponent::OnCapsuleHit(UPrimitiveComponent* HitComponent, 
 			takeFireDamage();
 	}
 
+	/*
 	FVector velocity = OtherComp->GetComponentVelocity();
 	FVector	relSpeed = Hit.ImpactPoint - OtherComp->GetComponentLocation();
 	FVector	project = velocity.ProjectOnTo(relSpeed);
@@ -171,6 +172,7 @@ void	UCharacterHealthComponent::OnCapsuleHit(UPrimitiveComponent* HitComponent, 
 	}
 	else if (impactForce >= ImpactForce3Threshold)
 		die(Hit.ImpactNormal * ImpactMeshForce, Hit.Location, Hit.BoneName);
+	*/
 }
 
 void	UCharacterHealthComponent::takeFireDamage()
@@ -224,6 +226,7 @@ void	UCharacterHealthComponent::die(FVector impact, FVector impactLocation, FNam
 	if (!mainCharacter)
 		return;
 	mainCharacter->BlockCharacter();
+	mainCharacter->Die();
 	USkeletalMeshComponent*	skeletal = mainCharacter->GetMesh();
 	if (!skeletal)
 		return;
