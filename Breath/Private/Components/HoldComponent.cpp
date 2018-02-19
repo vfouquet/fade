@@ -169,7 +169,7 @@ void	UHoldComponent::Grab()
 		FVector	holdPrimExtent = holdingPrimitiveComponent->Bounds.BoxExtent;
 		holdPrimExtent.Z = 0.0f;
 		FVector	holdingPoint = holdingPrimitiveComponent->GetComponentLocation() + (holdPrimExtent + HoldSnapOffset) * hitRes.Normal;
-		holdingActor->SetActorLocation(holdingActor->GetActorLocation() + FVector::UpVector * 10.0f);
+		holdingPrimitiveComponent->SetWorldLocation(holdingPrimitiveComponent->GetComponentLocation() + FVector::UpVector * 10.0f);
 
 		character->SetActorLocationAndRotation(holdingPoint, newRot, true);
 
