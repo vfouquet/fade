@@ -41,7 +41,7 @@ class BREATH_API ACameraRailPoint : public AActor
 public:
 	// Only used in editor
 	UPROPERTY(VisibleAnywhere)
-	ACameraRailManager*	CurrentCameraRailManager;
+	TAssetPtr<ACameraRailManager>	CurrentCameraRailManager;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TAssetPtr<ACameraRailPoint>	PreviousPoint;
