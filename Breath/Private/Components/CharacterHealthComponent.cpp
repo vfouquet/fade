@@ -59,8 +59,8 @@ void UCharacterHealthComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	if (moveComponent && moveComponent->IsFalling(ascending) && !ascending)
 	{
 		jumpZOffset -= moveComponent->GetLastMovementOffset().Z;
-		if (jumpZOffset >= FatalJumpHeight)
-			Die();
+		//if (jumpZOffset >= FatalJumpHeight)
+		//	Die();
 	}
 	else
 		jumpZOffset = 0.0f;
