@@ -60,7 +60,7 @@ void UCharacterHealthComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	{
 		jumpZOffset -= moveComponent->GetLastMovementOffset().Z;
 		if (jumpZOffset >= FatalJumpHeight)
-			die();
+			Die();
 	}
 	else
 		jumpZOffset = 0.0f;
@@ -193,7 +193,7 @@ void	UCharacterHealthComponent::takeFireDamage()
 	}
 	else if (currentCondition == ECharacterCondition::Burning)
 	{
-		die();
+		Die();
 	}
 }
 
@@ -223,7 +223,7 @@ void	UCharacterHealthComponent::applyWaterEffect()
 	}
 }
 
-void	UCharacterHealthComponent::die(FVector impact, FVector impactLocation, FName boneName)
+void	UCharacterHealthComponent::Die(FVector impact, FVector impactLocation, FName boneName)
 {
 	if (!mainCharacter)
 		return;

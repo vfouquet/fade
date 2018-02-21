@@ -69,6 +69,8 @@ public:
 	int const getCurrentMemoryZoneCount() const { return memoryZoneCount; }
 	UFUNCTION(BlueprintPure)
 	bool const isAffectedByFire() const { return eraseZoneCount == 0 || (eraseZoneCount > 0 && memoryZoneCount > 0); }
+	UFUNCTION(BlueprintCallable)
+	void	Die(FVector	impact = FVector::ZeroVector, FVector impactLocation = FVector::ZeroVector, FName boneName = NAME_None);
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire")
@@ -94,7 +96,6 @@ private:
 	void	takeFireDamage();
 	void	decreaseFireCount();
 	void	applyWaterEffect();
-	void	die(FVector	impact = FVector::ZeroVector, FVector impactLocation = FVector::ZeroVector, FName boneName = NAME_None);
 
 private:
 	AMainCharacter*						mainCharacter = nullptr;
