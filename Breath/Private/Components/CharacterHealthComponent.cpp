@@ -135,6 +135,7 @@ void	UCharacterHealthComponent::OnCapsuleEndOverlap(UPrimitiveComponent* Overlap
 
 void	UCharacterHealthComponent::OnCapsuleHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	/*
 	if (bIsDead)
 		return;
 
@@ -145,6 +146,7 @@ void	UCharacterHealthComponent::OnCapsuleHit(UPrimitiveComponent* HitComponent, 
 			((comp->GetType() == EChemicalType::Rock || comp->GetType() == EChemicalType::Wood) && comp->GetState() == EChemicalState::Burning))
 			takeFireDamage();
 	}
+	*/
 
 	/*
 	FVector velocity = OtherComp->GetComponentVelocity();
