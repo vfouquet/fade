@@ -76,11 +76,11 @@ void ACameraRailManager::AttachCamera(ARailCamera* CameraToAttach, AActor* Playe
 	{
 		this->PlayerActor = PlayerActor;
 		this->RailCamera = CameraToAttach;
-		CurrentInputKey = FlatSplineComponent->FindInputKeyClosestToWorldLocation(PlayerActor->GetActorLocation());
-
+		this->CurrentInputKey = FlatSplineComponent->FindInputKeyClosestToWorldLocation(PlayerActor->GetActorLocation());
+		
 		if (bTeleport == true)
 		{
-			this->RailCamera->SetActorLocation(SplineComponent->GetWorldLocationAtDistanceAlongSpline(CurrentInputKey));
+			this->CurrentDistanceAlongSpline = GetDistanceAlongSplineAtWorldLocation(PlayerActor->GetActorLocation());
 		}
 
 		this->SetActorTickEnabled(true);
