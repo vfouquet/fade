@@ -2,6 +2,25 @@
 
 #include "StoryChapter.h"
 
+#include "MainPlayerStart.h"
 
+#if WITH_EDITOR
+void UStoryChapter::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-
+	if (PropertyChangedEvent.GetPropertyName() == "Spawn")
+	{
+		if (this->Spawn.IsValid())
+		{
+			FString LevelName;
+			LevelName = this->Spawn->GetLevel()->GetOuter()->GetName();
+			this->LevelName = LevelName;
+		}
+		else
+		{
+			this->LevelName = "";
+		}
+	}
+}
+#endif

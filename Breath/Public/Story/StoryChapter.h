@@ -12,7 +12,7 @@ class AMainPlayerStart;
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class BREATH_API UStoryChapter : public UDataAsset
 {
 	GENERATED_BODY()
@@ -21,8 +21,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Info")
 	FString	Name;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game")
+	FString	LevelName;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Info")
-	TAssetPtr<UTexture> Screenshot;
+	TAssetPtr<UTexture2D> Screenshot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Info")
 	bool	bAvailableToSelection;
@@ -30,4 +33,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Game")
 	TAssetPtr<AMainPlayerStart>	Spawn;
 
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 };

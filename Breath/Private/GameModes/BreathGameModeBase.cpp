@@ -61,14 +61,8 @@ void ABreathGameModeBase::LoadGame()
 	}
 }
 
-void ABreathGameModeBase::LoadGameToChapter(FString ChapterToLoad)
+void ABreathGameModeBase::LoadGameToChapter(UStoryChapter* Chapter)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Loading Chapter: %s"), *ChapterToLoad);
-	FStreamableManager AssetLoader;
-	FStringAssetReference MyAssetPath("/Game/Gameplay/Story/Chapters/" + ChapterToLoad);
-	UObject* MyAsset = MyAssetPath.TryLoad();
-	UStoryChapter*	Chapter = Cast<UStoryChapter>(MyAsset);
-
 	if (Chapter != nullptr)
 	{
 		if (Chapter->Spawn.IsValid())
@@ -100,7 +94,7 @@ void ABreathGameModeBase::LoadGameToChapter(FString ChapterToLoad)
 						}
 					}*/
 
-					UE_LOG(LogTemp, Warning, TEXT("Chapter loaded."), *ChapterToLoad);
+					UE_LOG(LogTemp, Warning, TEXT("Chapter loaded."));
 				}
 				else
 				{

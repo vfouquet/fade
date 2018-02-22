@@ -23,12 +23,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool	bGameStarted;
 
-	UFUNCTION(exec)
+	//UFUNCTION(exec)
 	void	SaveGame();
-	UFUNCTION(exec)
+	//UFUNCTION(exec)
 	void	LoadGame();
-	UFUNCTION(exec)
-	void	LoadGameToChapter(FString ChapterToLoad);
+	//UFUNCTION(exec)
+	void	LoadGameToChapter(UStoryChapter* Chapter);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
