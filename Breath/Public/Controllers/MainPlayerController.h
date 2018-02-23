@@ -20,7 +20,13 @@ class BREATH_API AMainPlayerController : public APlayerController
 protected:
 	virtual void BeginPlay() override;
 
+
+	virtual void SetSpectatorPawn(class ASpectatorPawn* NewSpectatorPawn) override;
+
 public:
+	UFUNCTION(exec, BlueprintCallable)
+	void	DebugMode(bool bValue);
+
 	UFUNCTION(BlueprintPure)
 	ACameraActor*	GetCameraActor();
 

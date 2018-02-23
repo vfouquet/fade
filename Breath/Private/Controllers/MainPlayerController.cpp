@@ -4,6 +4,8 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/SpectatorPawn.h"
+#include "GameFramework/PlayerState.h"
 
 #include "Cameras/CameraRailManager.h"
 
@@ -31,6 +33,31 @@ void AMainPlayerController::BeginPlay()
 #endif
 	this->SetViewTarget(CameraActor);
 
+}
+
+void AMainPlayerController::SetSpectatorPawn(class ASpectatorPawn* NewSpectatorPawn)
+{
+	Super::SetSpectatorPawn(NewSpectatorPawn);
+
+	if (NewSpectatorPawn != nullptr && this->MainCharacter != nullptr)
+	{
+		NewSpectatorPawn->SetActorTransform(this->MainCharacter->GetActorTransform());
+	}
+}
+
+void AMainPlayerController::DebugMode(bool bValue)
+{
+	if (bValue)
+	{
+		this->ChangeState(NAME_Spectating);
+		this->PlayerState->bIsSpectator = true;
+	}
+	else
+	{
+		this->PlayerState->bIsSpectator = false;
+		this->ChangeState(NAME_Playing);
+		Possess(MainCharacter);
+	}
 }
 
 ACameraActor* AMainPlayerController::GetCameraActor()
@@ -83,14 +110,14 @@ void AMainPlayerController::UnPossess()
 {
 	Super::UnPossess();
 
-	SpringArmComponent = nullptr;
-	MainCharacter = nullptr;
+	//SpringArmComponent = nullptr;
+	//MainCharacter = nullptr;
 }
 
 
 void	AMainPlayerController::MoveForward(float Value)
 {
-	if (MainCharacter != nullptr)
+	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 	{
 		updateCharacterValues();
 
@@ -108,11 +135,15 @@ void	AMainPlayerController::MoveForward(float Value)
 		else
 			MainCharacter->Move(MoveDir);
 	}
+	else if (this->GetSpectatorPawn())
+	{
+		this->GetSpectatorPawn()->MoveForward(Value);
+	}
 }
 
 void	AMainPlayerController::MoveRight(float Value)
 {
-	if (MainCharacter != nullptr)
+	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 	{
 		updateCharacterValues();
 		if (Value < WalkStickThreshold && Value > -WalkStickThreshold)
@@ -129,23 +160,27 @@ void	AMainPlayerController::MoveRight(float Value)
 		else
 			MainCharacter->Move(MoveDir);
 	}
+	else if (this->GetSpectatorPawn())
+	{
+		this->GetSpectatorPawn()->MoveRight(Value);
+	}
 }
 
 void	AMainPlayerController::RotateHorizontal(float Value)
 {
-	if (MainCharacter != nullptr)
+	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 		MainCharacter->RotateHorizontal(Value);
 }
 
 void	AMainPlayerController::RotateVertical(float Value)
 {
-	if (MainCharacter != nullptr)
+	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 		MainCharacter->RotateVertical(Value);
 }
 
 void AMainPlayerController::Jump()
 {
-	if (MainCharacter != nullptr)
+	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 	{
 		if (MainCharacter->CanThrow())
 			MainCharacter->Throw();
@@ -156,19 +191,19 @@ void AMainPlayerController::Jump()
 
 void	AMainPlayerController::Action()
 {
-	if (MainCharacter)
+	if (this->GetSpectatorPawn() == nullptr && MainCharacter)
 		MainCharacter->Action();
 }
 
 void	AMainPlayerController::BeginGrab()
 {
-	if (MainCharacter != nullptr)
+	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 		MainCharacter->BeginGrab();
 }
 
 void	AMainPlayerController::StopGrab()
 {
-	if (MainCharacter != nullptr)
+	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 		MainCharacter->StopGrab();
 }
 
