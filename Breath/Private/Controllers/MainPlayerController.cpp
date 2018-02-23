@@ -207,6 +207,18 @@ void	AMainPlayerController::StopGrab()
 		MainCharacter->StopGrab();
 }
 
+void	AMainPlayerController::EnableGodMode()
+{
+	if (MainCharacter != nullptr)
+		MainCharacter->SetGodMode(true);
+}
+
+void	AMainPlayerController::DisableGodMode()
+{
+	if (MainCharacter != nullptr)
+		MainCharacter->SetGodMode(false);
+}
+
 #if WITH_EDITOR
 #include "UnrealEd.h"
 void	AMainPlayerController::DebugPauseEditor()

@@ -58,6 +58,8 @@ public:
 	ECharacterDamageState const& getCurrentDamageState() const { return currentDamageState; }
 	
 	UFUNCTION(BlueprintPure)
+	bool IsGod() const { return bIsGod; }
+	UFUNCTION(BlueprintPure)
 	float const getCurrentFireTime() const { return currentFireTime; }
 	UFUNCTION(BlueprintPure)
 	float const getCurrentDamageTime() const { return currentDamageTime; }
@@ -71,6 +73,8 @@ public:
 	bool const isAffectedByFire() const { return eraseZoneCount == 0 || (eraseZoneCount > 0 && memoryZoneCount > 0); }
 	UFUNCTION(BlueprintCallable)
 	void	Die(FVector	impact = FVector::ZeroVector, FVector impactLocation = FVector::ZeroVector, FName boneName = NAME_None);
+	UFUNCTION(BlueprintCallable)
+	void	SetGodMode(bool value) { bIsGod = value; }
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire")
@@ -109,8 +113,8 @@ private:
 
 	float	jumpZOffset = 0.0f;
 
-	int	fireCount = 0;
-	int	eraseZoneCount = 0;
-	int	memoryZoneCount = 0;
-	bool	bIsDead = false;
+	int		fireCount = 0;
+	int		eraseZoneCount = 0;
+	int		memoryZoneCount = 0;
+	bool	bIsGod = false;
 };

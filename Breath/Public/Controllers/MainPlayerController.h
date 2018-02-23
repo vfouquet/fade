@@ -47,6 +47,11 @@ public:
 	void	BeginGrab();
 	void	StopGrab();
 
+	UFUNCTION(Exec)
+	void	EnableGodMode();
+	UFUNCTION(Exec)
+	void	DisableGodMode();
+
 	float		GetInputAngle() const { return FMath::RadiansToDegrees(FMath::Atan2(GetInputAxisValue("MoveForward"), GetInputAxisValue("MoveRight"))); }
 	FRotator	GetCameraRotation() const { return PlayerCameraManager->GetCameraRotation(); }
 

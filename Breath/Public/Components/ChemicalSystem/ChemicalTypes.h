@@ -8,13 +8,11 @@ enum class EChemicalType : uint8
 {
 	None = 0 UMETA(DisplayName = "None"),
 	Wood UMETA(DisplayName = "Wood"),
-	Fabric UMETA(DisplayName = "Fabric"),
 	Rock UMETA(DisplayName = "Rock"),
 	Ceramic UMETA(DisplayName = "Ceramic"),
 	Water UMETA(DisplayName = "Water"),
 	Fire UMETA(DisplayName = "Fire"),
 	Oil UMETA(DisplayName = "Oil"),
-	Wind UMETA(DisplayName = "Wind")
 };
 
 UENUM(BlueprintType)

@@ -4,12 +4,14 @@
 
 #include "HoldComponent.h"
 #include "MainCharacterMovementComponent.h"
+#include "CharacterHealthComponent.h"
 
 #include "GameFramework/SpringArmComponent.h"
 #include "Cameras/PlayerCameraComponent.h"
 #include "MainPlayerController.h"
 #include "Camera/CameraActor.h"
 #include "BoxClimbComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 
 // Sets default values
@@ -183,6 +185,23 @@ void	AMainCharacter::OnDamage()
 		holdComponent->UniversalRelease();
 }
 
+void	AMainCharacter::Die(FVector impact, FVector impactLocation, FName boneName)
+{
+	bIsDead = true;
+	OnDie.Broadcast();
+	BlockCharacter();
+	USkeletalMeshComponent* mesh = GetMesh();
+	if (!mesh)
+		return;
+	mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	mesh->SetSimulatePhysics(true);
+	mesh->WakeAllRigidBodies();
+	if (boneName != NAME_None)
+		mesh->AddImpulse(impact, boneName);
+	else
+		mesh->AddImpulseAtLocation(impact, impactLocation);
+}
+
 bool	AMainCharacter::CanThrow() const
 {
 	return bHoldingObject || bMovingHeavyObject;
@@ -198,6 +217,13 @@ void	AMainCharacter::SetJogMode()
 {
 	if (!bCustomSpeedEnabled)
 		mainCharacterMovement->SetJogMode();
+}
+
+void	AMainCharacter::SetGodMode(bool value)
+{
+	UCharacterHealthComponent* healthComp = FindComponentByClass<UCharacterHealthComponent>();
+	if (healthComp)
+		healthComp->SetGodMode(value);
 }
 
 void	AMainCharacter::SetCustomSpeed(bool customSpeed, float newSpeed)

@@ -52,7 +52,7 @@ void UCharacterHealthComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (bIsDead)
+	if (bIsGod)
 		return;
 
 	bool ascending = false;
@@ -88,9 +88,6 @@ void UCharacterHealthComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 void	UCharacterHealthComponent::OnCapsuleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	if (bIsDead)
-		return;
-
 	UIdentityEraserComponent* identityEraser = Cast<UIdentityEraserComponent>(OtherComp);
 	if (identityEraser)
 		eraseZoneCount++;
@@ -114,9 +111,6 @@ void	UCharacterHealthComponent::OnCapsuleOverlap(UPrimitiveComponent* Overlapped
 
 void	UCharacterHealthComponent::OnCapsuleEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (bIsDead)
-		return;
-
 	UIdentityEraserComponent* identityEraser = Cast<UIdentityEraserComponent>(OtherComp);
 	if (identityEraser)
 		eraseZoneCount--;
@@ -181,7 +175,7 @@ void	UCharacterHealthComponent::takeFireDamage()
 {
 	if (currentCondition == ECharacterCondition::None)
 	{
-		if (mainCharacter)
+		if (mainCharacter && !bIsGod)
 			mainCharacter->OnDamage();
 		currentCondition = ECharacterCondition::Scalding;
 		onConditionChanged.Broadcast(ECharacterCondition::None, ECharacterCondition::Scalding);
@@ -191,7 +185,7 @@ void	UCharacterHealthComponent::takeFireDamage()
 		currentCondition = ECharacterCondition::Burning;
 		onConditionChanged.Broadcast(ECharacterCondition::Scalding, ECharacterCondition::Burning);
 	}
-	else if (currentCondition == ECharacterCondition::Burning)
+	else if (currentCondition == ECharacterCondition::Burning && !bIsGod)
 	{
 		Die();
 	}
@@ -227,19 +221,5 @@ void	UCharacterHealthComponent::Die(FVector impact, FVector impactLocation, FNam
 {
 	if (!mainCharacter)
 		return;
-	mainCharacter->BlockCharacter();
-	mainCharacter->Die();
-	USkeletalMeshComponent*	skeletal = mainCharacter->GetMesh();
-	if (!skeletal)
-		return;
-	skeletal->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	skeletal->SetSimulatePhysics(true);
-	skeletal->WakeAllRigidBodies();
-	if (boneName != NAME_None)
-		skeletal->AddImpulse(impact, boneName);
-	else
-	{
-		skeletal->AddImpulseAtLocation(impact, impactLocation);
-	}
-	bIsDead = true;
+	mainCharacter->Die(impact, impactLocation, boneName);
 }

@@ -55,10 +55,11 @@ public:
 	bool	Climb();
 
 	void	OnDamage();
-	void	Die() { OnDie.Broadcast(); }
+	void	Die(FVector impact = FVector::ZeroVector, FVector impactLoc = FVector::ZeroVector, FName boneName = NAME_None);
 
 	void	SetWalkMode();
 	void	SetJogMode();
+	void	SetGodMode(bool value);
 
 	void	SetRotatingLeft(bool const value) { rotatingLeft = value; }
 	void	SetRotatingRight(bool const value) { rotatingRight = value; }
@@ -79,6 +80,8 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool	CanThrow() const;
 	bool	IsInAir() const;
+	UFUNCTION(BlueprintPure)
+	bool	isDead() const { return bIsDead; }
 	float	GetCameraStickAngleDifference() const;
 
 public:
@@ -111,6 +114,7 @@ private:
 	UBoxClimbComponent*			validClimbableBox = nullptr;
 	float						validateRunClimbCurrentTime = 0.0f;
 	bool						canClimb = false;
+	bool						bIsDead = false;
 
 	bool						rotatingLeft = false;
 	bool						rotatingRight = false;
