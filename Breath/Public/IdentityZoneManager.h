@@ -14,15 +14,35 @@ UCLASS()
 class BREATH_API AIdentityZoneManager : public AActor
 {
 	GENERATED_BODY()
-	
+
 public:	
+	struct FErasedObjectProperties
+	{
+		TWeakObjectPtr<UPrimitiveComponent>		primitiveComponent = nullptr;
+		TWeakObjectPtr<UChemicalComponent>		chemicalComponent = nullptr;
+		TWeakObjectPtr<UInteractableComponent>	interactableComponent = nullptr;
+		FVector								initialVelocity;
+		EChemicalState						previousChemicalState;
+		float								currentDecelerationTime = 0.0f;
+		float								maxDeceleratingTime = 0.1f;
+		bool								bWasSimulatingPhysics = false;
+		bool								bDecelerating = false;
+		int8								memoryZoneNbr = 0;
+		int8								erasedZoneNbr = 0;
+	};
+
 	// Sets default values for this actor's properties
 	AIdentityZoneManager();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	int		AddErasedZone(UIdentityEraserComponent* value) { return erasedZones.Add(value); }
 	void	RemoveZone(int idx);
+	void	RemoveAffectedObject(int id) { affectedObjects.RemoveAt(id); }
 
+	FErasedObjectProperties&	createNewProperties(UPrimitiveComponent* primitiveComponent, float decelerationTime = 0.0f);
+	FErasedObjectProperties*	containsErasedObjectProperties(UPrimitiveComponent* reference, bool& foundSomething, int& outID);
+	void						updateObjectProperties(FErasedObjectProperties& properties);
+	void						updateObjectProperties(FErasedObjectProperties& properties, float decelerationTime);
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader")
 	UMaterialInterface*	materialInterface = nullptr;
@@ -32,6 +52,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	TArray<FErasedObjectProperties>			affectedObjects;
 	TSparseArray<UIdentityEraserComponent*>	erasedZones;
 	UMaterialInstanceDynamic*				whiteZoneMaterial = nullptr;
 };

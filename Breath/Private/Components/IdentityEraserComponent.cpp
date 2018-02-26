@@ -6,42 +6,37 @@
 #include "ChemicalComponent.h"
 #include "InteractableComponent.h"
 #include "IdentityZoneManager.h"
-#include "EngineUtils.h"
 
 void	UIdentityEraserComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (TActorIterator<AIdentityZoneManager> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-	{
-		identityZoneManager = (*ActorItr);
-		erasedIndex = identityZoneManager->AddErasedZone(this);
-		break;
-	}
+	if (manager)
+		erasedIndex = manager->AddErasedZone(this);
 }
 
 void	UIdentityEraserComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
-	if (identityZoneManager)
-		identityZoneManager->RemoveZone(erasedIndex);
+	if (manager)
+		manager->RemoveZone(erasedIndex);
 }
 
 void	UIdentityEraserComponent::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
 	bool isPropertyExisting = false;
 	int id = 0;
-	FErasedObjectProperties* outProperty = containsErasedObjectProperties(OtherComp, isPropertyExisting, id);
+	AIdentityZoneManager::FErasedObjectProperties* outProperty = manager->containsErasedObjectProperties(OtherComp, isPropertyExisting, id);
 	if (isPropertyExisting)
 	{
 		if (outProperty->erasedZoneNbr == 0)
-			updateObjectProperties(*outProperty, DecelerationTime);
+			manager->updateObjectProperties(*outProperty, DecelerationTime);
 		outProperty->erasedZoneNbr++;
 	}
 	else
 	{
 		if (Cast<ACharacter>(OtherActor))
 			return;
-		FErasedObjectProperties&	properties = createNewProperties(OtherComp, DecelerationTime);
+		AIdentityZoneManager::FErasedObjectProperties&	properties = manager->createNewProperties(OtherComp, DecelerationTime);
 		properties.erasedZoneNbr = 1;
 	}
 }
@@ -50,7 +45,7 @@ void	UIdentityEraserComponent::OnEndOverlap(UPrimitiveComponent* OverlappedCompo
 {
 	bool isPropertyExisting = false;
 	int id = 0;
-	FErasedObjectProperties* outProperty = containsErasedObjectProperties(OtherComp, isPropertyExisting, id);
+	AIdentityZoneManager::FErasedObjectProperties* outProperty = manager->containsErasedObjectProperties(OtherComp, isPropertyExisting, id);
 	if (isPropertyExisting)
 	{
 		if (outProperty->memoryZoneNbr != 0)
@@ -63,7 +58,7 @@ void	UIdentityEraserComponent::OnEndOverlap(UPrimitiveComponent* OverlappedCompo
 				outProperty->chemicalComponent->GiveIdentity(outProperty->previousChemicalState);
 			if (outProperty->interactableComponent.IsValid())
 				outProperty->interactableComponent->GiveIdentity();
-			affectedObjects.RemoveAt(id);
+			manager->RemoveAffectedObject(id);
 		}
 		else
 			outProperty->erasedZoneNbr--;

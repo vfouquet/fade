@@ -5,6 +5,7 @@
 #include "Components/PostProcessComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "IdentityEraserComponent.h"
+#include "MemoryZoneComponent.h"
 
 // Sets default values
 AIdentityZoneManager::AIdentityZoneManager()
@@ -33,6 +34,27 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	affectedObjects.RemoveAll([](const FErasedObjectProperties& p1) { return p1.primitiveComponent.IsStale(); });
+	for (auto& erasedObject : affectedObjects)
+	{
+		if (erasedObject.interactableComponent.IsValid() && erasedObject.interactableComponent->MemoryInteractable)
+			continue;
+		if (!erasedObject.bDecelerating)
+			continue;
+		erasedObject.currentDecelerationTime += DeltaTime;
+		if (erasedObject.currentDecelerationTime >= erasedObject.maxDeceleratingTime)
+		{
+			erasedObject.bDecelerating = false;
+			erasedObject.primitiveComponent->ComponentVelocity = FVector::ZeroVector;
+			erasedObject.primitiveComponent->SetSimulatePhysics(false);
+			if (erasedObject.interactableComponent.IsValid())
+				erasedObject.interactableComponent->EraseIdentity();
+		}
+		else
+			erasedObject.primitiveComponent->SetPhysicsLinearVelocity(FMath::Lerp(erasedObject.initialVelocity, FVector::ZeroVector,
+				erasedObject.currentDecelerationTime / erasedObject.maxDeceleratingTime));
+	}
+
 	if (!whiteZoneMaterial)
 		return;
 
@@ -56,5 +78,115 @@ void	AIdentityZoneManager::RemoveZone(int value)
 			whiteZoneMaterial->SetScalarParameterValue(FName(*("Scale_" + indexStr)), 0.0f);
 		}
 		erasedZones.RemoveAt(value, 1);
+	}
+}
+
+AIdentityZoneManager::FErasedObjectProperties&	AIdentityZoneManager::createNewProperties(UPrimitiveComponent* primitiveComponent, float decelerationTime)
+{
+	FErasedObjectProperties	properties;
+	properties.primitiveComponent = primitiveComponent;
+
+	UInteractableComponent* interactableComp = UInteractableComponent::FindAssociatedInteractableComponent(primitiveComponent);
+	if (interactableComp)
+	{
+		properties.interactableComponent = interactableComp;
+		if (interactableComp->MemoryInteractable)
+		{
+			int32 idx = affectedObjects.Add(properties);
+			return affectedObjects[idx];
+		}
+	}
+
+	properties.bWasSimulatingPhysics = primitiveComponent->IsSimulatingPhysics();
+	if (properties.bWasSimulatingPhysics)
+	{
+		properties.initialVelocity = primitiveComponent->GetComponentVelocity();
+		properties.bDecelerating = true;
+		properties.maxDeceleratingTime = decelerationTime;
+	}
+
+	UChemicalComponent*	chemicalComp = UChemicalComponent::FindAssociatedChemicalComponent(primitiveComponent);
+	if (chemicalComp)
+	{
+		properties.previousChemicalState = chemicalComp->GetState();
+		chemicalComp->EraseIdentity();
+		properties.chemicalComponent = chemicalComp;
+	}
+
+	int32 idx = affectedObjects.Add(properties);
+	return affectedObjects[idx];
+}
+
+AIdentityZoneManager::FErasedObjectProperties*	AIdentityZoneManager::containsErasedObjectProperties(UPrimitiveComponent* reference, bool& foundSomething, int& outID)
+{
+	for (int pos = 0; pos < affectedObjects.Num(); pos++)
+	{
+		if (affectedObjects[pos].primitiveComponent == reference)
+		{
+			foundSomething = true;
+			outID = pos;
+			return &affectedObjects[pos];
+		}
+	}
+	foundSomething = false;
+	return nullptr;
+}
+
+void	AIdentityZoneManager::updateObjectProperties(AIdentityZoneManager::FErasedObjectProperties& properties)
+{
+	if (properties.interactableComponent.IsValid())
+	{
+		if (properties.interactableComponent->MemoryInteractable)
+			return;
+		properties.interactableComponent->EraseIdentity();
+	}
+
+	properties.bWasSimulatingPhysics = properties.primitiveComponent->IsSimulatingPhysics();
+	if (properties.bWasSimulatingPhysics)
+	{
+		properties.initialVelocity = properties.primitiveComponent->GetComponentVelocity();
+		properties.bDecelerating = true;
+
+		TArray<UPrimitiveComponent*>	actorComponents;
+		properties.primitiveComponent->GetOverlappingComponents(actorComponents);
+		float	maxTime = FLT_MAX;
+		for (auto& primitiveComp : actorComponents)
+		{
+			UIdentityEraserComponent* eraserZone = Cast<UIdentityEraserComponent>(primitiveComp);
+			if (eraserZone && eraserZone->DecelerationTime <= maxTime)
+				maxTime = eraserZone->DecelerationTime;
+		}
+		if (maxTime != FLT_MAX)
+			properties.maxDeceleratingTime = maxTime;
+	}
+
+	if (properties.chemicalComponent.IsValid())
+	{
+		properties.previousChemicalState = properties.chemicalComponent->GetState();
+		properties.chemicalComponent->EraseIdentity();
+	}
+}
+
+void	AIdentityZoneManager::updateObjectProperties(AIdentityZoneManager::FErasedObjectProperties& properties, float decelerationTime)
+{
+	if (properties.interactableComponent.IsValid())
+	{
+		if (properties.interactableComponent->MemoryInteractable)
+			return;
+		properties.interactableComponent->EraseIdentity();
+	}
+
+	properties.bWasSimulatingPhysics = properties.primitiveComponent->IsSimulatingPhysics();
+	if (properties.bWasSimulatingPhysics)
+	{
+		properties.initialVelocity = properties.primitiveComponent->GetComponentVelocity();
+		properties.bDecelerating = true;
+		properties.maxDeceleratingTime = decelerationTime;
+	}
+
+	if (properties.chemicalComponent.IsValid())
+	{
+		properties.previousChemicalState = properties.chemicalComponent->GetState();
+		properties.chemicalComponent->EraseIdentity();
 	}
 }

@@ -6,8 +6,6 @@
 #include "IdentityZoneComponent.h"
 #include "IdentityEraserComponent.generated.h"
 
-class AIdentityZoneManager;
-
 UCLASS(meta=(DisplayName = "IdentityEraser", BlueprintSpawnableComponent) )
 class BREATH_API UIdentityEraserComponent : public UIdentityZoneComponent
 {
@@ -29,6 +27,5 @@ public:
 		int	GetIndex() const { return erasedIndex; }
 
 private:
-	AIdentityZoneManager*	identityZoneManager = nullptr;
 	int	erasedIndex = 0;
 };
