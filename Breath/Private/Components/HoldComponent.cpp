@@ -57,21 +57,6 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	detectInteractableAround();
 
-	/*
-	if (holdingObject.IsStale())
-	{
-		holdingStateChangedDelegate.Broadcast(currentHoldingState, EHoldingState::None);
-		holdingObject.Reset();
-
-		if (mainCharacter)
-		{
-			mainCharacter->UnblockCharacter();
-			mainCharacter->DisableMovingHeavyObjectMode();
-			mainCharacter->SetThrowingObject(false);
-			mainCharacter->SetHoldingObject(false);
-		}
-	}
-	*/
 	if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
 		if (!holdingObject.IsValid())
@@ -81,6 +66,8 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		}
 
 		handleComponent->SetTargetLocation(handleTargetLocation->GetComponentLocation());
+		
+		//CHECK HOLDING OBJECT DISTANCE - RELEASE IF TOO FAR
 		FVector dist = handleTargetLocation->GetComponentLocation() - holdingPrimitiveComponent->GetComponentLocation();
 		
 		if (releaseCurrentTime < ReleaseTimeTolerence)
@@ -90,6 +77,7 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 			if (dist.Size() >= ReleaseDistanceThreshold)
 				StopGrab();
 		}
+		//
 	}
 	else if (currentHoldingState == EHoldingState::Throwing)
 		handleComponent->SetTargetLocation(handleTargetLocation->GetComponentLocation());
@@ -142,10 +130,10 @@ void	UHoldComponent::Grab()
 			holdingObject->Unstick();
 
 		holdingPrimitiveComponent = holdingObject->GetAssociatedComponent();
-		holdingPrimitiveComponent->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());
+		holdingPrimitiveComponent->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());	//RESET ROTATION
 		handleComponent->GrabComponentAtLocationWithRotation
 			(holdingPrimitiveComponent, "", holdingPrimitiveComponent->GetComponentLocation(), FRotator::ZeroRotator);
-		holdingPrimitiveComponent->SetCollisionProfileName("OverlapAllDynamic");
+		holdingPrimitiveComponent->SetCollisionProfileName("OverlapAllDynamic");	//DISABLE OBJECT COLLISION
 
 		mainCharacter->SetHoldingObject(true);
 	}
@@ -169,9 +157,10 @@ void	UHoldComponent::Grab()
 		FVector	holdPrimExtent = holdingPrimitiveComponent->Bounds.BoxExtent;
 		holdPrimExtent.Z = 0.0f;
 		FVector	holdingPoint = holdingPrimitiveComponent->GetComponentLocation() + (holdPrimExtent + HoldSnapOffset) * hitRes.Normal;
-		holdingPrimitiveComponent->SetWorldLocation(holdingPrimitiveComponent->GetComponentLocation() + FVector::UpVector * 10.0f);
+		
+		holdingPrimitiveComponent->SetWorldLocation(holdingPrimitiveComponent->GetComponentLocation() + FVector::UpVector * 10.0f); //ADD SOME Z POSITION TO AVOID GROUND CONTACT (TEMP)
 
-		character->SetActorLocationAndRotation(holdingPoint, newRot, true);
+		character->SetActorLocationAndRotation(holdingPoint, newRot, true);	//SNAP CHARACTER WITH A FACING ROTATION
 
 		mainCharacter->EnableMovingHeavyObjectMode();	
 		createHandConstraint();
@@ -311,13 +300,13 @@ void	UHoldComponent::createHandConstraint()
 	FVector	center;
 	FVector leftSphereLocation;
 	FVector rightSphereLocation;
-	getPushingPoints(center, leftSphereLocation, rightSphereLocation);
+	getPushingPoints(center, leftSphereLocation, rightSphereLocation);	//GET COLSEST POINT ON ACTOR CLOSE TO CHARACTER HANDS
 
 	FVector leftHand = leftHandConstraint->GetComponentLocation();
 	FVector rightHand = rightHandConstraint->GetComponentLocation();
 	leftHand.Z = leftSphereLocation.Z;
 	rightHand.Z = rightSphereLocation.Z;
-	leftHandConstraint->SetWorldLocation(leftHand);
+	leftHandConstraint->SetWorldLocation(leftHand);	//SET CONSTRAINTS TO SAME Z POSITION AS CHARACTER HANDS
 	rightHandConstraint->SetWorldLocation(rightHand);
 
 	//leftHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingObject->CreateLeftConstraintPoint(leftSphereLocation), "None");

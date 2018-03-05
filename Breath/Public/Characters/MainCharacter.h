@@ -102,7 +102,7 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent*				SpringArmComponent;
 	UPlayerCameraComponent*				CameraComponent;
-	UHoldComponent*						holdComponent = nullptr;
+	UHoldComponent*						holdComponent = nullptr;  //REMOVE THIS WITH PUSH/PULL TEMP CALL
 	UMainCharacterMovementComponent*	mainCharacterMovement = nullptr;
 
 	bool						bCustomSpeedEnabled = false;
@@ -116,6 +116,7 @@ private:
 	bool						canClimb = false;
 	bool						bIsDead = false;
 
+	//PUSH/PULL INPUT FROM CONTROLLER
 	bool						rotatingLeft = false;
 	bool						rotatingRight = false;
 	float						pushingAxis = 0.0f;

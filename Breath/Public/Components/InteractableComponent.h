@@ -45,9 +45,6 @@ public:
 	void	OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit );
 
 	UPhysicsConstraintComponent*	AddStickConstraint(UInteractableComponent* hook, UPrimitiveComponent* stickedObject, FName stickedBoneName);
-	//UPrimitiveComponent*			CreateLeftConstraintPoint(FVector location);
-	//UPrimitiveComponent*			CreateRightConstraintPoint(FVector location);
-	//void							ReleaseLeftRightConstraintPoint();
 	
 	void							Unstick();
 	void							RemoveHookingConstraint(UInteractableComponent* hookToRemove);
@@ -66,7 +63,8 @@ public:
 	UPrimitiveComponent* GetAssociatedComponent() const { return associatedComponent; }
 
 	bool	IsGrabable() const { return CanBeGrabbed && !identityErased && associatedComponent; }
-	
+
+	//ALL THIS SHIT ARE SECURITY TEST FOR TEMPORARY PUSH/PULL
 	UFUNCTION(BlueprintCallable)
 	bool	CanRotateLeft(FVector characterForward);
 	UFUNCTION(BlueprintCallable)
@@ -81,6 +79,9 @@ public:
 	bool	GetDebugRight();
 	UFUNCTION(BlueprintCallable)
 	bool	GetDebugBack();
+	
+	FVector							tempExtent; //NON UPDATED EXTENT (CORRECT IF ROTATION IS 0,0,0 AT BEGIN PLAY)
+	//
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
@@ -94,29 +95,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	MemoryInteractable = false;
 
-	/*
-	UPROPERTY(VisibleAnywhere, Category = "Shitty Stuff")
-	UPhysicsConstraintComponent*	leftConstraint = nullptr;
-	UPROPERTY(VisibleAnywhere, Category = "Shitty Stuff")
-	UPhysicsConstraintComponent*	rightConstraint = nullptr;
-	*/
 	UPROPERTY(EditAnywhere, Category = "Interactions Settings")
 	FComponentReference	Grab;
-
-protected:
-	/*
-	UPROPERTY(VisibleAnywhere)
-	USphereComponent*				leftConstraintPoint = nullptr;
-	UPROPERTY(VisibleAnywhere)
-	USphereComponent*				rightConstraintPoint = nullptr;
-	*/
 
 private:
 	TArray<FStickConstraint>		stickingConstraints;
 	UPrimitiveComponent*			associatedComponent = nullptr;
 	UHoldComponent*					holder = nullptr;
 
-	FVector							tempExtent;
 	bool							thrown = false;
 	bool							isSticked = false;
 	bool							identityErased = false;

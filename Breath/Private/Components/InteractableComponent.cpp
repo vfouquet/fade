@@ -31,52 +31,6 @@ void UInteractableComponent::BeginPlay()
 
 		tempExtent = associatedComponent->Bounds.BoxExtent;
 	}
-
-	// ...
-	/*
-	leftConstraintPoint = NewObject<USphereComponent>(this, TEXT("LeftConstraintPoint"));
-	rightConstraintPoint = NewObject<USphereComponent>(this, TEXT("RightConstraintPoint"));
-	leftConstraintPoint->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
-	rightConstraintPoint->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
-	leftConstraintPoint->SetActive(false);
-	rightConstraintPoint->SetActive(false);
-	leftConstraintPoint->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	rightConstraintPoint->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	leftConstraintPoint->SetSphereRadius(10.0f, true);
-	rightConstraintPoint->SetSphereRadius(10.0f, true);
-	leftConstraintPoint->SetSimulatePhysics(true);
-	rightConstraintPoint->SetSimulatePhysics(true);
-
-	leftConstraint = NewObject<UPhysicsConstraintComponent>(this, TEXT("LeftConstraint"));
-	rightConstraint = NewObject<UPhysicsConstraintComponent>(this, TEXT("RightConstraint"));
-	leftConstraint->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
-	rightConstraint->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
-	leftConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	leftConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	leftConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	rightConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	rightConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	rightConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	leftConstraint->SetActive(false);
-	rightConstraint->SetActive(false);
-
-	
-	UPrimitiveComponent*	primitiveComp = GetOwner()->FindComponentByClass<UPrimitiveComponent>();
-	float halfMass = primitiveComp->GetMass() * 0.5f;
-
-	FVector dist = primitiveComp->GetComponentLocation() - leftConstraintPoint->GetComponentLocation();
-	FVector dist2 = primitiveComp->GetComponentLocation() - rightConstraintPoint->GetComponentLocation();
-	
-	leftConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Limited, dist.Size());
-	leftConstraint->SetLinearYLimit(ELinearConstraintMotion::LCM_Limited, dist.Size());
-	leftConstraint->SetLinearZLimit(ELinearConstraintMotion::LCM_Limited, dist.Size());
-	rightConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Limited, dist2.Size());
-	rightConstraint->SetLinearYLimit(ELinearConstraintMotion::LCM_Limited, dist2.Size());
-	rightConstraint->SetLinearZLimit(ELinearConstraintMotion::LCM_Limited, dist2.Size());
-	
-	leftConstraintPoint->SetMassOverrideInKg("None", halfMass, true);
-	rightConstraintPoint->SetMassOverrideInKg("None", halfMass, true);
-	*/
 }
 
 
@@ -289,55 +243,6 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInterac
 
 	return stickConstraint;
 }
-
-/*
-UPrimitiveComponent*	UInteractableComponent::CreateLeftConstraintPoint(FVector location)
-{
-	UPrimitiveComponent*	primitiveComp = GetOwner()->FindComponentByClass<UPrimitiveComponent>();
-	leftConstraintPoint->SetWorldLocation(location);
-	leftConstraintPoint->SetActive(true);
-	leftConstraint->SetWorldLocation(location);
-	leftConstraint->SetConstrainedComponents(primitiveComp, "None", leftConstraintPoint, "None");
-	leftConstraint->SetActive(true);
-
-	return leftConstraintPoint;
-}
-
-UPrimitiveComponent*	UInteractableComponent::CreateRightConstraintPoint(FVector location)
-{
-	UPrimitiveComponent*	primitiveComp = GetOwner()->FindComponentByClass<UPrimitiveComponent>();
-	rightConstraintPoint->SetWorldLocation(location);
-	rightConstraintPoint->SetActive(true);
-	rightConstraint->SetWorldLocation(location);
-	rightConstraint->SetConstrainedComponents(primitiveComp, "None", rightConstraintPoint, "None");
-	rightConstraint->SetActive(true);
-
-	return rightConstraintPoint;
-}
-
-void	UInteractableComponent::ReleaseLeftRightConstraintPoint()
-{
-	leftConstraint->BreakConstraint();
-	leftConstraintPoint->SetActive(false);
-	leftConstraint->SetActive(false);
-	rightConstraint->BreakConstraint();
-	rightConstraintPoint->SetActive(false);
-	rightConstraint->SetActive(false);
-*/
-	/*
-	if (leftConstraintPoint)
-	{
-		leftConstraintPoint->DestroyComponent();
-		leftConstraintPoint = nullptr;
-	}
-	if (rightConstraintPoint)
-	{
-		rightConstraintPoint->DestroyComponent();
-		rightConstraintPoint = nullptr;
-	}
-	*/
-//}
-
 
 void	UInteractableComponent::Unstick()
 {

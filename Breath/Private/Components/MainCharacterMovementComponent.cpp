@@ -70,6 +70,7 @@ void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(bool direction, f
 	float angle = RotationSpeed * GetWorld()->GetDeltaSeconds() * massMult;
 	angle *= direction ? -1.0f : 1.0f;
 	//MAYBE USE OBJECT WEIGHT
+	//TO DO REPLACE THIS OLD WAY OF ROTATING OBJECT
 	FRotator	rotation = FQuat(FVector::UpVector, FMath::DegreesToRadians(angle)).Rotator();
 	FVector		holdingToCharac = GetActorLocation() - holdingObjectLocation;
 	FVector		holdingToNewLoc = rotation.RotateVector(holdingToCharac);

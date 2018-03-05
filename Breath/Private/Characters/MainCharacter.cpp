@@ -79,6 +79,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	}
 	else if (bMovingHeavyObject)
 	{
+		//ADDITIONAL SECURITY TEST FOR PUSH/PULL SHOULD BE REMOVED
 		if (holdComponent)
 		{
 			if (rotatingLeft && holdComponent->CanRotateLeft(GetActorForwardVector()))
@@ -297,7 +298,7 @@ bool	AMainCharacter::Climb()
 	if (!canClimb)
 		return false;
 
-	//BEGIN SNAP + BLOCK INPUT
+	//TO DO  BEGIN SNAP + BLOCK INPUT
 	UCapsuleComponent*	characterCapsule = FindComponentByClass<UCapsuleComponent>();
 	if (!characterCapsule)
 		return false;
