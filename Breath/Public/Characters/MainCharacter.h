@@ -50,9 +50,13 @@ public:
 	void	BeginGrab();
 	void	StopGrab();
 	void	Throw();
+	UFUNCTION(BlueprintCallable)
+	void	EndThrow();
 	void	Stick();
 	void	Jump() override;
 	bool	Climb();
+	UFUNCTION(BlueprintCallable)
+	void	EndClimb();
 
 	void	OnDamage();
 	void	Die(FVector impact = FVector::ZeroVector, FVector impactLoc = FVector::ZeroVector, FName boneName = NAME_None);
@@ -82,21 +86,22 @@ public:
 	bool	IsInAir() const;
 	UFUNCTION(BlueprintPure)
 	bool	isDead() const { return bIsDead; }
-	float	GetCameraStickAngleDifference() const;
 
 public:
+	UPROPERTY(EditAnywhere, Category = "Climb")
+	UAnimMontage*	ClimbMontage = nullptr;
 	UPROPERTY(EditAnywhere, Category = "Climb")
 		TArray<FComponentReference>	climbBoxesReferences;
 	/*Time to validate climb by walking**/
 	UPROPERTY(EditAnywhere, Category = "Climb")
-		float	RunClimbValue = 1.0f;
+	float	ClimbAngleTolerence = 45.0f;
 	UPROPERTY(BlueprintAssignable)
 	FDeathDelegate	OnDie;
 private:
 	UFUNCTION()
 	void	computeClimbableBoxes();
-	UFUNCTION(BlueprintPure)
-	bool	isClimbAngleCorrect() const;
+	UFUNCTION()
+	void	endCharacterClimbSnap();
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -105,6 +110,9 @@ private:
 	UHoldComponent*						holdComponent = nullptr;  //REMOVE THIS WITH PUSH/PULL TEMP CALL
 	UMainCharacterMovementComponent*	mainCharacterMovement = nullptr;
 
+	FTimerHandle		climbSnapTimerHandle;
+	FVector				centerSpineBoneOffset;
+
 	bool						bCustomSpeedEnabled = false;
 	bool						bBlocked = false;
 	bool						bMovingHeavyObject = false;
@@ -112,7 +120,6 @@ private:
 	bool						bHoldingObject = false;
 	TArray<UBoxClimbComponent*>	climbBoxes;
 	UBoxClimbComponent*			validClimbableBox = nullptr;
-	float						validateRunClimbCurrentTime = 0.0f;
 	bool						canClimb = false;
 	bool						bIsDead = false;
 

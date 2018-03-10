@@ -12,7 +12,9 @@
 #include "Camera/CameraActor.h"
 #include "BoxClimbComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-
+#include "Animation/AnimInstance.h"
+#include "TimerManager.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer)
@@ -44,6 +46,12 @@ void AMainCharacter::BeginPlay()
 			tempBox->boxClimbOverlap.Add(beginOverlapDel);
 			tempBox->boxClimbEndOverlap.Add(beginOverlapDel);
 		}
+	}
+
+	if (auto* mesh = GetMesh())
+	{
+		FVector boneLoc = mesh->GetBoneLocation("Maori_Hip_JNT");
+		centerSpineBoneOffset = GetActorLocation() - boneLoc;
 	}
 
 #if WITH_EDITOR
@@ -95,20 +103,6 @@ void AMainCharacter::Tick(float DeltaTime)
 			}
 		}
 	}
-	else if (canClimb && !bHoldingObject)
-	{
-		FVector vel = GetCharacterMovement()->Velocity;
-		//isClimbAngleCorrect();
-		if (vel.Size() > 0.0f)
-			validateRunClimbCurrentTime += DeltaTime;
-		else
-			validateRunClimbCurrentTime = 0.0f;
-	}
-	else
-		validateRunClimbCurrentTime = 0.0f;
-
-	if (validateRunClimbCurrentTime >= RunClimbValue)
-		Climb();
 }
 
 // Called to bind functionality to input
@@ -164,6 +158,10 @@ void	AMainCharacter::Throw()
 	if (!holdComponent)
 		return;
 	holdComponent->Throw();
+}
+
+void	AMainCharacter::EndThrow()
+{
 }
 
 void	AMainCharacter::Stick()
@@ -272,24 +270,6 @@ void	AMainCharacter::computeClimbableBoxes()
 	}
 	if (validClimbableBox && validClimbableBox->CheckSpaceOver())
 		canClimb = true;
-	else
-		validateRunClimbCurrentTime = 0.0f;
-}
-
-bool	AMainCharacter::isClimbAngleCorrect() const
-{
-	if (!validClimbableBox)
-		return false;
-	FHitResult	result;
-	FCollisionQueryParams	queryParams;
-	queryParams.AddIgnoredActor(GetOwner());
-	if (!GetWorld()->LineTraceSingleByChannel(result, GetOwner()->GetActorLocation(), GetOwner()->GetActorForwardVector() * 100.0f, ECollisionChannel::ECC_WorldDynamic, queryParams))
-		return false;
-	FVector	character = GetOwner()->GetActorForwardVector() * -1.0f;
-	character.Normalize();
-	float test = FMath::RadiansToDegrees(FVector::DotProduct(character, result.Normal));
-	UE_LOG(LogTemp, Warning, TEXT("Diff : %f"), test);
-	return true;
 }
 
 bool	AMainCharacter::Climb()
@@ -298,11 +278,54 @@ bool	AMainCharacter::Climb()
 	if (!canClimb)
 		return false;
 
-	//TO DO  BEGIN SNAP + BLOCK INPUT
+	FHitResult	result;
+	FVector	startTrace = GetActorLocation();
+	startTrace.Z = validClimbableBox->GetComponentLocation().Z;
+	FVector	endTrace = startTrace + GetActorForwardVector() * 70.0f;
+
+	FCollisionQueryParams	params;
+	params.AddIgnoredActor(this);
+	bool res = GetWorld()->LineTraceSingleByChannel(result, startTrace, endTrace, ECollisionChannel::ECC_Visibility, params);
+	if (res)
+	{
+		float angle = FMath::RadiansToDegrees(FMath::Acos(GetActorForwardVector() | (result.Normal * -1.0f)));
+		if (angle > ClimbAngleTolerence)
+			return false;
+
+		FVector	newLoc = result.Location + result.Normal * 50.0f;
+		newLoc.Z = GetActorLocation().Z;
+
+		FLatentActionInfo	latentInfo;
+		latentInfo.CallbackTarget = this;
+		float interpTime =  (newLoc - GetActorLocation()).Size() / 100.0f;
+		UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), newLoc, (result.Normal * -1.0f).Rotation(), true, true, interpTime, true, EMoveComponentAction::Type::Move, latentInfo);
+		FTimerDelegate	del;
+		del.BindUFunction(this, "endCharacterClimbSnap");
+		GetWorldTimerManager().SetTimer(climbSnapTimerHandle, del, interpTime, false);
+		BlockCharacter();
+	}
+	return true;
+}
+	
+void	AMainCharacter::endCharacterClimbSnap()
+{
+	PlayAnimMontage(ClimbMontage);
+}
+
+void	AMainCharacter::EndClimb()
+{
+	UnblockCharacter();
+	/*
+	if (auto* mesh = GetMesh())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *centerSpineBoneOffset.ToString());
+		FVector tempLoc = mesh->GetBoneLocation("Maori_Hip_JNT");
+		SetActorLocation(tempLoc + centerSpineBoneOffset);
+	}
+	*/
 	UCapsuleComponent*	characterCapsule = FindComponentByClass<UCapsuleComponent>();
 	if (!characterCapsule)
-		return false;
+		return;
 	SetActorLocation(validClimbableBox->GetClimbedLocation() + FVector::UpVector * (characterCapsule->GetScaledCapsuleHalfHeight() + 10.0f),
 		false, nullptr, ETeleportType::TeleportPhysics);
-	return true;
 }
