@@ -69,6 +69,8 @@ public:
 	void	SetRotatingRight(bool const value) { rotatingRight = value; }
 	void	SetPushingAxis(float const& value) { pushingAxis = value; }	
 	UFUNCTION(BlueprintCallable)
+	void	SetHeadRotation(FRotator value);
+	UFUNCTION(BlueprintCallable)
 	void	SetCustomSpeed(bool customSpeed, float newSpeed = 0.0f);
 	UFUNCTION(BlueprintCallable)
 	void	UnsetCustomSpeed();
@@ -86,12 +88,17 @@ public:
 	bool	IsInAir() const;
 	UFUNCTION(BlueprintPure)
 	bool	isDead() const { return bIsDead; }
+	UFUNCTION(BlueprintPure)
+	FRotator const GetHeadRotation() const { return headRotation; }
 
 public:
+	/*Roll isn't used*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Head")
+	FRotator	MaxHeadRotationRange;
 	UPROPERTY(EditAnywhere, Category = "Climb")
 	UAnimMontage*	ClimbMontage = nullptr;
 	UPROPERTY(EditAnywhere, Category = "Climb")
-		TArray<FComponentReference>	climbBoxesReferences;
+	TArray<FComponentReference>	climbBoxesReferences;
 	/*Time to validate climb by walking**/
 	UPROPERTY(EditAnywhere, Category = "Climb")
 	float	ClimbAngleTolerence = 45.0f;
@@ -109,6 +116,8 @@ private:
 	UPlayerCameraComponent*				CameraComponent;
 	UHoldComponent*						holdComponent = nullptr;  //REMOVE THIS WITH PUSH/PULL TEMP CALL
 	UMainCharacterMovementComponent*	mainCharacterMovement = nullptr;
+
+	FRotator	headRotation;
 
 	FTimerHandle		climbSnapTimerHandle;
 	FVector				centerSpineBoneOffset;

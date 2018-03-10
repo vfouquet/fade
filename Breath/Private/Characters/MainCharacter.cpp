@@ -230,6 +230,12 @@ void	AMainCharacter::SetCustomSpeed(bool customSpeed, float newSpeed)
 	bCustomSpeedEnabled = true;
 	mainCharacterMovement->MaxWalkSpeed = customSpeed? newSpeed : mainCharacterMovement->WalkSpeed;
 }
+	
+void	AMainCharacter::SetHeadRotation(FRotator value)
+{
+	headRotation.Pitch = FMath::Clamp(value.Pitch, -MaxHeadRotationRange.Pitch, MaxHeadRotationRange.Pitch);
+	headRotation.Yaw = FMath::Clamp(value.Yaw, -MaxHeadRotationRange.Yaw, MaxHeadRotationRange.Yaw);
+}
 
 void	AMainCharacter::UnsetCustomSpeed()
 {
