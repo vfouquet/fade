@@ -71,6 +71,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	SetHeadRotation(FRotator value);
 	UFUNCTION(BlueprintCallable)
+	void	HeadLookAt(FVector lookAtLocation);
+	UFUNCTION(BlueprintCallable)
 	void	SetCustomSpeed(bool customSpeed, float newSpeed = 0.0f);
 	UFUNCTION(BlueprintCallable)
 	void	UnsetCustomSpeed();

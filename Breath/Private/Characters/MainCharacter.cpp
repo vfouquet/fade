@@ -236,6 +236,17 @@ void	AMainCharacter::SetHeadRotation(FRotator value)
 	headRotation.Pitch = FMath::Clamp(value.Pitch, -MaxHeadRotationRange.Pitch, MaxHeadRotationRange.Pitch);
 	headRotation.Yaw = FMath::Clamp(value.Yaw, -MaxHeadRotationRange.Yaw, MaxHeadRotationRange.Yaw);
 }
+	
+void	AMainCharacter::HeadLookAt(FVector lookAtLocation)
+{
+	if (auto* mesh = GetMesh())
+	{
+		FVector headLocation = mesh->GetBoneLocation("Maori_Chest_JNT");
+		FRotator neededRot = (lookAtLocation - headLocation).Rotation() - GetActorRotation();
+		UE_LOG(LogTemp, Warning, TEXT("Needrot : %s"), *neededRot.ToString());
+		SetHeadRotation(neededRot);
+	}
+}
 
 void	AMainCharacter::UnsetCustomSpeed()
 {
