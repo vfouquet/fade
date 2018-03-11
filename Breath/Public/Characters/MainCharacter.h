@@ -85,6 +85,8 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	bool	CanThrow() const;
+	UFUNCTION(BlueprintPure)
+	bool	IsHoldingObject() const { return bHoldingObject; }
 	bool	IsInAir() const;
 	UFUNCTION(BlueprintPure)
 	bool	isDead() const { return bIsDead; }
