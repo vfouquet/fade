@@ -85,6 +85,8 @@ public:
 	void	SetThrowingObject(bool const value) { bThrowingObject = value; }
 	void	SetHoldingObject(bool const value) { bHoldingObject = value; }
 
+	void	PlayLightGrabMontage() { PlayAnimMontage(LightGrabAnim); }
+
 	UFUNCTION(BlueprintPure)
 	bool	CanThrow() const;
 	UFUNCTION(BlueprintPure)
@@ -100,14 +102,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Head")
 	FRotator	MaxHeadRotationRange;
 	UPROPERTY(EditAnywhere, Category = "Climb")
-	UAnimMontage*	ClimbMontage = nullptr;
-	UPROPERTY(EditAnywhere, Category = "Climb")
 	TArray<FComponentReference>	climbBoxesReferences;
 	/*Time to validate climb by walking**/
 	UPROPERTY(EditAnywhere, Category = "Climb")
 	float	ClimbAngleTolerence = 45.0f;
 	UPROPERTY(BlueprintAssignable)
 	FDeathDelegate	OnDie;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage*	ClimbMontage = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage*	LightGrabAnim = nullptr;
 private:
 	UFUNCTION()
 	void	computeClimbableBoxes();

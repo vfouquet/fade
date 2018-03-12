@@ -44,6 +44,8 @@ public:
 
 	void	Action();
 	void	Grab();
+	UFUNCTION(BlueprintCAllable)
+	void	EndLightGrab();
 	void	StopGrab();
 	void	Throw();
 	void	EndThrow();

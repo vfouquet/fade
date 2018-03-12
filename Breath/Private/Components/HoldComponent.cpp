@@ -136,6 +136,8 @@ void	UHoldComponent::Grab()
 		holdingPrimitiveComponent->SetCollisionProfileName("OverlapAllDynamic");	//DISABLE OBJECT COLLISION
 
 		mainCharacter->SetHoldingObject(true);
+		mainCharacter->BlockCharacter();
+		mainCharacter->PlayLightGrabMontage();
 	}
 	else
 	{
@@ -166,6 +168,11 @@ void	UHoldComponent::Grab()
 		createHandConstraint();
 		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::HeavyGrabbing);
 	}
+}
+
+void	UHoldComponent::EndLightGrab()
+{
+	mainCharacter->UnblockCharacter();
 }
 
 void	UHoldComponent::StopGrab()
