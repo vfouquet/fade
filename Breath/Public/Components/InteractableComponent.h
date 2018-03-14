@@ -15,6 +15,7 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BREATH_API UInteractableComponent : public USceneComponent
 {
 	GENERATED_BODY()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FConditionDelegate);
 
 	struct FStickConstraint
 	{
@@ -97,6 +98,15 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Interactions Settings")
 	FComponentReference	Grab;
+
+	UPROPERTY(BlueprintAssignable)
+	FConditionDelegate	onBeginGrab;
+	UPROPERTY(BlueprintAssignable)
+	FConditionDelegate	onEndGrab;
+	UPROPERTY(BlueprintAssignable)
+	FConditionDelegate	onBeginStick;
+	UPROPERTY(BlueprintAssignable)
+	FConditionDelegate	onEndStick;
 
 private:
 	TArray<FStickConstraint>		stickingConstraints;

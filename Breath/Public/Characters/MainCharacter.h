@@ -96,6 +96,8 @@ public:
 	bool	isDead() const { return bIsDead; }
 	UFUNCTION(BlueprintPure)
 	FRotator const GetHeadRotation() const { return headRotation; }
+	UFUNCTION(BlueprintPure)
+	FVector	GetTwoHandsLocation() const;
 
 public:
 	/*Roll isn't used*/

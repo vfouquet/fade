@@ -29,7 +29,6 @@ void UHoldComponent::BeginPlay()
 	
 	mainCharacter = Cast<AMainCharacter>(GetOwner());
 	characterCapsule = GetOwner()->FindComponentByClass<UCapsuleComponent>();
-	handleTargetLocation = Cast<UPrimitiveComponent>(HandleTargetLocationReference.GetComponent(GetOwner()));
 	leftHandConstraint = Cast<UPhysicsConstraintComponent>(LeftHandPhysicalConstraintReference.GetComponent(GetOwner()));
 	rightHandConstraint = Cast<UPhysicsConstraintComponent>(RightHandPhysicalConstraintReference.GetComponent(GetOwner()));
 }
@@ -52,12 +51,12 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	}
 
 	closestInteractableObject = nullptr;
-	if (!handleTargetLocation && !characterCapsule && !GetOwner())
+	if (!characterCapsule && !GetOwner())
 		return;
 
 	detectInteractableAround();
 
-	if (currentHoldingState == EHoldingState::LightGrabbing)
+	if (currentHoldingState == EHoldingState::LightGrabbing && !preHoldingState)
 	{
 		if (!holdingObject.IsValid())
 		{
@@ -65,11 +64,13 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 			return;
 		}
 
-		handleComponent->SetTargetLocation(handleTargetLocation->GetComponentLocation());
+		FVector	middleTwoHands = mainCharacter->GetTwoHandsLocation();
+		handleComponent->SetTargetLocation(middleTwoHands);
 		
 		//CHECK HOLDING OBJECT DISTANCE - RELEASE IF TOO FAR
-		FVector dist = handleTargetLocation->GetComponentLocation() - holdingPrimitiveComponent->GetComponentLocation();
-		
+		FVector dist = middleTwoHands - holdingPrimitiveComponent->GetComponentLocation();
+		DrawDebugSphere(GetWorld(), middleTwoHands, 25.0f, 50, FColor::Black);
+
 		if (releaseCurrentTime < ReleaseTimeTolerence)
 			releaseCurrentTime += DeltaTime;
 		else
@@ -77,10 +78,11 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 			if (dist.Size() >= ReleaseDistanceThreshold)
 				StopGrab();
 		}
+
 		//
 	}
 	else if (currentHoldingState == EHoldingState::Throwing)
-		handleComponent->SetTargetLocation(handleTargetLocation->GetComponentLocation());
+		handleComponent->SetTargetLocation(mainCharacter->GetTwoHandsLocation());
 	else
 		releaseCurrentTime = 0.0f;
 }
@@ -126,15 +128,13 @@ void	UHoldComponent::Grab()
 
 		holdingObject = closestInteractableObject.Get();
 		holdingObject->SetHoldComponent(this);
+		holdingObject->onBeginGrab.Broadcast();
 		if (holdingObject->IsSticked())
 			holdingObject->Unstick();
 
 		holdingPrimitiveComponent = holdingObject->GetAssociatedComponent();
-		holdingPrimitiveComponent->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());	//RESET ROTATION
-		handleComponent->GrabComponentAtLocationWithRotation
-			(holdingPrimitiveComponent, "", holdingPrimitiveComponent->GetComponentLocation(), FRotator::ZeroRotator);
-		holdingPrimitiveComponent->SetCollisionProfileName("OverlapAllDynamic");	//DISABLE OBJECT COLLISION
-
+		
+		preHoldingState = true;
 		mainCharacter->SetHoldingObject(true);
 		mainCharacter->BlockCharacter();
 		mainCharacter->PlayLightGrabMontage();
@@ -168,6 +168,19 @@ void	UHoldComponent::Grab()
 		createHandConstraint();
 		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::HeavyGrabbing);
 	}
+}
+void	UHoldComponent::BeginLightGrabPositionUpdate()
+{
+	if (!holdingPrimitiveComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Begin light grab position update : holding primitive component is nullptr"));
+		return;
+	}
+	preHoldingState = false;
+	holdingPrimitiveComponent->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());	//RESET ROTATION
+	handleComponent->GrabComponentAtLocationWithRotation
+	(holdingPrimitiveComponent, "", holdingPrimitiveComponent->GetComponentLocation(), FRotator::ZeroRotator);
+	holdingPrimitiveComponent->SetCollisionProfileName("OverlapAllDynamic");	//DISABLE OBJECT COLLISION
 }
 
 void	UHoldComponent::EndLightGrab()
@@ -294,10 +307,14 @@ void	UHoldComponent::UniversalRelease()
 
 void	UHoldComponent::releaseLightGrabbedObject()
 {
+	preHoldingState = false;
 	handleComponent->ReleaseComponent();
 	holdingPrimitiveComponent->SetCollisionProfileName("SmallInteractable");
 	if (holdingObject.IsValid())
+	{
 		holdingObject->SetHoldComponent(nullptr);
+		holdingObject->onEndGrab.Broadcast();
+	}
 	holdingObject = nullptr;
 	holdingPrimitiveComponent = nullptr;
 }

@@ -271,6 +271,18 @@ bool	AMainCharacter::IsInAir() const
 	bool ascending = false;
 	return mainCharacterMovement->IsFalling(ascending);
 }
+	
+FVector	AMainCharacter::GetTwoHandsLocation() const
+{
+	if (auto* mesh = GetMesh())
+	{
+		FVector	leftHandLocation = mesh->GetBoneLocation("Maori_L_Hand_JNT");
+		FVector	rightHandLocation = mesh->GetBoneLocation("Maori_R_Hand_JNT");
+		FVector	distance = rightHandLocation - leftHandLocation;
+		return leftHandLocation + distance * 0.5f;
+	}
+	return FVector::ZeroVector;
+}
 
 void	AMainCharacter::computeClimbableBoxes()
 {

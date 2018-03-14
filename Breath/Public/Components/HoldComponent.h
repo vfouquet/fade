@@ -44,6 +44,8 @@ public:
 
 	void	Action();
 	void	Grab();
+	UFUNCTION(BlueprintCallable)
+	void	BeginLightGrabPositionUpdate();
 	UFUNCTION(BlueprintCAllable)
 	void	EndLightGrab();
 	void	StopGrab();
@@ -87,8 +89,6 @@ public:
 	float	DetectionOffset = 60.0f;
 	UPROPERTY(EditAnywhere, Category = "Detection")
 	float	HoldingDetectionOffset = 100.0f;
-	UPROPERTY(EditAnywhere, Category = "Grab")
-	FComponentReference	HandleTargetLocationReference;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float	ThrowPower = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hold")
@@ -117,7 +117,6 @@ protected:
 	TWeakObjectPtr<UInteractableComponent>		closestInteractableObject;
 	
 	UPhysicsHandleComponent*		handleComponent;
-	UPrimitiveComponent*			handleTargetLocation = nullptr;
 	UCapsuleComponent*				characterCapsule = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
@@ -130,6 +129,7 @@ protected:
 	bool	notifyingThrow = false;
 
 	float	releaseCurrentTime = 0.0f;
+	bool	preHoldingState = false;
 
 	UPhysicsConstraintComponent*	leftHandConstraint = nullptr;
 	UPhysicsConstraintComponent*	rightHandConstraint = nullptr;
