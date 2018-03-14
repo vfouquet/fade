@@ -10,6 +10,9 @@ void	UMemoryZoneComponent::OnBeginOverlap(UPrimitiveComponent* OverlappedCompone
 	if (!manager)
 		return;
 
+	if (ACharacter* character = Cast<ACharacter>(OtherActor))
+		return;
+
 	int id = 0;
 	bool isPropertyExisting = false;
 	AIdentityZoneManager::FErasedObjectProperties* outProperty = manager->containsErasedObjectProperties(OtherComp, isPropertyExisting, id);
@@ -39,6 +42,12 @@ void	UMemoryZoneComponent::OnBeginOverlap(UPrimitiveComponent* OverlappedCompone
 
 void	UMemoryZoneComponent::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	if (!manager)
+		return;
+
+	if (ACharacter* character = Cast<ACharacter>(OtherActor))
+		return;
+
 	int id = 0;
 	bool isPropertyExisting = false;
 	AIdentityZoneManager::FErasedObjectProperties* outProperty = manager->containsErasedObjectProperties(OtherComp, isPropertyExisting, id);

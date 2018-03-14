@@ -23,6 +23,12 @@ void	UIdentityEraserComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 
 void	UIdentityEraserComponent::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
+	if (!manager)
+		return;
+
+	if (ACharacter* character = Cast<ACharacter>(OtherActor))
+		return;
+
 	bool isPropertyExisting = false;
 	int id = 0;
 	AIdentityZoneManager::FErasedObjectProperties* outProperty = manager->containsErasedObjectProperties(OtherComp, isPropertyExisting, id);
@@ -43,6 +49,12 @@ void	UIdentityEraserComponent::OnBeginOverlap(UPrimitiveComponent* OverlappedCom
 
 void	UIdentityEraserComponent::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	if (!manager)
+		return;
+
+	if (ACharacter* character = Cast<ACharacter>(OtherActor))
+		return;
+
 	bool isPropertyExisting = false;
 	int id = 0;
 	AIdentityZoneManager::FErasedObjectProperties* outProperty = manager->containsErasedObjectProperties(OtherComp, isPropertyExisting, id);
