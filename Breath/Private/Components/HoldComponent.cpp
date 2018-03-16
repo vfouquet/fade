@@ -39,17 +39,6 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (notifyingThrow)
-	{
-		throwNotifyTime += DeltaTime;
-		if (throwNotifyTime > ThrowBlockingTimeDebug)
-		{
-			throwNotifyTime = 0.0f;
-			notifyingThrow = false;
-			EndThrow();
-		}
-	}
-
 	closestInteractableObject = nullptr;
 	if (!characterCapsule && !GetOwner())
 		return;
@@ -106,12 +95,7 @@ void	UHoldComponent::Action()
 	{
 		if (closestInteractableObject.IsValid() && closestInteractableObject->CanAcceptStick)
 			Stick();
-		//else
-		//	Throw();
 	}
-	//else if (currentHoldingState == EHoldingState::HeavyGrabbing)
-	//	Throw();
-	//THOSE COMMENTS DEPENDS ON THE INPUT BUTTON FOR THROW
 }
 
 void	UHoldComponent::Grab()
@@ -215,13 +199,13 @@ void	UHoldComponent::Throw()
 	{
 		currentHoldingState = EHoldingState::Throwing;
 		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Throwing);
+		mainCharacter->PlayLightThrowMontage();
 	}
 	else if (currentHoldingState == EHoldingState::HeavyGrabbing)
 	{
 		currentHoldingState = EHoldingState::HeavyThrowing;
 		holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyGrabbing, EHoldingState::Throwing);
 	}
-	notifyingThrow = true;
 }
 
 void	UHoldComponent::EndThrow()
@@ -233,7 +217,7 @@ void	UHoldComponent::EndThrow()
 		releaseLightGrabbedObject();
 		FRotator	tempRotation = characterCapsule->GetComponentRotation();
 		tempRotation.Pitch += AdditionalThrowAngle;
-		tempPrimitive->AddImpulse(tempRotation.Vector() * ThrowPower * 10000.0f);
+		tempPrimitive->AddImpulse(tempRotation.Vector() * ThrowPower);
 		
 		mainCharacter->SetHoldingObject(false);
 		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);

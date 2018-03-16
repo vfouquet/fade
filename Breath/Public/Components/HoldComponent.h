@@ -50,6 +50,7 @@ public:
 	void	EndLightGrab();
 	void	StopGrab();
 	void	Throw();
+	UFUNCTION(BlueprintCallable)
 	void	EndThrow();
 	void	Stick();
 	void	UniversalRelease();
@@ -99,8 +100,6 @@ public:
 	FComponentReference	RightHandPhysicalConstraintReference;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
 	float	AdditionalThrowAngle = 45.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
-	float	ThrowBlockingTimeDebug = 3.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hold")
 	float	ReleaseDistanceThreshold = 75.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hold")
@@ -123,10 +122,6 @@ protected:
 	TWeakObjectPtr<UInteractableComponent>	holdingObject;
 	UPrimitiveComponent*					holdingPrimitiveComponent = nullptr;
 	EHoldingState							currentHoldingState = EHoldingState::None;
-
-	//TEMPORARY TO DO : CHANGE TO WORK WITH NOTIFIES
-	float	throwNotifyTime = 0.0;
-	bool	notifyingThrow = false;
 
 	float	releaseCurrentTime = 0.0f;
 	bool	preHoldingState = false;

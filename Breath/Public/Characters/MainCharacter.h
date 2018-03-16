@@ -89,6 +89,7 @@ public:
 	void	SetHoldingObject(bool const value) { bHoldingObject = value; }
 
 	void	PlayLightGrabMontage() { PlayAnimMontage(LightGrabAnim); }
+	void	PlayLightThrowMontage() { PlayAnimMontage(LightThrowAnim); }
 
 	UFUNCTION(BlueprintPure)
 	bool	CanThrow() const;
@@ -117,11 +118,15 @@ public:
 	UAnimMontage*	ClimbMontage = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	LightGrabAnim = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage*	LightThrowAnim = nullptr;
 private:
 	UFUNCTION()
 	void	computeClimbableBoxes();
 	UFUNCTION()
 	void	endCharacterClimbSnap();
+	UFUNCTION()
+	void	stopCurrentPlayingMontage();
 
 private:
 	UPROPERTY(VisibleAnywhere)

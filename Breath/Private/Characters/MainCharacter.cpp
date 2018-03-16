@@ -370,3 +370,20 @@ void	AMainCharacter::EndClimb()
 	SetActorLocation(validClimbableBox->GetClimbedLocation() + FVector::UpVector * (characterCapsule->GetScaledCapsuleHalfHeight() + 10.0f),
 		false, nullptr, ETeleportType::TeleportPhysics);
 }
+
+void	AMainCharacter::stopCurrentPlayingMontage()
+{
+	UAnimMontage*	montage = GetCurrentMontage();
+	if (montage == ClimbMontage)
+	{
+
+	}
+	else if (montage == LightGrabAnim)
+	{
+
+	}
+	else if (montage == LightThrowAnim)
+	{
+
+	}
+}
