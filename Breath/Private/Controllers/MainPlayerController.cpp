@@ -181,11 +181,28 @@ void	AMainPlayerController::RotateVertical(float Value)
 void AMainPlayerController::Jump()
 {
 	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
-	{
+	{	
 		if (MainCharacter->CanThrow())
 			MainCharacter->Throw();
 		else
-			MainCharacter->Jump();
+		{
+			float cameraDiffAngle = GetCameraRotation().Yaw - MainCharacter->GetActorRotation().Yaw;
+			float	stickLength = getStickLength();
+
+			if (stickLength < JumpStickThreshold)
+			{
+				MainCharacter->Jump();
+				//pass 0
+			}
+			else
+			{
+				stickLength = FMath::Clamp(stickLength, 0.0f, 1.0f);
+				FVector pawnForward = MainCharacter->GetActorForwardVector();
+				FRotator	stickRot(0.0f, cameraDiffAngle, 0.0f);
+				FVector direction = stickRot.RotateVector(pawnForward);
+				MainCharacter->Jump();
+			}
+		}
 	}
 }
 

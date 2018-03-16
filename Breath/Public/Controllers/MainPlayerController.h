@@ -68,6 +68,8 @@ public:
 	float	WalkStickThreshold = 0.1f;
 	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Speed")
 	float	JogStickThreshold = 0.5f;
+	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Jump")
+	float	JumpStickThreshold = 0.1f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
 		float	HeavyAngleTolerance = 15.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb")

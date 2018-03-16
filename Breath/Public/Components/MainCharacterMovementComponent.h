@@ -18,6 +18,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual bool CheckFall(const FFindFloorResult& OldFloor, const FHitResult& Hit, const FVector& Delta, const FVector& OldLocation, float remainingTime, float timeTick, int32 Iterations, bool bMustJump) override;	
 	virtual FVector GetAirControl(float DeltaTime, float TickAirControl, const FVector& FallAcceleration) override;
+	virtual bool DoJump(bool bReplayingMoves) override;
 
 	void	ProcessPushAndPull(float const& coeff, float holdingObjectMass);
 	void	ProcessRotateHeavyObject(bool direction, float holdingObjectMass, FVector holdingObjectLocation);
@@ -25,6 +26,7 @@ public:
 
 	void	SetWalkMode() { MaxWalkSpeed = WalkSpeed; }
 	void	SetJogMode() { MaxWalkSpeed = JogSpeed; }
+	void	SetJumpDirection(FVector value) { jumpDirection = value; }
 
 	bool	IsFalling(bool& ascending);
 	FVector const& 	GetLastMovementOffset() const { return lastOffsetLocation; }
@@ -49,7 +51,15 @@ public:
 	float	CoyoteTime = 0.5f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Movement")
 	float	AirControlPower = 500.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Forward Jump")
+	float	ForwardJumpAngle = 45.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Forward Jump")
+	float	ForwardJumpForce = 450.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Forward Jump")
+	float	LateralJumpForce = 300.0f;
+
 private:
+	FVector	jumpDirection;
 	float	currentCoyoteTime = 0.0f;
 	FVector	lastOffsetLocation = FVector::ZeroVector;
 };

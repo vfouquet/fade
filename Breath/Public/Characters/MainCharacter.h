@@ -53,13 +53,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	EndThrow();
 	void	Stick();
-	void	Jump() override;
+	void	Jump(FVector direction = FVector::ZeroVector);
 	bool	Climb();
 	UFUNCTION(BlueprintCallable)
 	void	EndClimb();
 
 	void	OnDamage();
 	void	Die(FVector impact = FVector::ZeroVector, FVector impactLoc = FVector::ZeroVector, FName boneName = NAME_None);
+
+	//UFUNCTION(BlueprintCallable)
+	//void	UpdateClimbTrick();
 
 	void	SetWalkMode();
 	void	SetJogMode();
@@ -130,7 +133,7 @@ private:
 	FRotator	headRotation;
 
 	FTimerHandle		climbSnapTimerHandle;
-	FVector				centerSpineBoneOffset;
+	//FVector				centerSpineBoneOffset;
 
 	bool						bCustomSpeedEnabled = false;
 	bool						bBlocked = false;
@@ -146,4 +149,8 @@ private:
 	bool						rotatingLeft = false;
 	bool						rotatingRight = false;
 	float						pushingAxis = 0.0f;
+
+	bool	isClimbing = false;
+	FVector	rootHipsOffset;
+	FVector	beginClimbActorLocation;
 };

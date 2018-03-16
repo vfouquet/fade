@@ -49,10 +49,7 @@ void AMainCharacter::BeginPlay()
 	}
 
 	if (auto* mesh = GetMesh())
-	{
-		FVector boneLoc = mesh->GetBoneLocation("Maori_Hip_JNT");
-		centerSpineBoneOffset = GetActorLocation() - boneLoc;
-	}
+		rootHipsOffset = mesh->GetBoneLocation("Maori_Hip_JNT") - GetActorLocation();
 
 #if WITH_EDITOR
 	if (bIsThirdPersonCamera == true)
@@ -67,6 +64,14 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (isClimbing)
+	{
+		FVector translation = GetMesh()->GetBoneLocation("Maori_Hip_JNT") - rootHipsOffset - GetActorLocation();
+		FVector newLoc = beginClimbActorLocation + translation;
+		//SetActorLocation(newLoc);
+		//GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -92.0f) - translation);
+	}
 
 	if (bBlocked)
 		return;	
@@ -171,10 +176,11 @@ void	AMainCharacter::Stick()
 	holdComponent->Stick();
 }
 
-void	AMainCharacter::Jump()
+void	AMainCharacter::Jump(FVector direction)
 {
 	if (Climb())
 		return;
+	mainCharacterMovement->SetJumpDirection(direction);
 	Super::Jump();
 }
 
@@ -339,10 +345,16 @@ bool	AMainCharacter::Climb()
 void	AMainCharacter::endCharacterClimbSnap()
 {
 	PlayAnimMontage(ClimbMontage);
+	//beginClimbActorLocation = GetActorLocation();
+	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	isClimbing = true;
 }
 
 void	AMainCharacter::EndClimb()
 {
+	isClimbing = false;
+	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -92.0f));
 	UnblockCharacter();
 	/*
 	if (auto* mesh = GetMesh())
