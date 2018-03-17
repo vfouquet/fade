@@ -13,7 +13,6 @@ class USpringArmComponent;
 class UPlayerCameraComponent;
 class UHoldComponent;
 class AMainPlayerController;
-class UBoxClimbComponent;
 
 UCLASS()
 class BREATH_API AMainCharacter : public ACharacter
@@ -107,8 +106,6 @@ public:
 	/*Roll isn't used*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Head")
 	FRotator	MaxHeadRotationRange;
-	UPROPERTY(EditAnywhere, Category = "Climb")
-	TArray<FComponentReference>	climbBoxesReferences;
 	/*Time to validate climb by walking**/
 	UPROPERTY(EditAnywhere, Category = "Climb")
 	float	ClimbAngleTolerence = 45.0f;
@@ -121,8 +118,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	LightThrowAnim = nullptr;
 private:
-	UFUNCTION()
-	void	computeClimbableBoxes();
+	bool	climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint);
 	UFUNCTION()
 	void	endCharacterClimbSnap();
 public:
@@ -137,6 +133,8 @@ private:
 	UMainCharacterMovementComponent*	mainCharacterMovement = nullptr;
 
 	FTimerHandle		climbSnapTimerHandle;
+	FVector				climbPointTarget;
+
 	FRotator			headRotation;
 
 	bool	bCustomSpeedEnabled = false;
@@ -146,11 +144,6 @@ private:
 	bool	bHoldingObject = false;
 	bool	bIsDead = false;
 	
-	//OLD CLIMB WAY
-	TArray<UBoxClimbComponent*>	climbBoxes;
-	UBoxClimbComponent*			validClimbableBox = nullptr;
-	bool						canClimb = false;
-
 	//PUSH/PULL INPUT FROM CONTROLLER
 	bool	rotatingLeft = false;
 	bool	rotatingRight = false;

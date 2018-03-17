@@ -10,7 +10,6 @@
 #include "Cameras/PlayerCameraComponent.h"
 #include "MainPlayerController.h"
 #include "Camera/CameraActor.h"
-#include "BoxClimbComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
@@ -34,20 +33,6 @@ void AMainCharacter::BeginPlay()
 	Super::BeginPlay();
 	holdComponent = FindComponentByClass<UHoldComponent>();
 	mainCharacterMovement = Cast<UMainCharacterMovementComponent>(GetCharacterMovement());
-
-	//TO REMOVE (OLD CLIMB) When UPDATED
-	for (auto&& climbBoxesReference : climbBoxesReferences)
-	{
-		UBoxClimbComponent*	tempBox = Cast<UBoxClimbComponent>(climbBoxesReference.GetComponent(this));
-		if (tempBox)
-		{
-			climbBoxes.Add(tempBox);
-			FScriptDelegate	beginOverlapDel;
-			beginOverlapDel.BindUFunction(this, "computeClimbableBoxes");
-			tempBox->boxClimbOverlap.Add(beginOverlapDel);
-			tempBox->boxClimbEndOverlap.Add(beginOverlapDel);
-		}
-	}
 
 	//TEMP CLIMB TRICK
 	if (auto* mesh = GetMesh())
@@ -190,36 +175,27 @@ void	AMainCharacter::Jump(FVector direction)
 
 bool	AMainCharacter::Climb()
 {
-	computeClimbableBoxes();
-	if (!canClimb)
+	FVector	normal, hitLocation, topPoint;
+	bool firstRes = climbTrace(hitLocation, normal, topPoint);
+	if (!firstRes)
 		return false;
+	
+	float angle = FMath::RadiansToDegrees(FMath::Acos(GetActorForwardVector() | (normal * -1.0f)));
+	if (angle > ClimbAngleTolerence)
+		return false;
+	
+	FVector	newLoc = hitLocation + normal * 50.0f;
+	newLoc.Z = GetActorLocation().Z;
+	climbPointTarget = topPoint;
 
-	FHitResult	result;
-	FVector	startTrace = GetActorLocation();
-	startTrace.Z = validClimbableBox->GetComponentLocation().Z;
-	FVector	endTrace = startTrace + GetActorForwardVector() * 70.0f;
-
-	FCollisionQueryParams	params;
-	params.AddIgnoredActor(this);
-	bool res = GetWorld()->LineTraceSingleByChannel(result, startTrace, endTrace, ECollisionChannel::ECC_Visibility, params);
-	if (res)
-	{
-		float angle = FMath::RadiansToDegrees(FMath::Acos(GetActorForwardVector() | (result.Normal * -1.0f)));
-		if (angle > ClimbAngleTolerence)
-			return false;
-
-		FVector	newLoc = result.Location + result.Normal * 50.0f;
-		newLoc.Z = GetActorLocation().Z;
-
-		FLatentActionInfo	latentInfo;
-		latentInfo.CallbackTarget = this;
-		float interpTime = (newLoc - GetActorLocation()).Size() / 100.0f;
-		UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), newLoc, (result.Normal * -1.0f).Rotation(), true, true, interpTime, true, EMoveComponentAction::Type::Move, latentInfo);
-		FTimerDelegate	del;
-		del.BindUFunction(this, "endCharacterClimbSnap");
-		GetWorldTimerManager().SetTimer(climbSnapTimerHandle, del, interpTime, false);
-		BlockCharacter();
-	}
+	FLatentActionInfo	latentInfo;
+	latentInfo.CallbackTarget = this;
+	float interpTime = (newLoc - GetActorLocation()).Size() / 100.0f;
+	UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), newLoc, (normal * -1.0f).Rotation(), true, true, interpTime, true, EMoveComponentAction::Type::Move, latentInfo);
+	FTimerDelegate	del;
+	del.BindUFunction(this, "endCharacterClimbSnap");
+	GetWorldTimerManager().SetTimer(climbSnapTimerHandle, del, interpTime, false);
+	BlockCharacter();
 	return true;
 }
 
@@ -274,14 +250,14 @@ void	AMainCharacter::EndClimb()
 	UCapsuleComponent*	characterCapsule = FindComponentByClass<UCapsuleComponent>();
 	if (!characterCapsule)
 		return;
-	SetActorLocation(validClimbableBox->GetClimbedLocation() + FVector::UpVector * (characterCapsule->GetScaledCapsuleHalfHeight() + 10.0f),
+	SetActorLocation(climbPointTarget + FVector::UpVector * (characterCapsule->GetScaledCapsuleHalfHeight() + 10.0f),
 		false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 void	AMainCharacter::SetWalkMode()
 {
 	if (!bCustomSpeedEnabled)
-		mainCharacterMovement->SetWalkMode();
+mainCharacterMovement->SetWalkMode();
 }
 
 void	AMainCharacter::SetJogMode()
@@ -306,24 +282,24 @@ void	AMainCharacter::SetHeadRotation(FRotator value)
 void	AMainCharacter::SetCustomSpeed(bool customSpeed, float newSpeed)
 {
 	bCustomSpeedEnabled = true;
-	mainCharacterMovement->MaxWalkSpeed = customSpeed? newSpeed : mainCharacterMovement->WalkSpeed;
+	mainCharacterMovement->MaxWalkSpeed = customSpeed ? newSpeed : mainCharacterMovement->WalkSpeed;
 }
-	
+
 void	AMainCharacter::UnsetCustomSpeed()
 {
 	bCustomSpeedEnabled = false;
 	mainCharacterMovement->SetWalkMode();
 }
 
-void	AMainCharacter::EnableMovingHeavyObjectMode() 
-{ 
+void	AMainCharacter::EnableMovingHeavyObjectMode()
+{
 	mainCharacterMovement->bOrientRotationToMovement = false;
 	bMovingHeavyObject = true;
 }
 
 void	AMainCharacter::DisableMovingHeavyObjectMode()
-{ 
-	mainCharacterMovement->bOrientRotationToMovement = true; 
+{
+	mainCharacterMovement->bOrientRotationToMovement = true;
 	bMovingHeavyObject = false;
 }
 
@@ -337,7 +313,7 @@ bool	AMainCharacter::IsInAir() const
 	bool ascending = false;
 	return mainCharacterMovement->IsFalling(ascending);
 }
-	
+
 FVector	AMainCharacter::GetTwoHandsLocation() const
 {
 	if (auto* mesh = GetMesh())
@@ -350,23 +326,72 @@ FVector	AMainCharacter::GetTwoHandsLocation() const
 	return FVector::ZeroVector;
 }
 
-void	AMainCharacter::computeClimbableBoxes()
+#include "DrawDebugHelpers.h"
+
+bool	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint)
 {
-	validClimbableBox = nullptr;
-	canClimb = false;
+	UCapsuleComponent* capsuleComponent = GetCapsuleComponent();
+	FCollisionShape	secondCapsule = FCollisionShape::MakeCapsule(capsuleComponent->GetScaledCapsuleRadius(), 99);
+	FCollisionQueryParams	queryParams;
+	queryParams.AddIgnoredActor(this);
 
-	for (auto& climbBox : climbBoxes)
-	{
-		if (climbBox->IsOverlappingClimbingSurface() && !validClimbableBox)
-			validClimbableBox = climbBox;
-		else if (climbBox->IsOverlappingOthers())
-			break;
-
-	}
-	if (validClimbableBox && validClimbableBox->CheckSpaceOver())
-		canClimb = true;
-}
+	FVector	beginGround = GetActorLocation();
+	FVector	groundEnd = GetActorLocation() + GetActorForwardVector() * 50.0f;
+	beginGround.Z -= capsuleComponent->GetScaledCapsuleHalfHeight();
+	groundEnd.Z -= capsuleComponent->GetScaledCapsuleHalfHeight();
 	
+	FVector twoMeterBegin = beginGround;
+	twoMeterBegin.Z += 200;
+	FVector	twoMeterEnd = groundEnd;
+	twoMeterEnd.Z += 200;
+	
+
+	FHitResult	twoMeterHitResult;
+	if (GetWorld()->SweepSingleByChannel(twoMeterHitResult, twoMeterBegin, twoMeterEnd,
+		FQuat::Identity, ECollisionChannel::ECC_Visibility, secondCapsule, queryParams))
+	{
+		FHitResult upperHitResult;
+		FVector upperBegin = beginGround;
+		upperBegin.Z += 300;
+		FVector	upperEnd = groundEnd;
+		upperEnd.Z += 300;
+		
+		if (!GetWorld()->SweepSingleByChannel(upperHitResult, upperBegin, upperEnd, FQuat::Identity, ECollisionChannel::ECC_Visibility, secondCapsule, queryParams))
+		{
+			if (twoMeterHitResult.Component.IsValid() && twoMeterHitResult.GetComponent()->ComponentHasTag("Climbable"))
+			{
+				twoMeterHitResult.GetComponent()->GetClosestPointOnCollision(upperEnd, outTopPoint);
+				outHitLocation = twoMeterHitResult.Location - twoMeterHitResult.Normal * secondCapsule.GetCapsuleRadius();
+				outNormal = twoMeterHitResult.Normal;
+				return true;
+			}
+		}
+		return false;
+	}
+	else
+	{
+		FCollisionShape	firstCapsule = FCollisionShape::MakeCapsule(capsuleComponent->GetScaledCapsuleRadius(), 49);
+		FVector oneMeterBegin = beginGround;
+		oneMeterBegin.Z += 50;
+		FVector	oneMeterEnd = groundEnd;
+		oneMeterEnd.Z += 50;
+		FHitResult	oneMeterHitResult;
+		
+		if (GetWorld()->SweepSingleByChannel(oneMeterHitResult, oneMeterBegin, oneMeterEnd, 
+			FQuat::Identity, ECollisionChannel::ECC_Visibility, firstCapsule, queryParams))
+		{
+			if (oneMeterHitResult.Component.IsValid() && oneMeterHitResult.GetComponent()->ComponentHasTag("Climbable"))
+			{
+				oneMeterHitResult.GetComponent()->GetClosestPointOnCollision(twoMeterEnd, outTopPoint);
+				outHitLocation = oneMeterHitResult.Location - oneMeterHitResult.Normal * firstCapsule.GetCapsuleRadius();
+				outNormal = oneMeterHitResult.Normal;
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
 void	AMainCharacter::endCharacterClimbSnap()
 {
 	PlayAnimMontage(ClimbMontage);
