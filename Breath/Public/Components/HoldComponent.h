@@ -10,6 +10,7 @@ UENUM(BlueprintType)
 enum class EHoldingState : uint8
 {
 	None = 0 UMETA(DisplayName = "None"),
+	PreLightGrabbing UMETA(DisplayName = "PreLightGrabbing"),
 	LightGrabbing UMETA(DisplayName = "LightGrabbing"),
 	HeavyGrabbing UMETA(DisplayName = "HeavyGrabbing"),
 	Throwing UMETA(DisplayName = "Throwing"),
@@ -54,6 +55,8 @@ public:
 	void	EndThrow();
 	void	Stick();
 	void	UniversalRelease();
+	void	CancelThrow();
+	void	CancelLightGrab();
 
 	UFUNCTION(BlueprintPure)
 	UInteractableComponent*			GetClosestInteractableObject() const { return closestInteractableObject.IsValid() ? closestInteractableObject.Get() : nullptr; }
@@ -124,7 +127,6 @@ protected:
 	EHoldingState							currentHoldingState = EHoldingState::None;
 
 	float	releaseCurrentTime = 0.0f;
-	bool	preHoldingState = false;
 
 	UPhysicsConstraintComponent*	leftHandConstraint = nullptr;
 	UPhysicsConstraintComponent*	rightHandConstraint = nullptr;

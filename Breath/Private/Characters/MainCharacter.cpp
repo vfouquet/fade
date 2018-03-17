@@ -35,6 +35,7 @@ void AMainCharacter::BeginPlay()
 	holdComponent = FindComponentByClass<UHoldComponent>();
 	mainCharacterMovement = Cast<UMainCharacterMovementComponent>(GetCharacterMovement());
 
+	//TO REMOVE (OLD CLIMB) When UPDATED
 	for (auto&& climbBoxesReference : climbBoxesReferences)
 	{
 		UBoxClimbComponent*	tempBox = Cast<UBoxClimbComponent>(climbBoxesReference.GetComponent(this));
@@ -48,6 +49,7 @@ void AMainCharacter::BeginPlay()
 		}
 	}
 
+	//TEMP CLIMB TRICK
 	if (auto* mesh = GetMesh())
 		rootHipsOffset = mesh->GetBoneLocation("Maori_Hip_JNT") - GetActorLocation();
 
@@ -65,13 +67,16 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//CLIMB TRICK
+	/*
 	if (isClimbing)
 	{
 		FVector translation = GetMesh()->GetBoneLocation("Maori_Hip_JNT") - rootHipsOffset - GetActorLocation();
 		FVector newLoc = beginClimbActorLocation + translation;
-		//SetActorLocation(newLoc);
-		//GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -92.0f) - translation);
+		SetActorLocation(newLoc);
+		GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -92.0f) - translation);
 	}
+	*/
 
 	if (bBlocked)
 		return;	
@@ -80,7 +85,10 @@ void AMainCharacter::Tick(float DeltaTime)
 	{
 		bool ascending = false;
 		if (mainCharacterMovement->IsFalling(ascending) && !ascending)
-			OnDamage(); //DO THAT SHIT TO JUST TO RELEASE BECAUSE IT GOT THE SAME CONSEQUENCES THAN DAMAGE
+		{
+			if (holdComponent)
+				holdComponent->UniversalRelease();
+		}
 	}
 
 	if (bHoldingObject && bThrowingObject)
@@ -165,10 +173,6 @@ void	AMainCharacter::Throw()
 	holdComponent->Throw();
 }
 
-void	AMainCharacter::EndThrow()
-{
-}
-
 void	AMainCharacter::Stick()
 {
 	if (!holdComponent)
@@ -181,13 +185,49 @@ void	AMainCharacter::Jump(FVector direction)
 	if (Climb())
 		return;
 	mainCharacterMovement->SetJumpDirection(direction);
-	Super::Jump();
+	ACharacter::Jump();
+}
+
+bool	AMainCharacter::Climb()
+{
+	computeClimbableBoxes();
+	if (!canClimb)
+		return false;
+
+	FHitResult	result;
+	FVector	startTrace = GetActorLocation();
+	startTrace.Z = validClimbableBox->GetComponentLocation().Z;
+	FVector	endTrace = startTrace + GetActorForwardVector() * 70.0f;
+
+	FCollisionQueryParams	params;
+	params.AddIgnoredActor(this);
+	bool res = GetWorld()->LineTraceSingleByChannel(result, startTrace, endTrace, ECollisionChannel::ECC_Visibility, params);
+	if (res)
+	{
+		float angle = FMath::RadiansToDegrees(FMath::Acos(GetActorForwardVector() | (result.Normal * -1.0f)));
+		if (angle > ClimbAngleTolerence)
+			return false;
+
+		FVector	newLoc = result.Location + result.Normal * 50.0f;
+		newLoc.Z = GetActorLocation().Z;
+
+		FLatentActionInfo	latentInfo;
+		latentInfo.CallbackTarget = this;
+		float interpTime = (newLoc - GetActorLocation()).Size() / 100.0f;
+		UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), newLoc, (result.Normal * -1.0f).Rotation(), true, true, interpTime, true, EMoveComponentAction::Type::Move, latentInfo);
+		FTimerDelegate	del;
+		del.BindUFunction(this, "endCharacterClimbSnap");
+		GetWorldTimerManager().SetTimer(climbSnapTimerHandle, del, interpTime, false);
+		BlockCharacter();
+	}
+	return true;
 }
 
 void	AMainCharacter::OnDamage()
 {
 	if (holdComponent)
 		holdComponent->UniversalRelease();
+	stopCurrentPlayingMontage();
 }
 
 void	AMainCharacter::Die(FVector impact, FVector impactLocation, FName boneName)
@@ -207,9 +247,35 @@ void	AMainCharacter::Die(FVector impact, FVector impactLocation, FName boneName)
 		mesh->AddImpulseAtLocation(impact, impactLocation);
 }
 
-bool	AMainCharacter::CanThrow() const
+void	AMainCharacter::HeadLookAt(FVector lookAtLocation)
 {
-	return bHoldingObject || bMovingHeavyObject;
+	if (auto* mesh = GetMesh())
+	{
+		FVector headLocation = mesh->GetBoneLocation("Maori_Chest_JNT");
+		FRotator neededRot = (lookAtLocation - headLocation).Rotation() - GetActorRotation();
+		SetHeadRotation(neededRot);
+	}
+}
+
+void	AMainCharacter::EndClimb()
+{
+	isClimbing = false;
+	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -92.0f));
+	UnblockCharacter();
+	/*
+	if (auto* mesh = GetMesh())
+	{
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *centerSpineBoneOffset.ToString());
+	FVector tempLoc = mesh->GetBoneLocation("Maori_Hip_JNT");
+	SetActorLocation(tempLoc + centerSpineBoneOffset);
+	}
+	*/
+	UCapsuleComponent*	characterCapsule = FindComponentByClass<UCapsuleComponent>();
+	if (!characterCapsule)
+		return;
+	SetActorLocation(validClimbableBox->GetClimbedLocation() + FVector::UpVector * (characterCapsule->GetScaledCapsuleHalfHeight() + 10.0f),
+		false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 void	AMainCharacter::SetWalkMode()
@@ -231,29 +297,18 @@ void	AMainCharacter::SetGodMode(bool value)
 		healthComp->SetGodMode(value);
 }
 
+void	AMainCharacter::SetHeadRotation(FRotator value)
+{
+	headRotation.Pitch = FMath::Clamp(value.Pitch, -MaxHeadRotationRange.Pitch, MaxHeadRotationRange.Pitch);
+	headRotation.Yaw = FMath::Clamp(value.Yaw, -MaxHeadRotationRange.Yaw, MaxHeadRotationRange.Yaw);
+}
+
 void	AMainCharacter::SetCustomSpeed(bool customSpeed, float newSpeed)
 {
 	bCustomSpeedEnabled = true;
 	mainCharacterMovement->MaxWalkSpeed = customSpeed? newSpeed : mainCharacterMovement->WalkSpeed;
 }
 	
-void	AMainCharacter::SetHeadRotation(FRotator value)
-{
-	headRotation.Pitch = FMath::Clamp(value.Pitch, -MaxHeadRotationRange.Pitch, MaxHeadRotationRange.Pitch);
-	headRotation.Yaw = FMath::Clamp(value.Yaw, -MaxHeadRotationRange.Yaw, MaxHeadRotationRange.Yaw);
-}
-	
-void	AMainCharacter::HeadLookAt(FVector lookAtLocation)
-{
-	if (auto* mesh = GetMesh())
-	{
-		FVector headLocation = mesh->GetBoneLocation("Maori_Chest_JNT");
-		FRotator neededRot = (lookAtLocation - headLocation).Rotation() - GetActorRotation();
-		UE_LOG(LogTemp, Warning, TEXT("Needrot : %s"), *neededRot.ToString());
-		SetHeadRotation(neededRot);
-	}
-}
-
 void	AMainCharacter::UnsetCustomSpeed()
 {
 	bCustomSpeedEnabled = false;
@@ -270,6 +325,11 @@ void	AMainCharacter::DisableMovingHeavyObjectMode()
 { 
 	mainCharacterMovement->bOrientRotationToMovement = true; 
 	bMovingHeavyObject = false;
+}
+
+bool	AMainCharacter::CanThrow() const
+{
+	return bHoldingObject || bMovingHeavyObject;
 }
 
 bool	AMainCharacter::IsInAir() const
@@ -306,41 +366,6 @@ void	AMainCharacter::computeClimbableBoxes()
 	if (validClimbableBox && validClimbableBox->CheckSpaceOver())
 		canClimb = true;
 }
-
-bool	AMainCharacter::Climb()
-{
-	computeClimbableBoxes();
-	if (!canClimb)
-		return false;
-
-	FHitResult	result;
-	FVector	startTrace = GetActorLocation();
-	startTrace.Z = validClimbableBox->GetComponentLocation().Z;
-	FVector	endTrace = startTrace + GetActorForwardVector() * 70.0f;
-
-	FCollisionQueryParams	params;
-	params.AddIgnoredActor(this);
-	bool res = GetWorld()->LineTraceSingleByChannel(result, startTrace, endTrace, ECollisionChannel::ECC_Visibility, params);
-	if (res)
-	{
-		float angle = FMath::RadiansToDegrees(FMath::Acos(GetActorForwardVector() | (result.Normal * -1.0f)));
-		if (angle > ClimbAngleTolerence)
-			return false;
-
-		FVector	newLoc = result.Location + result.Normal * 50.0f;
-		newLoc.Z = GetActorLocation().Z;
-
-		FLatentActionInfo	latentInfo;
-		latentInfo.CallbackTarget = this;
-		float interpTime =  (newLoc - GetActorLocation()).Size() / 100.0f;
-		UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), newLoc, (result.Normal * -1.0f).Rotation(), true, true, interpTime, true, EMoveComponentAction::Type::Move, latentInfo);
-		FTimerDelegate	del;
-		del.BindUFunction(this, "endCharacterClimbSnap");
-		GetWorldTimerManager().SetTimer(climbSnapTimerHandle, del, interpTime, false);
-		BlockCharacter();
-	}
-	return true;
-}
 	
 void	AMainCharacter::endCharacterClimbSnap()
 {
@@ -348,27 +373,6 @@ void	AMainCharacter::endCharacterClimbSnap()
 	//beginClimbActorLocation = GetActorLocation();
 	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	isClimbing = true;
-}
-
-void	AMainCharacter::EndClimb()
-{
-	isClimbing = false;
-	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	//GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -92.0f));
-	UnblockCharacter();
-	/*
-	if (auto* mesh = GetMesh())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *centerSpineBoneOffset.ToString());
-		FVector tempLoc = mesh->GetBoneLocation("Maori_Hip_JNT");
-		SetActorLocation(tempLoc + centerSpineBoneOffset);
-	}
-	*/
-	UCapsuleComponent*	characterCapsule = FindComponentByClass<UCapsuleComponent>();
-	if (!characterCapsule)
-		return;
-	SetActorLocation(validClimbableBox->GetClimbedLocation() + FVector::UpVector * (characterCapsule->GetScaledCapsuleHalfHeight() + 10.0f),
-		false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 void	AMainCharacter::stopCurrentPlayingMontage()
@@ -380,10 +384,14 @@ void	AMainCharacter::stopCurrentPlayingMontage()
 	}
 	else if (montage == LightGrabAnim)
 	{
-
+		if (holdComponent)
+			holdComponent->CancelLightGrab();
+		StopAnimMontage(montage);
 	}
 	else if (montage == LightThrowAnim)
 	{
-
+		if (holdComponent)
+			holdComponent->CancelThrow();
+		StopAnimMontage(montage);
 	}
 }

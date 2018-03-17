@@ -45,7 +45,7 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	detectInteractableAround();
 
-	if (currentHoldingState == EHoldingState::LightGrabbing && !preHoldingState)
+	if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
 		if (!holdingObject.IsValid())
 		{
@@ -58,7 +58,6 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		
 		//CHECK HOLDING OBJECT DISTANCE - RELEASE IF TOO FAR
 		FVector dist = middleTwoHands - holdingPrimitiveComponent->GetComponentLocation();
-		DrawDebugSphere(GetWorld(), middleTwoHands, 25.0f, 50, FColor::Black);
 
 		if (releaseCurrentTime < ReleaseTimeTolerence)
 			releaseCurrentTime += DeltaTime;
@@ -107,19 +106,10 @@ void	UHoldComponent::Grab()
 
 	if (!closestInteractableObject->IsHeavy)
 	{
-		currentHoldingState = EHoldingState::LightGrabbing;
-		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::LightGrabbing);
+		currentHoldingState = EHoldingState::PreLightGrabbing;
+		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::PreLightGrabbing);
 
 		holdingObject = closestInteractableObject.Get();
-		holdingObject->SetHoldComponent(this);
-		holdingObject->onBeginGrab.Broadcast();
-		if (holdingObject->IsSticked())
-			holdingObject->Unstick();
-
-		holdingPrimitiveComponent = holdingObject->GetAssociatedComponent();
-		
-		preHoldingState = true;
-		mainCharacter->SetHoldingObject(true);
 		mainCharacter->BlockCharacter();
 		mainCharacter->PlayLightGrabMontage();
 	}
@@ -155,29 +145,49 @@ void	UHoldComponent::Grab()
 }
 void	UHoldComponent::BeginLightGrabPositionUpdate()
 {
-	if (!holdingPrimitiveComponent)
+	if (!holdingObject.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Begin light grab position update : holding primitive component is nullptr"));
+		UE_LOG(LogTemp, Error, TEXT("Begin light grab position update : holding object is nullptr"));
 		return;
 	}
-	preHoldingState = false;
+
+	holdingObject->SetHoldComponent(this);
+	holdingObject->onBeginGrab.Broadcast();
+	if (holdingObject->IsSticked())
+		holdingObject->Unstick();
+
+	holdingPrimitiveComponent = holdingObject->GetAssociatedComponent();
+	
 	holdingPrimitiveComponent->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());	//RESET ROTATION
 	handleComponent->GrabComponentAtLocationWithRotation
 	(holdingPrimitiveComponent, "", holdingPrimitiveComponent->GetComponentLocation(), FRotator::ZeroRotator);
 	holdingPrimitiveComponent->SetCollisionProfileName("OverlapAllDynamic");	//DISABLE OBJECT COLLISION
+	mainCharacter->SetHoldingObject(true);
+	mainCharacter->UnblockCharacter();
+
+	currentHoldingState = EHoldingState::LightGrabbing;
+	holdingStateChangedDelegate.Broadcast(EHoldingState::PreLightGrabbing, EHoldingState::LightGrabbing);
 }
 
 void	UHoldComponent::EndLightGrab()
 {
-	mainCharacter->UnblockCharacter();
 }
 
 void	UHoldComponent::StopGrab()
 {
-	if (currentHoldingState == EHoldingState::LightGrabbing)
+	if (currentHoldingState == EHoldingState::PreLightGrabbing)
+	{
+		mainCharacter->StopLightGrabMontage();
+		mainCharacter->UnblockCharacter();
+		holdingObject = nullptr;
+		currentHoldingState = EHoldingState::None;
+		holdingStateChangedDelegate.Broadcast(EHoldingState::PreLightGrabbing, EHoldingState::None);
+	}
+	else if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
 		releaseLightGrabbedObject();
 		mainCharacter->SetHoldingObject(false);
+		mainCharacter->StopLightGrabMontage();
 		currentHoldingState = EHoldingState::None;
 		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::None);
 	}
@@ -289,9 +299,28 @@ void	UHoldComponent::UniversalRelease()
 	holdingStateChangedDelegate.Broadcast(currentHoldingState, EHoldingState::None);
 }
 
+void	UHoldComponent::CancelThrow()
+{
+	releaseLightGrabbedObject();
+	mainCharacter->SetHoldingObject(false);
+	currentHoldingState = EHoldingState::None;
+	mainCharacter->SetThrowingObject(false);
+}
+
+void	UHoldComponent::CancelLightGrab()
+{
+	if (currentHoldingState == EHoldingState::LightGrabbing)
+	{
+		releaseLightGrabbedObject();
+		mainCharacter->SetHoldingObject(false);
+	}
+	holdingObject = nullptr;
+	mainCharacter->UnblockCharacter();
+	currentHoldingState = EHoldingState::None;
+}
+
 void	UHoldComponent::releaseLightGrabbedObject()
 {
-	preHoldingState = false;
 	handleComponent->ReleaseComponent();
 	holdingPrimitiveComponent->SetCollisionProfileName("SmallInteractable");
 	if (holdingObject.IsValid())

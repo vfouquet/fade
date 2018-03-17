@@ -128,5 +128,5 @@ void	UMainCharacterMovementComponent::ProcessThrowRotation(float coeff)
 bool	UMainCharacterMovementComponent::IsFalling(bool& ascending)
 {
 	ascending = Velocity.Z >= 0.0f;
-	return Super::IsFalling();
+	return UCharacterMovementComponent::IsFalling();
 }

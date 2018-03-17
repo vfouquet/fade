@@ -50,35 +50,34 @@ public:
 	void	BeginGrab();
 	void	StopGrab();
 	void	Throw();
-	UFUNCTION(BlueprintCallable)
-	void	EndThrow();
 	void	Stick();
 	void	Jump(FVector direction = FVector::ZeroVector);
 	bool	Climb();
-	UFUNCTION(BlueprintCallable)
-	void	EndClimb();
 
 	void	OnDamage();
 	void	Die(FVector impact = FVector::ZeroVector, FVector impactLoc = FVector::ZeroVector, FName boneName = NAME_None);
 
-	//UFUNCTION(BlueprintCallable)
-	//void	UpdateClimbTrick();
+	UFUNCTION(BlueprintCallable)
+	void	HeadLookAt(FVector lookAtLocation);
+
+	//NOTIFY CALLBACK
+	UFUNCTION(BlueprintCallable)
+	void	EndClimb();
 
 	void	SetWalkMode();
 	void	SetJogMode();
 	void	SetGodMode(bool value);
-
-	void	SetRotatingLeft(bool const value) { rotatingLeft = value; }
-	void	SetRotatingRight(bool const value) { rotatingRight = value; }
-	void	SetPushingAxis(float const& value) { pushingAxis = value; }	
 	UFUNCTION(BlueprintCallable)
 	void	SetHeadRotation(FRotator value);
-	UFUNCTION(BlueprintCallable)
-	void	HeadLookAt(FVector lookAtLocation);
 	UFUNCTION(BlueprintCallable)
 	void	SetCustomSpeed(bool customSpeed, float newSpeed = 0.0f);
 	UFUNCTION(BlueprintCallable)
 	void	UnsetCustomSpeed();
+
+	void	SetRotatingLeft(bool const value) { rotatingLeft = value; }
+	void	SetRotatingRight(bool const value) { rotatingRight = value; }
+	void	SetPushingAxis(float const& value) { pushingAxis = value; }	
+	
 	UFUNCTION(BlueprintCallable)
 	void	BlockCharacter() { bBlocked = true; }
 	UFUNCTION(BlueprintCallable)
@@ -90,18 +89,19 @@ public:
 
 	void	PlayLightGrabMontage() { PlayAnimMontage(LightGrabAnim); }
 	void	PlayLightThrowMontage() { PlayAnimMontage(LightThrowAnim); }
+	void	StopLightGrabMontage() { StopAnimMontage(LightGrabAnim); }
 
 	UFUNCTION(BlueprintPure)
-	bool	CanThrow() const;
+	bool			CanThrow() const;
 	UFUNCTION(BlueprintPure)
-	bool	IsHoldingObject() const { return bHoldingObject; }
-	bool	IsInAir() const;
+	bool			IsHoldingObject() const { return bHoldingObject; }
+	bool			IsInAir() const;
 	UFUNCTION(BlueprintPure)
-	bool	isDead() const { return bIsDead; }
+	bool			isDead() const { return bIsDead; }
 	UFUNCTION(BlueprintPure)
-	FRotator const GetHeadRotation() const { return headRotation; }
+	FRotator const	GetHeadRotation() const { return headRotation; }
 	UFUNCTION(BlueprintPure)
-	FVector	GetTwoHandsLocation() const;
+	FVector			GetTwoHandsLocation() const;
 
 public:
 	/*Roll isn't used*/
@@ -125,7 +125,8 @@ private:
 	void	computeClimbableBoxes();
 	UFUNCTION()
 	void	endCharacterClimbSnap();
-	UFUNCTION()
+public:
+	UFUNCTION(BlueprintCallable)
 	void	stopCurrentPlayingMontage();
 
 private:
@@ -135,26 +136,27 @@ private:
 	UHoldComponent*						holdComponent = nullptr;  //REMOVE THIS WITH PUSH/PULL TEMP CALL
 	UMainCharacterMovementComponent*	mainCharacterMovement = nullptr;
 
-	FRotator	headRotation;
-
 	FTimerHandle		climbSnapTimerHandle;
-	//FVector				centerSpineBoneOffset;
+	FRotator			headRotation;
 
-	bool						bCustomSpeedEnabled = false;
-	bool						bBlocked = false;
-	bool						bMovingHeavyObject = false;
-	bool						bThrowingObject = false;
-	bool						bHoldingObject = false;
+	bool	bCustomSpeedEnabled = false;
+	bool	bBlocked = false;
+	bool	bMovingHeavyObject = false;
+	bool	bThrowingObject = false;
+	bool	bHoldingObject = false;
+	bool	bIsDead = false;
+	
+	//OLD CLIMB WAY
 	TArray<UBoxClimbComponent*>	climbBoxes;
 	UBoxClimbComponent*			validClimbableBox = nullptr;
 	bool						canClimb = false;
-	bool						bIsDead = false;
 
 	//PUSH/PULL INPUT FROM CONTROLLER
-	bool						rotatingLeft = false;
-	bool						rotatingRight = false;
-	float						pushingAxis = 0.0f;
+	bool	rotatingLeft = false;
+	bool	rotatingRight = false;
+	float	pushingAxis = 0.0f;
 
+	//TEMP CLIMB TRICK SHIT
 	bool	isClimbing = false;
 	FVector	rootHipsOffset;
 	FVector	beginClimbActorLocation;
