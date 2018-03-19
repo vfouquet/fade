@@ -110,8 +110,15 @@ void	UHoldComponent::Grab()
 		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::PreLightGrabbing);
 
 		holdingObject = closestInteractableObject.Get();
+		bool oneMeter = false;
+		if (UPrimitiveComponent* prim = holdingObject->GetAssociatedComponent())
+		{
+			float diff = mainCharacter->GetActorLocation().Z - prim->GetComponentLocation().Z;
+			if (diff < 15.0f)
+				oneMeter = true;
+		}
 		mainCharacter->BlockCharacter();
-		mainCharacter->PlayLightGrabMontage();
+		mainCharacter->PlayLightGrabMontage(oneMeter);
 	}
 	else
 	{
@@ -449,20 +456,4 @@ bool	UHoldComponent::getPushingPoints(FVector& centerPoint, FVector& firstPoint,
 	DrawDebugSphere(GetWorld(), firstPoint, 10.0f, 12, FColor::Emerald, true, 5.0f);
 	DrawDebugSphere(GetWorld(), secondPoint, 10.0f, 12, FColor::Turquoise, true, 5.0f);
 	return true;
-}
-	
-void	UHoldComponent::DebugInteractableDetection(FColor beginColor, FColor endColor, float lifetime)
-{
-	DrawDebugCapsule(GetWorld(), characterCapsule->GetComponentLocation(), 
-		characterCapsule->GetScaledCapsuleHalfHeight(), 
-		characterCapsule->GetScaledCapsuleRadius(), FQuat::Identity, 
-		beginColor, false, lifetime);
-
-	FVector destination = characterCapsule->GetComponentLocation() + 
-		GetOwner()->GetActorForwardVector() * 
-		((currentHoldingState == EHoldingState::LightGrabbing) ? HoldingDetectionOffset : DetectionOffset);
-	DrawDebugCapsule(GetWorld(), destination,
-		characterCapsule->GetScaledCapsuleHalfHeight(),
-		characterCapsule->GetScaledCapsuleRadius(), FQuat::Identity,
-		endColor, false, lifetime);
 }

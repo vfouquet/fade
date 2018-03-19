@@ -86,13 +86,19 @@ public:
 	void	SetThrowingObject(bool const value) { bThrowingObject = value; }
 	void	SetHoldingObject(bool const value) { bHoldingObject = value; }
 
-	void	PlayLightGrabMontage() { PlayAnimMontage(LightGrabAnim); }
+	void	PlayLightGrabMontage(bool oneMeter = false) { PlayAnimMontage(oneMeter? LightGrabOneMeterAnim : LightGrabAnim); }
 	void	PlayLightThrowMontage() { PlayAnimMontage(LightThrowAnim); }
 	void	PlayHeavyGrabMontage() { PlayAnimMontage(HeavyGrabAnim); }
 	void	PlayHeavyThrowMontage() { PlayAnimMontage(HeavyPushAnim); }
 	void	StopLightGrabMontage() { StopAnimMontage(LightGrabAnim); }
 	void	StopHeavyGrabMontage() { StopAnimMontage(HeavyGrabAnim); }
 
+	UFUNCTION(BlueprintPure)
+	bool			IsHeavyModeEnabled() const { return bMovingHeavyObject; }
+	UFUNCTION(BlueprintPure)
+	bool			IsRotatingLeft() const { return rotatingLeft; }
+	UFUNCTION(BlueprintPure)
+	bool			IsRotatingRight() const { return rotatingRight; }
 	UFUNCTION(BlueprintPure)
 	bool			CanThrow() const;
 	UFUNCTION(BlueprintPure)
@@ -120,6 +126,8 @@ public:
 	UAnimMontage*	ClimbMontage = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	LightGrabAnim = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage*	LightGrabOneMeterAnim = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	LightThrowAnim = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")

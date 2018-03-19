@@ -90,13 +90,10 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool							getPushingPoints(FVector& centerPoint, FVector& leftPoint, FVector& rightPoint) const;
 
-	//DEBUG
-	UFUNCTION(BlueprintCallable)
-	void	DebugInteractableDetection(FColor beginColor, FColor endColor, float lifetime);
 public:
-	UPROPERTY(EditAnywhere, Category = "Detection")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Detection")
 	float	DetectionOffset = 60.0f;
-	UPROPERTY(EditAnywhere, Category = "Detection")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Detection")
 	float	HoldingDetectionOffset = 100.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float	ThrowPower = 10.0f;
