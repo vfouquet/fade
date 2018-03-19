@@ -329,6 +329,7 @@ FVector	AMainCharacter::GetTwoHandsLocation() const
 bool	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint)
 {
 	UCapsuleComponent* capsuleComponent = GetCapsuleComponent();
+		FCollisionShape	firstCapsule = FCollisionShape::MakeCapsule(capsuleComponent->GetScaledCapsuleRadius(), 49);
 	FCollisionShape	secondCapsule = FCollisionShape::MakeCapsule(capsuleComponent->GetScaledCapsuleRadius(), 99);
 	FCollisionQueryParams	queryParams;
 	queryParams.AddIgnoredActor(this);
@@ -339,14 +340,14 @@ bool	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVe
 	groundEnd.Z -= capsuleComponent->GetScaledCapsuleHalfHeight();
 	
 	FVector twoMeterBegin = beginGround;
-	twoMeterBegin.Z += 200;
+	twoMeterBegin.Z += 150;
 	FVector	twoMeterEnd = groundEnd;
-	twoMeterEnd.Z += 200;
+	twoMeterEnd.Z += 150;
 	
 
 	FHitResult	twoMeterHitResult;
 	if (GetWorld()->SweepSingleByChannel(twoMeterHitResult, twoMeterBegin, twoMeterEnd,
-		FQuat::Identity, ECollisionChannel::ECC_Visibility, secondCapsule, queryParams))
+		FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel1, firstCapsule, queryParams))
 	{
 		FHitResult upperHitResult;
 		FVector upperBegin = beginGround;
@@ -356,19 +357,15 @@ bool	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVe
 		
 		if (!GetWorld()->SweepSingleByChannel(upperHitResult, upperBegin, upperEnd, FQuat::Identity, ECollisionChannel::ECC_Visibility, secondCapsule, queryParams))
 		{
-			if (twoMeterHitResult.Component.IsValid() && twoMeterHitResult.GetComponent()->ComponentHasTag("Climbable"))
-			{
-				twoMeterHitResult.GetComponent()->GetClosestPointOnCollision(upperEnd, outTopPoint);
-				outHitLocation = twoMeterHitResult.Location - twoMeterHitResult.Normal * secondCapsule.GetCapsuleRadius();
-				outNormal = twoMeterHitResult.Normal;
-				return true;
-			}
+			twoMeterHitResult.GetComponent()->GetClosestPointOnCollision(upperEnd, outTopPoint);
+			outHitLocation = twoMeterHitResult.Location - twoMeterHitResult.Normal * secondCapsule.GetCapsuleRadius();
+			outNormal = twoMeterHitResult.Normal;
+			return true;
 		}
 		return false;
 	}
 	else
 	{
-		FCollisionShape	firstCapsule = FCollisionShape::MakeCapsule(capsuleComponent->GetScaledCapsuleRadius(), 49);
 		FVector oneMeterBegin = beginGround;
 		oneMeterBegin.Z += 50;
 		FVector	oneMeterEnd = groundEnd;
@@ -376,15 +373,22 @@ bool	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVe
 		FHitResult	oneMeterHitResult;
 		
 		if (GetWorld()->SweepSingleByChannel(oneMeterHitResult, oneMeterBegin, oneMeterEnd, 
-			FQuat::Identity, ECollisionChannel::ECC_Visibility, firstCapsule, queryParams))
+			FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel1, firstCapsule, queryParams))
 		{
-			if (oneMeterHitResult.Component.IsValid() && oneMeterHitResult.GetComponent()->ComponentHasTag("Climbable"))
+			FHitResult upperHitResult;
+			FVector upperBegin = beginGround;
+			upperBegin.Z += 200;
+			FVector	upperEnd = groundEnd;
+			upperEnd.Z += 200;
+
+			if (!GetWorld()->SweepSingleByChannel(upperHitResult, upperBegin, upperEnd, FQuat::Identity, ECollisionChannel::ECC_Visibility, secondCapsule, queryParams))
 			{
 				oneMeterHitResult.GetComponent()->GetClosestPointOnCollision(twoMeterEnd, outTopPoint);
 				outHitLocation = oneMeterHitResult.Location - oneMeterHitResult.Normal * firstCapsule.GetCapsuleRadius();
 				outNormal = oneMeterHitResult.Normal;
 				return true;
 			}
+			return false;
 		}
 		return false;
 	}
