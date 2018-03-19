@@ -399,7 +399,7 @@ void	AMainCharacter::endCharacterClimbSnap()
 	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	isClimbing = true;
 }
-
+	
 void	AMainCharacter::stopCurrentPlayingMontage()
 {
 	UAnimMontage*	montage = GetCurrentMontage();
@@ -417,6 +417,18 @@ void	AMainCharacter::stopCurrentPlayingMontage()
 	{
 		if (holdComponent)
 			holdComponent->CancelThrow();
+		StopAnimMontage(montage);
+	}
+	else if (montage == HeavyGrabAnim)
+	{
+		if (holdComponent)
+			holdComponent->CancelHeavyGrab();
+		StopAnimMontage(montage);
+	}
+	else if (montage == HeavyPushAnim)
+	{
+		if (holdComponent)
+			holdComponent->CancelHeavyThrow();
 		StopAnimMontage(montage);
 	}
 }

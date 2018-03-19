@@ -115,18 +115,18 @@ void	UHoldComponent::Grab()
 	}
 	else
 	{
-		currentHoldingState = EHoldingState::HeavyGrabbing;
+		currentHoldingState = EHoldingState::PreHeavyGrabbing;
+		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::PreHeavyGrabbing);
 
-		ACharacter* character = Cast<ACharacter>(characterCapsule->GetOwner());	
+		mainCharacter->BlockCharacter();
+
 		holdingObject = closestInteractableObject.Get();
-		holdingObject->SetHoldComponent(this);
-		AActor* holdingActor = holdingObject->GetOwner();
 		holdingPrimitiveComponent = closestInteractableObject->GetAssociatedComponent();
 
 		FHitResult	hitRes;
 		FCollisionQueryParams	queryParams;
-		queryParams.AddIgnoredActor(character);
-		GetWorld()->LineTraceSingleByChannel(hitRes, character->GetActorLocation(), holdingPrimitiveComponent->GetComponentLocation(), ECollisionChannel::ECC_PhysicsBody, queryParams);
+		queryParams.AddIgnoredActor(mainCharacter);
+		GetWorld()->LineTraceSingleByChannel(hitRes, mainCharacter->GetActorLocation(), holdingPrimitiveComponent->GetComponentLocation(), ECollisionChannel::ECC_PhysicsBody, queryParams);
 		FRotator newRot = (hitRes.Normal * -1.0f).Rotation();
 		newRot.Pitch = 0.0f;
 		newRot.Roll = 0.0f;
@@ -136,11 +136,8 @@ void	UHoldComponent::Grab()
 		
 		holdingPrimitiveComponent->SetWorldLocation(holdingPrimitiveComponent->GetComponentLocation() + FVector::UpVector * 10.0f); //ADD SOME Z POSITION TO AVOID GROUND CONTACT (TEMP)
 
-		character->SetActorLocationAndRotation(holdingPoint, newRot, true);	//SNAP CHARACTER WITH A FACING ROTATION
-
-		mainCharacter->EnableMovingHeavyObjectMode();	
-		createHandConstraint();
-		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::HeavyGrabbing);
+		mainCharacter->SetActorLocationAndRotation(holdingPoint, newRot, true);	//SNAP CHARACTER WITH A FACING ROTATION
+		mainCharacter->PlayHeavyGrabMontage();
 	}
 }
 void	UHoldComponent::BeginLightGrabPositionUpdate()
@@ -148,6 +145,7 @@ void	UHoldComponent::BeginLightGrabPositionUpdate()
 	if (!holdingObject.IsValid())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Begin light grab position update : holding object is nullptr"));
+		mainCharacter->UnblockCharacter();
 		return;
 	}
 
@@ -171,6 +169,18 @@ void	UHoldComponent::BeginLightGrabPositionUpdate()
 
 void	UHoldComponent::EndLightGrab()
 {
+	
+}
+
+void	UHoldComponent::EndHeavyGrab()
+{
+	currentHoldingState = EHoldingState::HeavyGrabbing;
+	holdingStateChangedDelegate.Broadcast(EHoldingState::PreHeavyGrabbing, EHoldingState::HeavyGrabbing);
+
+	mainCharacter->EnableMovingHeavyObjectMode();
+	mainCharacter->UnblockCharacter();
+	createHandConstraint();
+	holdingObject->SetHoldComponent(this);
 }
 
 void	UHoldComponent::StopGrab()
@@ -182,6 +192,15 @@ void	UHoldComponent::StopGrab()
 		holdingObject = nullptr;
 		currentHoldingState = EHoldingState::None;
 		holdingStateChangedDelegate.Broadcast(EHoldingState::PreLightGrabbing, EHoldingState::None);
+	}
+	else if (currentHoldingState == EHoldingState::PreHeavyGrabbing)
+	{
+		mainCharacter->StopHeavyGrabMontage();
+		mainCharacter->UnblockCharacter();
+		holdingObject = nullptr;
+		holdingPrimitiveComponent = nullptr;
+		currentHoldingState = EHoldingState::None;
+		holdingStateChangedDelegate.Broadcast(EHoldingState::PreHeavyGrabbing, EHoldingState::None);
 	}
 	else if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
@@ -215,6 +234,7 @@ void	UHoldComponent::Throw()
 	{
 		currentHoldingState = EHoldingState::HeavyThrowing;
 		holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyGrabbing, EHoldingState::Throwing);
+		mainCharacter->PlayHeavyThrowMontage();
 	}
 }
 
@@ -239,7 +259,7 @@ void	UHoldComponent::EndThrow()
 
 		releaseHeavyGrabbedObject();
 
-		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * ThrowPower * 10000.0f);
+		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * HeavyThrowPower);
 		mainCharacter->DisableMovingHeavyObjectMode();
 
 		holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyThrowing, EHoldingState::None);
@@ -307,6 +327,14 @@ void	UHoldComponent::CancelThrow()
 	mainCharacter->SetThrowingObject(false);
 }
 
+void	UHoldComponent::CancelHeavyThrow()
+{
+	releaseHeavyGrabbedObject();
+	mainCharacter->DisableMovingHeavyObjectMode();
+	mainCharacter->SetThrowingObject(false);
+	currentHoldingState = EHoldingState::None;
+}
+
 void	UHoldComponent::CancelLightGrab()
 {
 	if (currentHoldingState == EHoldingState::LightGrabbing)
@@ -316,6 +344,15 @@ void	UHoldComponent::CancelLightGrab()
 	}
 	holdingObject = nullptr;
 	mainCharacter->UnblockCharacter();
+	currentHoldingState = EHoldingState::None;
+}
+
+void	UHoldComponent::CancelHeavyGrab()
+{
+	mainCharacter->DisableMovingHeavyObjectMode();
+	mainCharacter->UnblockCharacter();
+	holdingObject = nullptr;
+	holdingPrimitiveComponent = nullptr;
 	currentHoldingState = EHoldingState::None;
 }
 

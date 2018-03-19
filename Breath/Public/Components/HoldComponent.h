@@ -12,6 +12,7 @@ enum class EHoldingState : uint8
 	None = 0 UMETA(DisplayName = "None"),
 	PreLightGrabbing UMETA(DisplayName = "PreLightGrabbing"),
 	LightGrabbing UMETA(DisplayName = "LightGrabbing"),
+	PreHeavyGrabbing UMETA(DisplayName = "PreHeavyGrabbing"),
 	HeavyGrabbing UMETA(DisplayName = "HeavyGrabbing"),
 	Throwing UMETA(DisplayName = "Throwing"),
 	HeavyThrowing UMETA(DisplayName = "HeavyThrowing"),
@@ -49,6 +50,8 @@ public:
 	void	BeginLightGrabPositionUpdate();
 	UFUNCTION(BlueprintCAllable)
 	void	EndLightGrab();
+	UFUNCTION(BlueprintCallable)
+	void	EndHeavyGrab();
 	void	StopGrab();
 	void	Throw();
 	UFUNCTION(BlueprintCallable)
@@ -56,7 +59,9 @@ public:
 	void	Stick();
 	void	UniversalRelease();
 	void	CancelThrow();
+	void	CancelHeavyThrow();
 	void	CancelLightGrab();
+	void	CancelHeavyGrab();
 
 	UFUNCTION(BlueprintPure)
 	UInteractableComponent*			GetClosestInteractableObject() const { return closestInteractableObject.IsValid() ? closestInteractableObject.Get() : nullptr; }
@@ -95,8 +100,10 @@ public:
 	float	HoldingDetectionOffset = 100.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float	ThrowPower = 10.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
+	float	HeavyThrowPower = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hold")
-		float	HoldSnapOffset = 75.0f;
+	float	HoldSnapOffset = 75.0f;
 	UPROPERTY(EditAnywhere, Category = "Hold")
 	FComponentReference	LeftHandPhysicalConstraintReference;
 	UPROPERTY(EditAnywhere, Category = "Hold")

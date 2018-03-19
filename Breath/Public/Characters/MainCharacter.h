@@ -88,7 +88,10 @@ public:
 
 	void	PlayLightGrabMontage() { PlayAnimMontage(LightGrabAnim); }
 	void	PlayLightThrowMontage() { PlayAnimMontage(LightThrowAnim); }
+	void	PlayHeavyGrabMontage() { PlayAnimMontage(HeavyGrabAnim); }
+	void	PlayHeavyThrowMontage() { PlayAnimMontage(HeavyPushAnim); }
 	void	StopLightGrabMontage() { StopAnimMontage(LightGrabAnim); }
+	void	StopHeavyGrabMontage() { StopAnimMontage(HeavyGrabAnim); }
 
 	UFUNCTION(BlueprintPure)
 	bool			CanThrow() const;
@@ -109,14 +112,21 @@ public:
 	/*Time to validate climb by walking**/
 	UPROPERTY(EditAnywhere, Category = "Climb")
 	float	ClimbAngleTolerence = 45.0f;
+	
 	UPROPERTY(BlueprintAssignable)
 	FDeathDelegate	OnDie;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	ClimbMontage = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	LightGrabAnim = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	LightThrowAnim = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage*	HeavyGrabAnim = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage*	HeavyPushAnim = nullptr;
+
 private:
 	bool	climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint);
 	UFUNCTION()
