@@ -326,8 +326,6 @@ FVector	AMainCharacter::GetTwoHandsLocation() const
 	return FVector::ZeroVector;
 }
 
-#include "DrawDebugHelpers.h"
-
 bool	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint)
 {
 	UCapsuleComponent* capsuleComponent = GetCapsuleComponent();
