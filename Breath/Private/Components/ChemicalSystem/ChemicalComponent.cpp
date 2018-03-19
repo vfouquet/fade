@@ -123,12 +123,11 @@ void	UChemicalComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherA
 		UChemicalComponent*	chemicalComp = FindAssociatedChemicalComponent(OtherComp);
 		if (!chemicalComp)
 			return;
+		if (!hitChemicalComponents.Contains(chemicalComp))
+			hitChemicalComponents.Add(chemicalComp, FVector::Distance(HitComponent->GetComponentLocation(), OtherComp->GetComponentLocation()));
 		EChemicalTransformation transformation = getEffectiveEffect(chemicalComp->GetType(), chemicalComp->GetState());
 		if (transformation != EChemicalTransformation::None)
-		{
-			hitChemicalComponents.Add(chemicalComp, FVector::Distance(HitComponent->GetComponentLocation(), OtherComp->GetComponentLocation()));
 			addComponentToChangers(transformation, OtherComp);
-		}
 	}
 }
 
