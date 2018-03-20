@@ -6,6 +6,7 @@
 #include "Components/SplineComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
+#include "Components/PrimitiveComponent.h"
 
 #include "Controllers/MainPlayerController.h"
 #include "Cameras/RailCamera.h" 
@@ -180,7 +181,7 @@ void ACameraRailManager::Tick(float DeltaSeconds)
 		{
 			if (point.Actor.IsValid())
 			{
-				FVector PointRelactiveLocFromPlayer = point.Actor->GetActorLocation() - PlayerActor->GetActorLocation();
+				FVector PointRelactiveLocFromPlayer = point.Actor->GetActorLocation() - PlayerActor->GetRootPrimitiveComponent()->GetComponentToWorld().GetLocation();
 				PointRelactiveLocFromPlayer *= point.Weight;
 				CentroidRelativeLocFromPlayer += PointRelactiveLocFromPlayer;
 			}
