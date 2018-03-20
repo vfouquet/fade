@@ -147,6 +147,14 @@ void	UChemicalComponent::GiveIdentity(EChemicalState previousState)
 	refreshChangersWithCurrentInteractions();
 }
 
+void	UChemicalComponent::AddHitComponent(UChemicalComponent* chemicalComp)
+{
+	if (!chemicalComp || !chemicalComp->GetAssociatedComponent() || !associatedComponent)
+		return;
+	if (!hitChemicalComponents.Contains(chemicalComp))
+		hitChemicalComponents.Add(chemicalComp, FVector::Distance(associatedComponent->GetComponentLocation(), chemicalComp->GetAssociatedComponent()->GetComponentLocation()));
+}
+
 ChemicalStateChanger&	UChemicalComponent::addStateChanger(EChemicalTransformation transformation)
 {
 	ChemicalStateChanger	temp(2.0f);

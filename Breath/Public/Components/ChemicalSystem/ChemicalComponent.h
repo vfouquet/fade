@@ -46,6 +46,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	/*Called when exiting erase zone**/
 	void	GiveIdentity(EChemicalState	previousState);
+	UFUNCTION(BlueprintCallable)
+	void	AddHitComponent(UChemicalComponent* primComp);
 
 	UFUNCTION(BlueprintPure)
 	static UChemicalComponent*	FindAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent);
