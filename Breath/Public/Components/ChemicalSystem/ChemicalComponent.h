@@ -16,6 +16,17 @@ class BREATH_API UChemicalComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+	struct FChemicalPropagation
+	{
+		UChemicalComponent*		component = nullptr;
+		UPrimitiveComponent*	primitive = nullptr;
+		bool					bUseDistance = false;
+		float					initialDistance = 0.0f;
+
+		inline bool operator==(FChemicalPropagation const& other) { return component == other.component; }
+
+	};
+
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FChemicalStateChanged, EChemicalTransformation, transformation, EChemicalState, previous, EChemicalState, next);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FChemicalCollision, UChemicalComponent*, OtherChemical, EChemicalTransformation, EffectOnThis);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChemicalEndCollision, UChemicalComponent*, OtherChemical);
@@ -51,6 +62,7 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	static UChemicalComponent*	FindAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent);
+	UFUNCTION(BlueprintPure)
 	EChemicalType const&	GetType() const { return type; }
 	UFUNCTION(BlueprintCallable)
 	EChemicalState const&	GetState() const { return state; }
@@ -71,6 +83,12 @@ public:
 	FChemicalEndCollision	chemicalEndCollisionEvent;
 	UPROPERTY(BlueprintAssignable)
 	FChemicalPercussion		chemicalPercussionEvent;
+	
+	UPROPERTY(EditAnywhere, Category = "Propagation")
+	TArray<FComponentReference>	PropagationComponentReferences;
+	UPROPERTY(EditAnywhere, Category = "Propagation")
+	TArray<FComponentReference>	StaticPropagationComponentReferences;
+
 	/**Does a incomplete transformation remain and can be resumed later or object state is reset*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Transformations")
 	bool	bPersistantTransformation = false;
@@ -89,6 +107,7 @@ protected:
 
 protected:
 	TMap<UChemicalComponent*, float>	hitChemicalComponents;
+	TArray<FChemicalPropagation>		propagationComponents;
 
 	TMap<EChemicalTransformation, ChemicalStateChanger>	currentChangers;
 	UPrimitiveComponent*								associatedComponent = nullptr;

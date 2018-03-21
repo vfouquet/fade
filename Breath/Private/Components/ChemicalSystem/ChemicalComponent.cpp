@@ -42,10 +42,45 @@ void UChemicalComponent::BeginPlay()
 	hitOverlap.BindUFunction(this, "OnHit");
 	associatedComponent->OnComponentHit.Add(hitOverlap);
 
-	TArray<UPrimitiveComponent*>	primitives;
-	associatedComponent->GetOverlappingComponents(primitives);
-	for (auto& prim : primitives)
-		OnOverlap(associatedComponent, prim->GetOwner(), prim, 0, false, FHitResult());	//DANGEROUS SHIT
+	for (auto& propagationComp : PropagationComponentReferences)
+	{
+		UPrimitiveComponent* otherPrimitive = Cast<UPrimitiveComponent>(propagationComp.GetComponent(propagationComp.OtherActor));
+		if (!otherPrimitive)
+			continue;
+		UChemicalComponent* otherChemicalComp = FindAssociatedChemicalComponent(otherPrimitive);
+		if (otherChemicalComp)
+			return;
+		FChemicalPropagation	propagationParams;
+		propagationParams.component = otherChemicalComp;
+		propagationParams.primitive = otherPrimitive;
+		propagationParams.bUseDistance = true;
+		propagationParams.initialDistance = 
+			FVector::Distance(associatedComponent->GetComponentLocation(), otherPrimitive->GetComponentLocation());
+		propagationComponents.Add(propagationParams);
+		
+		propagationParams.component = this;
+		propagationParams.primitive = GetAssociatedComponent();
+		otherChemicalComp->propagationComponents.Add(propagationParams);
+	}
+	for (auto& propagationComp : StaticPropagationComponentReferences)
+	{
+		UPrimitiveComponent* otherPrimitive = Cast<UPrimitiveComponent>(propagationComp.GetComponent(propagationComp.OtherActor));
+		if (!otherPrimitive)
+			continue;
+		UChemicalComponent* otherChemicalComp = FindAssociatedChemicalComponent(otherPrimitive);
+		if (!otherChemicalComp)
+			return;
+		FChemicalPropagation	propagationParams;
+		propagationParams.component = otherChemicalComp;
+		propagationParams.primitive = otherPrimitive;
+		propagationComponents.Add(propagationParams);
+
+		propagationParams.component = this;
+		propagationParams.primitive = GetAssociatedComponent();
+		otherChemicalComp->propagationComponents.Add(propagationParams);
+	}
+
+	refreshChangersWithCurrentInteractions();
 }
 
 
@@ -54,22 +89,43 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (!associatedComponent)
+		return;
+
 	// ...
-	for (auto& stateChanger : currentChangers)
+	for (auto& hitComp : hitChemicalComponents)
 	{
-		for (auto& hitComp : hitChemicalComponents)
+		float distance = FVector::Distance(associatedComponent->GetComponentLocation(), hitComp.Key->GetAssociatedComponent()->GetComponentLocation());
+		if (distance > hitComp.Value + 25.0f)
 		{
-			float distance = FVector::Distance(associatedComponent->GetComponentLocation(), hitComp.Key->GetAssociatedComponent()->GetComponentLocation());
-			if (distance > hitComp.Value + 25.0f)
+			hitChemicalComponents.Remove(hitComp.Key);
+			for (auto& stateChanger : currentChangers)
 			{
-				hitChemicalComponents.Remove(hitComp.Key);
 				if (stateChanger.Value.RemoveIfNeeded(hitComp.Key->GetAssociatedComponent()) && !bPersistantTransformation)
-				{
 					currentChangers.Remove(stateChanger.Key);
-					continue;
-				}
 			}
 		}
+	}
+
+	for (auto& propagationComp : propagationComponents)
+	{
+		if (!propagationComp.bUseDistance)
+			continue;
+		float distance = FVector::Distance(associatedComponent->GetComponentLocation(), 
+			propagationComp.primitive->GetComponentLocation());
+		if (distance > propagationComp.initialDistance)
+		{
+			for (auto& stateChanger : currentChangers)
+			{
+				if (stateChanger.Value.RemoveIfNeeded(propagationComp.primitive) && !bPersistantTransformation)
+					currentChangers.Remove(stateChanger.Key);
+			}
+			propagationComponents.Remove(propagationComp);
+		}
+	}
+
+	for (auto& stateChanger : currentChangers)
+	{
 		if (stateChanger.Value.Update(DeltaTime))
 		{
 			EChemicalState previousState = state;
@@ -262,6 +318,21 @@ void	UChemicalComponent::refreshChangersWithCurrentInteractions()
 		{
 			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
 			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(hitComp.Key->GetAssociatedComponent()));
+		}
+	}
+
+	for (auto& propagationComp : propagationComponents)
+	{
+		propagationComp.component->updateImpact(this, associatedComponent);
+		EChemicalTransformation transformation = getEffectiveEffect(propagationComp.component->GetType(), propagationComp.component->GetState());
+		if (transformation == EChemicalTransformation::None)
+			continue;
+		if (currentChangers.Contains(transformation))
+			currentChangers[transformation].AddImpactingComponent(Cast<UPrimitiveComponent>(propagationComp.component->GetAssociatedComponent()));
+		else
+		{
+			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
+			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(propagationComp.component->GetAssociatedComponent()));
 		}
 	}
 }
