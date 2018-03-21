@@ -40,7 +40,7 @@ void ARailCamera::NotifyActorBeginOverlap(AActor* OtherActor)
 
 	if (CurrentRailManager != nullptr && RailPoint != nullptr)
 	{
-		if (CurrentRailManager->GetCurrentInputKey() > RailPoint->SplinePoint.InputKey 
+		if (CurrentRailManager->GetInputKeyAtWorldLocation(this->CameraArm->GetComponentToWorld().GetLocation()) > RailPoint->SplinePoint.InputKey 
 			&& RailPoint->bOutCameraSettings == true)
 		{
 			this->CameraSettings = RailPoint->OutCameraSettings;
