@@ -228,8 +228,7 @@ UChemicalComponent*	UChemicalComponent::FindAssociatedChemicalComponent(UPrimiti
 	{
 		UChemicalComponent*	chemicalComp = Cast<UChemicalComponent>(actorComp);
 		if (!chemicalComp) continue;
-		UPrimitiveComponent* tempPrimitive = Cast<UPrimitiveComponent>(chemicalComp->AssociatedComponent.GetComponent(refCompOwner));
-		if (tempPrimitive == referenceComponent)
+		if (chemicalComp->GetAssociatedComponent() == referenceComponent)
 			return chemicalComp;
 	}
 	return nullptr;
@@ -284,7 +283,7 @@ void	UChemicalComponent::refreshChangersWithCurrentInteractions()
 	if (transformation != EChemicalTransformation::None)
 	{
 		ChemicalStateChanger& stateChanger = addStateChanger(transformation);
-		stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(GetOwner())));
+		stateChanger.AddImpactingComponent(associatedComponent);
 	}
 
 	TArray<UPrimitiveComponent*>	overlappingPrimitives;
@@ -299,11 +298,11 @@ void	UChemicalComponent::refreshChangersWithCurrentInteractions()
 		if (transformation == EChemicalTransformation::None)
 			continue;
 		if (currentChangers.Contains(transformation))
-			currentChangers[transformation].AddImpactingComponent(Cast<UPrimitiveComponent>(comp->AssociatedComponent.GetComponent(comp->GetOwner())));
+			currentChangers[transformation].AddImpactingComponent(comp->GetAssociatedComponent());
 		else
 		{
 			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
-			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(comp->AssociatedComponent.GetComponent(comp->GetOwner())));
+			stateChanger.AddImpactingComponent(comp->GetAssociatedComponent());
 		}
 	}
 	for (auto& hitComp : hitChemicalComponents)
@@ -313,11 +312,11 @@ void	UChemicalComponent::refreshChangersWithCurrentInteractions()
 		if (transformation == EChemicalTransformation::None)
 			continue;
 		if (currentChangers.Contains(transformation))
-			currentChangers[transformation].AddImpactingComponent(Cast<UPrimitiveComponent>(hitComp.Key->GetAssociatedComponent()));
+			currentChangers[transformation].AddImpactingComponent(hitComp.Key->GetAssociatedComponent());
 		else
 		{
 			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
-			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(hitComp.Key->GetAssociatedComponent()));
+			stateChanger.AddImpactingComponent(hitComp.Key->GetAssociatedComponent());
 		}
 	}
 
@@ -328,11 +327,11 @@ void	UChemicalComponent::refreshChangersWithCurrentInteractions()
 		if (transformation == EChemicalTransformation::None)
 			continue;
 		if (currentChangers.Contains(transformation))
-			currentChangers[transformation].AddImpactingComponent(Cast<UPrimitiveComponent>(propagationComp.component->GetAssociatedComponent()));
+			currentChangers[transformation].AddImpactingComponent(propagationComp.component->GetAssociatedComponent());
 		else
 		{
 			ChemicalStateChanger& stateChanger = addStateChanger(transformation);
-			stateChanger.AddImpactingComponent(Cast<UPrimitiveComponent>(propagationComp.component->GetAssociatedComponent()));
+			stateChanger.AddImpactingComponent(propagationComp.component->GetAssociatedComponent());
 		}
 	}
 }

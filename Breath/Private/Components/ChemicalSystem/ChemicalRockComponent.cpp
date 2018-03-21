@@ -52,7 +52,7 @@ EChemicalTransformation		UChemicalRockComponent::getEffectiveEffect(EChemicalTyp
 		if (canBurn())
 			return EChemicalTransformation::Burning;
 	}
-	else if (otherType == EChemicalType::Water)
+	else if (otherType == EChemicalType::Water && otherState == EChemicalState::None)
 	{
 		if (canBeDrenched())
 			return EChemicalTransformation::Drenching;

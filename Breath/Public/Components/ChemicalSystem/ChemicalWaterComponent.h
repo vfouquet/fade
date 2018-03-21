@@ -16,4 +16,22 @@ class BREATH_API UChemicalWaterComponent : public UChemicalComponent
 
 public:
 	void	InitializeComponent() override;
+
+	UFUNCTION(BlueprintPure)
+	bool	IsInsideBody() const { return InsideBody; }
+	UFUNCTION(BlueprintCallable)
+	void	SetOutsideBody();
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water properties")
+	bool	InsideBody = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water properties")
+	bool	AlreadyFilled = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water properties")
+	float FillingTime = 0.1f;
+
+private:
+	virtual ChemicalStateChanger&		addStateChanger(EChemicalTransformation transformation);
+	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const override;
+	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const override;
 };

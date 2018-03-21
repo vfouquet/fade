@@ -98,6 +98,7 @@ public:
 	static	float	SpeedThresholdValue;
 
 protected:
+	void								refreshChangersWithCurrentInteractions();
 	virtual	void						getStateChangedUselessTransformation(TArray<EChemicalTransformation>& returnValues, EChemicalTransformation previousTransformation) const {}
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const { return EChemicalTransformation::None; }
 	virtual EChemicalTransformation		getPotentialSelfNextTransformation() const { return EChemicalTransformation::None; }
@@ -119,6 +120,5 @@ private:
 	void	addComponentToChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent);
 	void	removeComponentFromChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent);
 	void	updateImpact(UChemicalComponent* chemical, UPrimitiveComponent* primtive);
-	void	refreshChangersWithCurrentInteractions();
 	void	applyChemicalPhysics();
 };
