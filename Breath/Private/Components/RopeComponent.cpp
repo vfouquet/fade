@@ -3,6 +3,7 @@
 #include "RopeComponent.h"
 
 #include "InteractableComponent.h"
+#include "RopeAttachmentComponent.h"
 
 // Sets default values for this component's properties
 URopeComponent::URopeComponent()
@@ -23,88 +24,102 @@ void URopeComponent::BeginPlay()
 	float	tempLength = 0.0f;
 
 	AActor*	owner = GetOwner();
-	FVector	ownerLocation = GetOwner()->GetActorLocation();
+	UChildActorComponent*	beginComponent = Cast<UChildActorComponent>(BeginComponentReference.GetComponent(owner));
+	UChildActorComponent*	endComponent = Cast<UChildActorComponent>(EndComponentReference.GetComponent(owner));
+	if (!beginComponent || !endComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s-Rope Component : BeginChildActorComponent or EndChildActorComponent is wrong"), owner?*owner->GetName() : *FString("Error"));
+		return;
+	}
+
+	AActor* beginActor = beginComponent->GetChildActor();
+	AActor* endActor = endComponent->GetChildActor();
+	if (!beginActor || !endActor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s-Rope Component : BeginChildActor or EndChildActor is hasn't been created"), owner?*owner->GetName() : *FString("Error"));
+		return;
+	}
+
+	URopeAttachmentComponent*	beginAttach = beginActor->FindComponentByClass<URopeAttachmentComponent>();
+	URopeAttachmentComponent*	endAttach = endActor->FindComponentByClass<URopeAttachmentComponent>();
+	if (!beginAttach || !endAttach)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s-Rope Component : BeginRopeAttachment or EndRopeAttachment is wrong"), owner ? *owner->GetName() : *FString("Error"));
+		return;
+	}
+
+	beginAttachPrimitive = beginAttach->GetRopeAttachment();
+	endAttachPrimitive = endAttach->GetRopeAttachment();
+	if (!beginAttachPrimitive || !endAttachPrimitive)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s-Rope Component : BeginRopeAttachmentPrimitive or EndRopeAttachmentPrimitive is wrong"), owner ? *owner->GetName() : *FString("Error"));
+		return;
+	}
+
+	FVector beginActorBoundsLoc, beginActorBoxExtent;
+	beginActor->GetActorBounds(true, beginActorBoundsLoc, beginActorBoxExtent);
+	FVector endActorBoundsLoc, endActorBoxExtent;
+	endActor->GetActorBounds(true, endActorBoundsLoc, endActorBoxExtent);
+
+	FVector	direction = (endComponent->GetComponentLocation() - beginComponent->GetComponentLocation()).GetSafeNormal();
+	FVector	sphereBeginPoint = beginComponent->GetComponentLocation() + direction * beginActorBoxExtent;
+	FVector	sphereEndPoint = endComponent->GetComponentLocation() + direction * endActorBoxExtent * -1.0f;
+
+	float	finalLength = (sphereEndPoint - sphereBeginPoint).Size();
+
+	int parts = (int)(finalLength / Thickness);
+	if (parts == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s-Rope Component : Thickness is too high for the rope distance, should be inferior to %f"), owner ? *owner->GetName() : *FString("Error"), finalLength);
+		return;
+	}
+
+	float rest = finalLength - (parts * Thickness);
+	float padding = rest / (parts - 1);
+
+	FVector	spawnPoint = sphereBeginPoint + direction * Thickness * 0.5f;
+	
+	for (int idx = 0; idx < parts; idx++)
+	{
+		USphereComponent*	sphere = NewObject<USphereComponent>(this);
+		sphere->SetupAttachment(this);
+		sphere->RegisterComponent();
+		sphere->SetSphereRadius(Thickness * 0.5f, false);
+		sphere->SetWorldLocation(spawnPoint);
+		sphere->SetSimulatePhysics(true);
+		sphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		sphere->SetCollisionProfileName("SmallInteractable");
+		sphere->SetEnableGravity(true);
+		sphere->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+
+		spawnPoint += direction * (Thickness + padding);
+		spheres.Add(sphere);
+	}
+
+	UPhysicsConstraintComponent* beginConstraint = NewObject<UPhysicsConstraintComponent>(this);
+	beginConstraint->SetupAttachment(this);
+	beginConstraint->RegisterComponent();
+	beginConstraint->SetWorldLocation(sphereBeginPoint);
+	beginConstraint->SetConstrainedComponents(beginAttachPrimitive, NAME_None, spheres[0], NAME_None);
+	constraints.Add(beginConstraint);
+
+	UPhysicsConstraintComponent* endConstraint = NewObject<UPhysicsConstraintComponent>(this);
+	endConstraint->SetupAttachment(this);
+	endConstraint->RegisterComponent();
+	endConstraint->SetWorldLocation(sphereEndPoint);
+	endConstraint->SetConstrainedComponents(endAttachPrimitive, NAME_None, spheres.Last(), NAME_None);
+	constraints.Add(endConstraint);
 
 	spline = NewObject<USplineComponent>(this);
 	spline->SetupAttachment(this);
 	spline->SetRelativeTransform(FTransform());
 	spline->RegisterComponent();
 
-	while (tempLength < Length)
-	{
-		USphereComponent*	sphere = NewObject<USphereComponent>(this);
-		sphere->SetupAttachment(this);
-		sphere->SetRelativeTransform(FTransform());
-		sphere->RegisterComponent();
-		sphere->SetSphereRadius(Thickness * 0.5f, false);
-		sphere->SetWorldLocation(ownerLocation + owner->GetActorForwardVector() * tempLength);
-		sphere->SetSimulatePhysics(true);
-		sphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		sphere->SetCollisionProfileName("SmallInteractable");
-		sphere->SetEnableGravity(true);
-
-		tempLength += Thickness;
-		spheres.Add(sphere);
-		splinePoints.Add(sphere->GetComponentLocation());
-	}
-
-	spline->SetSplinePoints(splinePoints, ESplineCoordinateSpace::World, true);
-	createSplineMeshes();
 	createConstraints();
+	updateSplinePoints();
+	createSplineMeshes();
 
-	if (BeginChild)
-	{
-		UChildActorComponent* beginChildActorComp = NewObject<UChildActorComponent>(this);
-		beginChildActorComp->SetupAttachment(this);
-		beginChildActorComp->RegisterComponent();
-		beginChildActorComp->SetChildActorClass(BeginChild);
-		beginChildActorComp->CreateChildActor();
-
-		beginActor = beginChildActorComp->GetChildActor();
-		FVector actorBoundsLoc, actorBoxExtent;
-		beginActor->GetActorBounds(true, actorBoundsLoc, actorBoxExtent);
-
-		USceneComponent* componentToAttach = BeginPrimitiveComponentReference.GetComponent(beginActor);
-		UPrimitiveComponent* primToAttach = Cast<UPrimitiveComponent>(componentToAttach);
-		primToAttach->SetWorldLocation(ownerLocation - owner->GetActorForwardVector() * (Thickness * 0.5f + actorBoxExtent.Size() * 0.5f));
-
-		if (spheres.Num() != 0 && primToAttach)
-		{
-			UPhysicsConstraintComponent* constraint = NewObject<UPhysicsConstraintComponent>(this);
-			constraint->SetupAttachment(this);
-			constraint->RegisterComponent();
-			constraint->SetWorldLocation(ownerLocation - owner->GetActorForwardVector() * Thickness * 0.5f);
-			constraint->SetConstrainedComponents(primToAttach, NAME_None, spheres[0], NAME_None);
-			constraints.Add(constraint);
-		}
-	}
-
-	if (EndChild)
-	{
-		UChildActorComponent* endChildActorComp = NewObject<UChildActorComponent>(this);
-		endChildActorComp->SetupAttachment(this);
-		endChildActorComp->RegisterComponent();
-		endChildActorComp->SetChildActorClass(EndChild);
-		endChildActorComp->CreateChildActor();
-
-		endActor = endChildActorComp->GetChildActor();
-		FVector actorBoundsLoc, actorBoxExtent;
-		endActor->GetActorBounds(true, actorBoundsLoc, actorBoxExtent);
-
-		USceneComponent* componentToAttach = EndPrimitiveComponentReference.GetComponent(endActor);
-		UPrimitiveComponent* primToAttach = Cast<UPrimitiveComponent>(componentToAttach);
-		primToAttach->SetWorldLocation(ownerLocation + owner->GetActorForwardVector() * (Length - Thickness * 0.5f + actorBoxExtent.Size() * 0.5f));
-
-		if (spheres.Num() != 0 && primToAttach)
-		{
-			UPhysicsConstraintComponent* constraint = NewObject<UPhysicsConstraintComponent>(this);
-			constraint->SetupAttachment(this);
-			constraint->RegisterComponent();
-			constraint->SetWorldLocation(ownerLocation + owner->GetActorForwardVector() * (Length - Thickness * 0.5f));
-			constraint->SetConstrainedComponents(primToAttach, NAME_None, spheres.Last(), NAME_None);
-			constraints.Add(constraint);
-		}
-	}
+	isInit = true;
 }
 
 
@@ -113,6 +128,8 @@ void URopeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (!isInit)
+		return;
 	updateSplinePoints();
 	updateSplineMeshes();
 }
@@ -138,15 +155,15 @@ void	URopeComponent::createSplineMeshes()
 
 void	URopeComponent::createConstraints()
 {
-	AActor*	owner = GetOwner();
-	FVector	ownerLocation = GetOwner()->GetActorLocation();
-	for (int pos = 0; pos < splinePoints.Num() - 1; pos++)
+	for (int pos = 0; pos < spheres.Num() - 1; pos++)
 	{
+		FVector	distanceNext = spheres[pos + 1]->GetComponentLocation() - spheres[pos]->GetComponentLocation();
 		UPhysicsConstraintComponent* constraint = NewObject<UPhysicsConstraintComponent>(this);
 		constraint->SetupAttachment(this);
 		constraint->RegisterComponent();
-		constraint->SetWorldLocation(ownerLocation + owner->GetActorForwardVector() * Thickness * (pos + 1));
+		constraint->SetWorldLocation(spheres[pos]->GetComponentLocation() + distanceNext * 0.5f);
 		constraint->SetConstrainedComponents(spheres[pos], NAME_None, spheres[pos + 1], NAME_None);
+		constraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
 		constraints.Add(constraint);
 	}
 }
@@ -169,7 +186,9 @@ void	URopeComponent::updateSplinePoints()
 {
 	splinePoints.Empty(splinePoints.Num());
 
-	for (auto& sphere : spheres)
-		splinePoints.Add(sphere->GetComponentLocation());
+	splinePoints.Add(spheres[0]->GetComponentLocation() + Thickness * 0.5f * (beginAttachPrimitive->GetComponentLocation() - spheres[0]->GetComponentLocation()).GetSafeNormal());
+	for (int pos = 0; pos < spheres.Num() - 1; pos++)
+		splinePoints.Add(spheres[pos]->GetComponentLocation() + (spheres[pos + 1]->GetComponentLocation() - spheres[pos]->GetComponentLocation()) * 0.5f);
+	splinePoints.Add(spheres.Last()->GetComponentLocation() + Thickness * 0.5f * (endAttachPrimitive->GetComponentLocation() - spheres.Last()->GetComponentLocation()).GetSafeNormal());
 	spline->SetSplinePoints(splinePoints, ESplineCoordinateSpace::World, true);
 }

@@ -30,19 +30,15 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
+	bool	CanBurn = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
 	float	Thickness = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
-	float	Length = 10.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
 	UStaticMesh*	mesh = nullptr;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
-	UClass*	BeginChild = nullptr;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
-	UClass*	EndChild = nullptr;
 	UPROPERTY(EditAnywhere, Category = "Rope")
-	FComponentReference	BeginPrimitiveComponentReference;
+	FComponentReference	BeginComponentReference;
 	UPROPERTY(EditAnywhere, Category = "Rope")
-	FComponentReference	EndPrimitiveComponentReference;
+	FComponentReference	EndComponentReference;
 
 private:
 	void	createSplineMeshes();
@@ -56,6 +52,7 @@ private:
 	TArray<FVector>							splinePoints;
 	TArray<UPhysicsConstraintComponent*>	constraints;
 	USplineComponent*						spline = nullptr;
-	AActor*									beginActor = nullptr;
-	AActor*									endActor = nullptr;
+	UPrimitiveComponent*					beginAttachPrimitive = nullptr;
+	UPrimitiveComponent*					endAttachPrimitive = nullptr;
+	bool									isInit = false;
 };
