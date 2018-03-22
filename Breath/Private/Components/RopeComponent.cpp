@@ -4,6 +4,7 @@
 
 #include "InteractableComponent.h"
 #include "RopeAttachmentComponent.h"
+#include "Engine/StaticMesh.h"
 
 // Sets default values for this component's properties
 URopeComponent::URopeComponent()
@@ -94,12 +95,31 @@ void URopeComponent::BeginPlay()
 
 		spawnPoint += direction * (Thickness + padding);
 		spheres.Add(sphere);
+
+		if (!CanBurn)
+			continue;
+		UChemicalWoodComponent* wood = NewObject<UChemicalWoodComponent>(GetOwner());
+		wood->RegisterComponent();
+		/*
+		if (idx == 0 || idx == parts - 1)
+		{
+			FComponentReference	ref;
+			ref.OverrideComponent = sphere;
+			wood->StaticPropagationComponentReferences.Add(ref);
+		}
+		*/
+		wood->OverrideAssociatedComponent(sphere);
+		chemicalComponents.Add(wood);
+		FScriptDelegate	woodDel;
+		woodDel.BindUFunction(this, "onDestroyedSphere");
+		wood->stateChangedDelegate.Add(woodDel);
 	}
 
 	UPhysicsConstraintComponent* beginConstraint = NewObject<UPhysicsConstraintComponent>(this);
 	beginConstraint->SetupAttachment(this);
 	beginConstraint->RegisterComponent();
 	beginConstraint->SetWorldLocation(sphereBeginPoint);
+	beginConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 5.0f);
 	beginConstraint->SetConstrainedComponents(beginAttachPrimitive, NAME_None, spheres[0], NAME_None);
 	constraints.Add(beginConstraint);
 
@@ -107,6 +127,7 @@ void URopeComponent::BeginPlay()
 	endConstraint->SetupAttachment(this);
 	endConstraint->RegisterComponent();
 	endConstraint->SetWorldLocation(sphereEndPoint);
+	endConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 5.0f);
 	endConstraint->SetConstrainedComponents(endAttachPrimitive, NAME_None, spheres.Last(), NAME_None);
 	constraints.Add(endConstraint);
 
@@ -185,6 +206,10 @@ void URopeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 void	URopeComponent::createSplineMeshes()
 {
+	FBox boxSize = mesh->GetBoundingBox();
+	float yScale = Thickness / boxSize.GetSize().Y;
+	float ZScale = Thickness / boxSize.GetSize().Z;
+
 	for (int pos = 0; pos < splinePoints.Num() - 1; pos++)
 	{
 		USplineMeshComponent*	splineMesh = NewObject<USplineMeshComponent>(this);
@@ -197,6 +222,10 @@ void	URopeComponent::createSplineMeshes()
 		spline->GetLocationAndTangentAtSplinePoint(pos, startPoint, startTangent, ESplineCoordinateSpace::World);
 		spline->GetLocationAndTangentAtSplinePoint(pos + 1, endPoint, endTangent, ESplineCoordinateSpace::World);
 		splineMesh->SetStartAndEnd(startPoint, startTangent, endPoint, endTangent, true);
+		
+		splineMesh->SetStartScale(FVector2D(yScale, ZScale));
+		splineMesh->SetEndScale(FVector2D(yScale, ZScale));
+		
 		splineMeshes.Add(splineMesh);
 		splineMesh->SetStaticMesh(mesh);
 	}
@@ -212,7 +241,6 @@ void	URopeComponent::createConstraints()
 		constraint->RegisterComponent();
 		constraint->SetWorldLocation(spheres[pos]->GetComponentLocation() + distanceNext * 0.5f);
 		constraint->SetConstrainedComponents(spheres[pos], NAME_None, spheres[pos + 1], NAME_None);
-		constraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
 		constraints.Add(constraint);
 	}
 }
@@ -240,4 +268,38 @@ void	URopeComponent::updateSplinePoints()
 		splinePoints.Add(spheres[pos]->GetComponentLocation() + (spheres[pos + 1]->GetComponentLocation() - spheres[pos]->GetComponentLocation()) * 0.5f);
 	splinePoints.Add(spheres.Last()->GetComponentLocation() + Thickness * 0.5f * (endAttachPrimitive->GetComponentLocation() - spheres.Last()->GetComponentLocation()).GetSafeNormal());
 	spline->SetSplinePoints(splinePoints, ESplineCoordinateSpace::World, true);
+}
+
+void	URopeComponent::onDestroyedSphere(EChemicalTransformation transformation, EChemicalState previousState, EChemicalState nextState)
+{
+	if (transformation == EChemicalTransformation::Burning)
+	{
+		if (nextState == EChemicalState::Scorched)
+			destroyRope();
+	}
+}
+
+void	URopeComponent::destroyRope()
+{
+	if (!isInit)
+		return;
+	isInit = false;
+
+	for (auto& constraint : constraints)
+	{
+		constraint->BreakConstraint();
+		constraint->DestroyComponent();
+	}
+	constraints.Empty();
+	for (auto& wood : chemicalComponents)
+		wood->DestroyComponent();
+	chemicalComponents.Empty();
+	for (auto& sphere : spheres)
+		sphere->DestroyComponent();
+	spheres.Empty();
+	for (auto& splineMesh : splineMeshes)
+		splineMesh->DestroyComponent();
+	splineMeshes.Empty();
+	splinePoints.Empty();
+	spline->DestroyComponent();
 }

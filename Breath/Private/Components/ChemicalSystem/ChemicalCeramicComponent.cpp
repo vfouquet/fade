@@ -11,14 +11,13 @@ void UChemicalCeramicComponent::InitializeComponent()
 
 bool	UChemicalCeramicComponent::computePercussionBreakability(UPrimitiveComponent* other)
 {
-	UPrimitiveComponent*	primitive = Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(GetOwner()));	
 	UChemicalComponent*	otherComp = FindAssociatedChemicalComponent(other);
-	if (!otherComp)
+	if (!otherComp || !associatedComponent)
 	{
 
 		return false;
 	}
-	if (primitive->GetComponentVelocity().Size() > SpeedThresholdValue)
+	if (associatedComponent->GetComponentVelocity().Size() > SpeedThresholdValue)
 		return true;
 	if (other->GetComponentVelocity().Size() < SpeedThresholdValue)
 		return false;

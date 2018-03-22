@@ -103,10 +103,9 @@ EChemicalState	UChemicalWoodComponent::getNextState(EChemicalTransformation cons
 
 bool	UChemicalWoodComponent::computePercussionBreakability(UPrimitiveComponent* other)
 {
-	if (other->GetComponentVelocity().Size() < SpeedThresholdValue)
+	if (other->GetComponentVelocity().Size() < SpeedThresholdValue || !associatedComponent)
 		return false;
-	UPrimitiveComponent*	primitive = Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(GetOwner()));
-	float woodMass = primitive->GetMass();
+	float woodMass = associatedComponent->GetMass();
 	UChemicalComponent*	otherComp = FindAssociatedChemicalComponent(other);
 	if (!otherComp)
 	{

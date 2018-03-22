@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "ChemicalWoodComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
@@ -34,6 +35,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
 	float	Thickness = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
+	float	ExtraLength = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
 	UStaticMesh*	mesh = nullptr;
 	UPROPERTY(EditAnywhere, Category = "Rope")
 	FComponentReference	BeginComponentReference;
@@ -51,8 +54,13 @@ private:
 	void	updateSplineMeshes();
 	void	updateSplinePoints();
 
+	UFUNCTION()
+		void	onDestroyedSphere(EChemicalTransformation transformation, EChemicalState previousState, EChemicalState nextState);
+	void	destroyRope();
+
 private:
 	TArray<USphereComponent*>				spheres;
+	TArray<UChemicalWoodComponent*>			chemicalComponents;
 	TArray<USplineMeshComponent*>			splineMeshes;
 	TArray<FVector>							splinePoints;
 	TArray<UPhysicsConstraintComponent*>	constraints;

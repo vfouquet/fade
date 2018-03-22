@@ -59,6 +59,7 @@ public:
 	void	GiveIdentity(EChemicalState	previousState);
 	UFUNCTION(BlueprintCallable)
 	void	AddHitComponent(UChemicalComponent* primComp);
+	void	OverrideAssociatedComponent(UPrimitiveComponent* newValue);
 
 	UFUNCTION(BlueprintPure)
 	static UChemicalComponent*	FindAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent);
@@ -121,4 +122,7 @@ private:
 	void	removeComponentFromChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent);
 	void	updateImpact(UChemicalComponent* chemical, UPrimitiveComponent* primtive);
 	void	applyChemicalPhysics();
+
+	void	bindDelegates();
+	void	addPropagationComponents();
 };

@@ -12,6 +12,12 @@ ChemicalStateChanger::ChemicalStateChanger(float value)
 bool	ChemicalStateChanger::Update(float deltaTime)
 {
 	//CHECK IF ACTOR EXIST
+	for (auto& comp : impactingComponents)
+	{
+		if (comp == nullptr)
+			delete comp;
+	}
+
 	if (impactingComponents.Num() == 0)
 		return false;
 	currentTime += deltaTime;

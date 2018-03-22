@@ -32,54 +32,8 @@ void UChemicalComponent::BeginPlay()
 	associatedComponent = Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(owner));
 	if (!associatedComponent) return;
 	
-	FScriptDelegate	beginOverlapDel;
-	beginOverlapDel.BindUFunction(this, "OnOverlap");
-	associatedComponent->OnComponentBeginOverlap.Add(beginOverlapDel);
-	FScriptDelegate	endOverlapDel;
-	endOverlapDel.BindUFunction(this, "OnEndOverlap");
-	associatedComponent->OnComponentEndOverlap.Add(endOverlapDel);
-	FScriptDelegate	hitOverlap;
-	hitOverlap.BindUFunction(this, "OnHit");
-	associatedComponent->OnComponentHit.Add(hitOverlap);
-
-	for (auto& propagationComp : PropagationComponentReferences)
-	{
-		UPrimitiveComponent* otherPrimitive = Cast<UPrimitiveComponent>(propagationComp.GetComponent(propagationComp.OtherActor));
-		if (!otherPrimitive)
-			continue;
-		UChemicalComponent* otherChemicalComp = FindAssociatedChemicalComponent(otherPrimitive);
-		if (otherChemicalComp)
-			return;
-		FChemicalPropagation	propagationParams;
-		propagationParams.component = otherChemicalComp;
-		propagationParams.primitive = otherPrimitive;
-		propagationParams.bUseDistance = true;
-		propagationParams.initialDistance = 
-			FVector::Distance(associatedComponent->GetComponentLocation(), otherPrimitive->GetComponentLocation());
-		propagationComponents.Add(propagationParams);
-		
-		propagationParams.component = this;
-		propagationParams.primitive = GetAssociatedComponent();
-		otherChemicalComp->propagationComponents.Add(propagationParams);
-	}
-	for (auto& propagationComp : StaticPropagationComponentReferences)
-	{
-		UPrimitiveComponent* otherPrimitive = Cast<UPrimitiveComponent>(propagationComp.GetComponent(propagationComp.OtherActor));
-		if (!otherPrimitive)
-			continue;
-		UChemicalComponent* otherChemicalComp = FindAssociatedChemicalComponent(otherPrimitive);
-		if (!otherChemicalComp)
-			return;
-		FChemicalPropagation	propagationParams;
-		propagationParams.component = otherChemicalComp;
-		propagationParams.primitive = otherPrimitive;
-		propagationComponents.Add(propagationParams);
-
-		propagationParams.component = this;
-		propagationParams.primitive = GetAssociatedComponent();
-		otherChemicalComp->propagationComponents.Add(propagationParams);
-	}
-
+	bindDelegates();
+	addPropagationComponents();
 	refreshChangersWithCurrentInteractions();
 }
 
@@ -211,6 +165,17 @@ void	UChemicalComponent::AddHitComponent(UChemicalComponent* chemicalComp)
 		hitChemicalComponents.Add(chemicalComp, FVector::Distance(associatedComponent->GetComponentLocation(), chemicalComp->GetAssociatedComponent()->GetComponentLocation()));
 }
 
+void	UChemicalComponent::OverrideAssociatedComponent(UPrimitiveComponent* newValue)
+{
+	if (!newValue)
+		return;
+	associatedComponent = newValue;
+
+	bindDelegates();
+	addPropagationComponents();
+	refreshChangersWithCurrentInteractions();
+}
+	
 ChemicalStateChanger&	UChemicalComponent::addStateChanger(EChemicalTransformation transformation)
 {
 	ChemicalStateChanger	temp(2.0f);
@@ -344,4 +309,58 @@ void	UChemicalComponent::applyChemicalPhysics()
 		destructibleComp->ApplyRadiusDamage(destructibleComp->DestructibleMesh->DefaultDestructibleParameters.DamageParameters.DamageThreshold, destructibleComp->GetComponentLocation(), 0.0f, 0.0f, true);
 	*/
 	DestroyComponent();
+}
+
+void	UChemicalComponent::bindDelegates()
+{
+	FScriptDelegate	beginOverlapDel;
+	beginOverlapDel.BindUFunction(this, "OnOverlap");
+	associatedComponent->OnComponentBeginOverlap.Add(beginOverlapDel);
+	FScriptDelegate	endOverlapDel;
+	endOverlapDel.BindUFunction(this, "OnEndOverlap");
+	associatedComponent->OnComponentEndOverlap.Add(endOverlapDel);
+	FScriptDelegate	hitOverlap;
+	hitOverlap.BindUFunction(this, "OnHit");
+	associatedComponent->OnComponentHit.Add(hitOverlap);
+}
+
+void	UChemicalComponent::addPropagationComponents()
+{
+	for (auto& propagationComp : PropagationComponentReferences)
+	{
+		UPrimitiveComponent* otherPrimitive = Cast<UPrimitiveComponent>(propagationComp.GetComponent(propagationComp.OtherActor));
+		if (!otherPrimitive)
+			continue;
+		UChemicalComponent* otherChemicalComp = FindAssociatedChemicalComponent(otherPrimitive);
+		if (otherChemicalComp)
+			return;
+		FChemicalPropagation	propagationParams;
+		propagationParams.component = otherChemicalComp;
+		propagationParams.primitive = otherPrimitive;
+		propagationParams.bUseDistance = true;
+		propagationParams.initialDistance =
+			FVector::Distance(associatedComponent->GetComponentLocation(), otherPrimitive->GetComponentLocation());
+		propagationComponents.Add(propagationParams);
+
+		propagationParams.component = this;
+		propagationParams.primitive = GetAssociatedComponent();
+		otherChemicalComp->propagationComponents.Add(propagationParams);
+	}
+	for (auto& propagationComp : StaticPropagationComponentReferences)
+	{
+		UPrimitiveComponent* otherPrimitive = Cast<UPrimitiveComponent>(propagationComp.GetComponent(propagationComp.OtherActor));
+		if (!otherPrimitive)
+			continue;
+		UChemicalComponent* otherChemicalComp = FindAssociatedChemicalComponent(otherPrimitive);
+		if (!otherChemicalComp)
+			return;
+		FChemicalPropagation	propagationParams;
+		propagationParams.component = otherChemicalComp;
+		propagationParams.primitive = otherPrimitive;
+		propagationComponents.Add(propagationParams);
+
+		propagationParams.component = this;
+		propagationParams.primitive = GetAssociatedComponent();
+		otherChemicalComp->propagationComponents.Add(propagationParams);
+	}
 }
