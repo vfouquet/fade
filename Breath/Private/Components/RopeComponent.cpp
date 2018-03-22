@@ -120,6 +120,55 @@ void URopeComponent::BeginPlay()
 	createSplineMeshes();
 
 	isInit = true;
+
+	if (BeginComponentStickOverride.ComponentProperty != NAME_None)
+	{
+		UPrimitiveComponent*	otherPrimitive = Cast<UPrimitiveComponent>
+			(BeginComponentStickOverride.GetComponent(BeginComponentStickOverride.OtherActor?BeginComponentStickOverride.OtherActor : GetOwner()));
+		if (!otherPrimitive)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find other primitive for begin stick override"), *GetOwner()->GetName());
+		}
+		else
+		{
+			UInteractableComponent* interactable = UInteractableComponent::FindAssociatedInteractableComponent(beginAttachPrimitive);
+			UInteractableComponent* otherInteractable = UInteractableComponent::FindAssociatedInteractableComponent(otherPrimitive);
+			if (!interactable)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find interactable component of BeginPrimitiveAttachment"), *GetOwner()->GetName());
+			}
+			else if (!otherInteractable)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find other interactable component of BeginPrimitiveAttachment"), *GetOwner()->GetName());
+			}
+			else
+				otherInteractable->AddStickConstraint(interactable, beginAttachPrimitive, NAME_None);
+		}
+	}
+	if (EndComponentStickOverride.ComponentProperty != NAME_None)
+	{
+		UPrimitiveComponent*	otherPrimitive = Cast<UPrimitiveComponent>
+			(EndComponentStickOverride.GetComponent(EndComponentStickOverride.OtherActor ? EndComponentStickOverride.OtherActor : GetOwner()));
+		if (!otherPrimitive)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find other primitive for end stick override"), *GetOwner()->GetName());
+		}
+		else
+		{
+			UInteractableComponent* interactable = UInteractableComponent::FindAssociatedInteractableComponent(endAttachPrimitive);
+			UInteractableComponent* otherInteractable = UInteractableComponent::FindAssociatedInteractableComponent(otherPrimitive);
+			if (!interactable)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find interactable component of EndPrimitiveAttachment"), *GetOwner()->GetName());
+			}
+			else if (!otherInteractable)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find other interactable component of EndPrimitiveAttachment"), *GetOwner()->GetName());
+			}
+			else
+				otherInteractable->AddStickConstraint(interactable, endAttachPrimitive, NAME_None);
+		}
+	}
 }
 
 

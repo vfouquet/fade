@@ -98,6 +98,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Interactions Settings")
 	FComponentReference	Grab;
+	UPROPERTY(EditAnywhere, Category = "Interactions Settings")
+	FComponentReference StickAtLaunch;
 
 	UPROPERTY(BlueprintAssignable)
 	FConditionDelegate	onBeginGrab;

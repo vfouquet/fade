@@ -30,7 +30,25 @@ void UInteractableComponent::BeginPlay()
 		associatedComponent->OnComponentHit.Add(hitOverlap);
 
 		tempExtent = associatedComponent->Bounds.BoxExtent;
-	}
+		
+		if (StickAtLaunch.ComponentProperty != NAME_None)
+		{
+			UPrimitiveComponent* prim = Cast<UPrimitiveComponent>
+				(StickAtLaunch.GetComponent(StickAtLaunch.OtherActor? StickAtLaunch.OtherActor : GetOwner()));
+			if (!prim)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%s-Interactable component : primitive reference incorrect"), *GetOwner()->GetName());
+				return;
+			}
+			UInteractableComponent* interactable = FindAssociatedInteractableComponent(prim);
+			if (!interactable)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%s-Interactable component : interactable reference couldn't be found from primitive component"), *GetOwner()->GetName());
+				return;
+			}
+			AddStickConstraint(interactable, prim, NAME_None);
+		}
+	}	
 }
 
 
@@ -220,6 +238,8 @@ void	UInteractableComponent::EraseIdentity()
 
 UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInteractableComponent* hook, UPrimitiveComponent* stickedObject, FName stickedBoneName)
 {
+	if (!CanAcceptStick)
+		return nullptr;
 	if (!associatedComponent && !stickedObject)
 		return nullptr;
 	UPhysicsConstraintComponent* stickConstraint = NewObject<UPhysicsConstraintComponent>(this, TEXT("CustomPhysicConstraint"));
@@ -230,9 +250,11 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInterac
 	}
 	stickConstraint->SetupAttachment(this);
 	stickConstraint->RegisterComponent();
-	stickConstraint->SetConstrainedComponents(associatedComponent, FName("None"), stickedObject, stickedBoneName);
 	//stickConstraint->SetDisableCollision(true);
-	
+	FVector offset = associatedComponent->Bounds.BoxExtent * (stickedObject->GetComponentLocation() - associatedComponent->GetComponentLocation()).GetSafeNormal();
+	stickConstraint->SetWorldLocation(associatedComponent->GetComponentLocation() + offset);
+	stickConstraint->SetConstrainedComponents(associatedComponent, FName("None"), stickedObject, stickedBoneName);
+
 	FStickConstraint	constraint;
 	constraint.physicConstraint = stickConstraint;
 	constraint.carrier = this;

@@ -40,6 +40,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Rope")
 	FComponentReference	EndComponentReference;
 
+	UPROPERTY(EditAnywhere, Category = "Stick options")
+	FComponentReference	BeginComponentStickOverride;
+	UPROPERTY(EditAnywhere, Category = "Stick options")
+	FComponentReference	EndComponentStickOverride;
+
 private:
 	void	createSplineMeshes();
 	void	createConstraints();
