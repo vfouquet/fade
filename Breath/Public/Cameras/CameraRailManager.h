@@ -65,4 +65,6 @@ private:
 	bool	bInCameraRailDistanceTolerance;
 	float	CurrentInputKey;
 	float	CurrentDistanceAlongSpline;
+	float	CurrentDistanceAlongSplineWithOffset;
+
 };

@@ -168,9 +168,10 @@ void ACameraRailManager::Tick(float DeltaSeconds)
 		FVector PlayerLoc = PlayerActor->GetActorLocation();
 
 		// Computes new distance along spline and new world location of the camera
-		float NewDistanceAlongSpline = FMath::FInterpConstantTo(CurrentDistanceAlongSpline, GetDistanceAlongSplineAtWorldLocation(PlayerLoc) + RailCamera->CameraSettings.CameraRailOffset, DeltaSeconds, RailCamera->CameraSettings.CameraSpeed);
+		float NewDistanceAlongSpline = FMath::FInterpConstantTo(CurrentDistanceAlongSpline, GetDistanceAlongSplineAtWorldLocation(PlayerLoc), DeltaSeconds, RailCamera->CameraSettings.CameraSpeed);
+		float NewDistanceAlongSplineWithOffset = FMath::FInterpConstantTo(CurrentDistanceAlongSplineWithOffset, GetDistanceAlongSplineAtWorldLocation(PlayerLoc) + RailCamera->CameraSettings.CameraRailOffset, DeltaSeconds, RailCamera->CameraSettings.CameraSpeed);
 		FVector NextCameraLocation = SplineComponent->GetWorldLocationAtDistanceAlongSpline(NewDistanceAlongSpline);
-		FVector NextCameraLocationWithOffset = SplineComponent->GetWorldLocationAtDistanceAlongSpline(NewDistanceAlongSpline);
+		FVector NextCameraLocationWithOffset = SplineComponent->GetWorldLocationAtDistanceAlongSpline(NewDistanceAlongSplineWithOffset);
 
 		float NewCurrentInputKey = FMath::FInterpConstantTo(CurrentInputKey, FlatSplineComponent->FindInputKeyClosestToWorldLocation(PlayerLoc), DeltaSeconds, RailCamera->CameraSettings.CameraSpeed);
 
@@ -202,7 +203,8 @@ void ACameraRailManager::Tick(float DeltaSeconds)
 			RailCamera->GetCameraArm()->SetWorldLocation(NextCameraLocationWithOffset);
 
 			// Checks if the camera is in tolerance
-			if (NewDistanceAlongSpline == this->CurrentDistanceAlongSpline)
+			if (NewDistanceAlongSplineWithOffset == GetDistanceAlongSplineAtWorldLocation(PlayerLoc) + RailCamera->CameraSettings.CameraRailOffset 
+				&& NewDistanceAlongSpline == this->CurrentDistanceAlongSpline)
 			{
 				bInCameraRailDistanceTolerance = true;
 			}
@@ -220,6 +222,7 @@ void ACameraRailManager::Tick(float DeltaSeconds)
 			{
 				bInCameraRailDistanceTolerance = false;
 				NewDistanceAlongSpline = GetDistanceAlongSplineAtWorldLocation(RailCamera->GetActorLocation());
+				NewDistanceAlongSplineWithOffset = NewDistanceAlongSpline + RailCamera->CameraSettings.CameraRailOffset;
 				NewCurrentInputKey = FlatSplineComponent->FindInputKeyClosestToWorldLocation(RailCamera->GetActorLocation());
 			}
 		}
@@ -227,10 +230,10 @@ void ACameraRailManager::Tick(float DeltaSeconds)
 		// Computes and sets new camera rotation
 		FRotator TargetRotation = FMath::RInterpConstantTo(RailCamera->GetCameraArm()->GetComponentRotation(), FRotationMatrix::MakeFromX(LookAtDir).Rotator(), DeltaSeconds, RailCamera->CameraSettings.CameraRotationSpeed);
 		RailCamera->GetCameraArm()->SetWorldRotation(TargetRotation);
-
-		this->CurrentDistanceAlongSpline = NewDistanceAlongSpline;
-		this->CurrentInputKey = NewCurrentInputKey;
 		
+		this->CurrentDistanceAlongSpline = NewDistanceAlongSpline;
+		this->CurrentDistanceAlongSplineWithOffset = NewDistanceAlongSplineWithOffset;
+		this->CurrentInputKey = NewCurrentInputKey;
 	}
 }
 
