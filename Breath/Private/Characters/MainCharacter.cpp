@@ -63,6 +63,8 @@ void AMainCharacter::Tick(float DeltaTime)
 	}
 	*/
 
+	//updateClimbAnimationTranslation();
+
 	if (bBlocked)
 		return;	
 
@@ -167,6 +169,8 @@ void	AMainCharacter::Stick()
 
 void	AMainCharacter::Jump(FVector direction)
 {
+	if (bBlocked)
+		return;
 	if (Climb())
 		return;
 	mainCharacterMovement->SetJumpDirection(direction);
@@ -397,9 +401,27 @@ bool	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVe
 void	AMainCharacter::endCharacterClimbSnap()
 {
 	PlayAnimMontage(ClimbMontage);
-	//beginClimbActorLocation = GetActorLocation();
+	beginClimbActorLocation = GetActorLocation();
 	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	isClimbing = true;
+}
+	
+void	AMainCharacter::updateClimbAnimationTranslation()
+{
+	UAnimMontage* montage = GetCurrentMontage();
+	if (montage == ClimbMontage && GetMesh())
+	{
+		UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+		if (animInstance)
+		{
+			float outZValue = 0.0f;
+			float outXValue = 0.0f;
+			animInstance->GetCurveValue("ZOffset", outZValue);
+			animInstance->GetCurveValue("XOffset", outXValue);
+			FVector newLoc = beginClimbActorLocation + FVector(outXValue, 0.0f, outZValue);
+			SetActorLocation(newLoc);
+		}
+	}
 }
 	
 void	AMainCharacter::stopCurrentPlayingMontage()

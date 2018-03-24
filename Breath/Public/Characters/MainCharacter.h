@@ -139,6 +139,7 @@ private:
 	bool	climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint);
 	UFUNCTION()
 	void	endCharacterClimbSnap();
+	void	updateClimbAnimationTranslation();
 public:
 	UFUNCTION(BlueprintCallable)
 	void	stopCurrentPlayingMontage();

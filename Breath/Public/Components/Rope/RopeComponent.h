@@ -7,6 +7,7 @@
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
+#include "RopeNodeComponent.h"
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
@@ -48,24 +49,22 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Stick options")
 	FComponentReference	EndComponentStickOverride;
 
+	UFUNCTION(BlueprintCallable)
+	void	DestroyNode(int idx) { if (idx < nodes.Num()) nodes[idx]->onSphereChemicalStateChanged(EChemicalTransformation::Burning, EChemicalState::None, EChemicalState::Scorched); }
+
 private:
 	void	createSplineMeshes();
 	void	createConstraints();
 	void	updateSplineMeshes();
-	void	updateSplinePoints();
 
-	UFUNCTION()
-		void	onDestroyedSphere(EChemicalTransformation transformation, EChemicalState previousState, EChemicalState nextState);
+	void	attachBeginPrimitive();
+	void	attachEndPrimitive();
 	void	destroyRope();
 
 private:
-	TArray<USphereComponent*>				spheres;
-	TArray<UChemicalWoodComponent*>			chemicalComponents;
-	TArray<USplineMeshComponent*>			splineMeshes;
-	TArray<FVector>							splinePoints;
-	TArray<UPhysicsConstraintComponent*>	constraints;
-	USplineComponent*						spline = nullptr;
-	UPrimitiveComponent*					beginAttachPrimitive = nullptr;
-	UPrimitiveComponent*					endAttachPrimitive = nullptr;
-	bool									isInit = false;
+	TArray<TWeakObjectPtr<URopeNodeComponent>>	nodes;
+	USplineComponent*							spline = nullptr;
+	UPrimitiveComponent*						beginAttachPrimitive = nullptr;
+	UPrimitiveComponent*						endAttachPrimitive = nullptr;
+	bool										isInit = false;
 };

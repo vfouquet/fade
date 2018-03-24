@@ -82,37 +82,26 @@ void URopeComponent::BeginPlay()
 	
 	for (int idx = 0; idx < parts; idx++)
 	{
-		USphereComponent*	sphere = NewObject<USphereComponent>(this);
-		sphere->SetupAttachment(this);
-		sphere->RegisterComponent();
-		sphere->SetSphereRadius(Thickness * 0.5f, false);
-		sphere->SetWorldLocation(spawnPoint);
-		sphere->SetSimulatePhysics(true);
-		sphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		sphere->SetCollisionProfileName("SmallInteractable");
-		sphere->SetEnableGravity(true);
-		sphere->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+		URopeNodeComponent*	node = NewObject<URopeNodeComponent>(this);
+		node->SetupAttachment(this);
+		node->RegisterComponent();
+		nodes.Add(node);
+		node->CreateSphere(Thickness * 0.5f, spawnPoint);
 
 		spawnPoint += direction * (Thickness + padding);
-		spheres.Add(sphere);
+	}
 
-		if (!CanBurn)
-			continue;
-		UChemicalWoodComponent* wood = NewObject<UChemicalWoodComponent>(GetOwner());
-		wood->RegisterComponent();
-		/*
-		if (idx == 0 || idx == parts - 1)
+	if (CanBurn)
+	{
+		for (int idx = 0; idx < nodes.Num(); idx++)
 		{
-			FComponentReference	ref;
-			ref.OverrideComponent = sphere;
-			wood->StaticPropagationComponentReferences.Add(ref);
+			if (idx == 0)
+				nodes[idx]->CreateWoodProperty(beginAttachPrimitive, nodes[idx + 1]->GetSphere());
+			else if (idx == nodes.Num() - 1)
+				nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), endAttachPrimitive);
+			else
+				nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), nodes[idx + 1]->GetSphere());
 		}
-		*/
-		wood->OverrideAssociatedComponent(sphere);
-		chemicalComponents.Add(wood);
-		FScriptDelegate	woodDel;
-		woodDel.BindUFunction(this, "onDestroyedSphere");
-		wood->stateChangedDelegate.Add(woodDel);
 	}
 
 	UPhysicsConstraintComponent* beginConstraint = NewObject<UPhysicsConstraintComponent>(this);
@@ -120,16 +109,16 @@ void URopeComponent::BeginPlay()
 	beginConstraint->RegisterComponent();
 	beginConstraint->SetWorldLocation(sphereBeginPoint);
 	beginConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 5.0f);
-	beginConstraint->SetConstrainedComponents(beginAttachPrimitive, NAME_None, spheres[0], NAME_None);
-	constraints.Add(beginConstraint);
+	beginConstraint->SetConstrainedComponents(beginAttachPrimitive, NAME_None, nodes[0]->GetSphere(), NAME_None);
+	nodes[0]->SetPreviousConstraint(beginConstraint);
 
 	UPhysicsConstraintComponent* endConstraint = NewObject<UPhysicsConstraintComponent>(this);
 	endConstraint->SetupAttachment(this);
 	endConstraint->RegisterComponent();
 	endConstraint->SetWorldLocation(sphereEndPoint);
 	endConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 5.0f);
-	endConstraint->SetConstrainedComponents(endAttachPrimitive, NAME_None, spheres.Last(), NAME_None);
-	constraints.Add(endConstraint);
+	endConstraint->SetConstrainedComponents(endAttachPrimitive, NAME_None, nodes.Last()->GetSphere(), NAME_None);
+	nodes.Last()->SetNextConstraint(endConstraint);
 
 	spline = NewObject<USplineComponent>(this);
 	spline->SetupAttachment(this);
@@ -137,59 +126,14 @@ void URopeComponent::BeginPlay()
 	spline->RegisterComponent();
 
 	createConstraints();
-	updateSplinePoints();
 	createSplineMeshes();
 
 	isInit = true;
 
 	if (BeginComponentStickOverride.ComponentProperty != NAME_None)
-	{
-		UPrimitiveComponent*	otherPrimitive = Cast<UPrimitiveComponent>
-			(BeginComponentStickOverride.GetComponent(BeginComponentStickOverride.OtherActor?BeginComponentStickOverride.OtherActor : GetOwner()));
-		if (!otherPrimitive)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find other primitive for begin stick override"), *GetOwner()->GetName());
-		}
-		else
-		{
-			UInteractableComponent* interactable = UInteractableComponent::FindAssociatedInteractableComponent(beginAttachPrimitive);
-			UInteractableComponent* otherInteractable = UInteractableComponent::FindAssociatedInteractableComponent(otherPrimitive);
-			if (!interactable)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find interactable component of BeginPrimitiveAttachment"), *GetOwner()->GetName());
-			}
-			else if (!otherInteractable)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find other interactable component of BeginPrimitiveAttachment"), *GetOwner()->GetName());
-			}
-			else
-				otherInteractable->AddStickConstraint(interactable, beginAttachPrimitive, NAME_None);
-		}
-	}
+		attachBeginPrimitive();
 	if (EndComponentStickOverride.ComponentProperty != NAME_None)
-	{
-		UPrimitiveComponent*	otherPrimitive = Cast<UPrimitiveComponent>
-			(EndComponentStickOverride.GetComponent(EndComponentStickOverride.OtherActor ? EndComponentStickOverride.OtherActor : GetOwner()));
-		if (!otherPrimitive)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find other primitive for end stick override"), *GetOwner()->GetName());
-		}
-		else
-		{
-			UInteractableComponent* interactable = UInteractableComponent::FindAssociatedInteractableComponent(endAttachPrimitive);
-			UInteractableComponent* otherInteractable = UInteractableComponent::FindAssociatedInteractableComponent(otherPrimitive);
-			if (!interactable)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find interactable component of EndPrimitiveAttachment"), *GetOwner()->GetName());
-			}
-			else if (!otherInteractable)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find other interactable component of EndPrimitiveAttachment"), *GetOwner()->GetName());
-			}
-			else
-				otherInteractable->AddStickConstraint(interactable, endAttachPrimitive, NAME_None);
-		}
-	}
+		attachEndPrimitive();
 }
 
 
@@ -200,7 +144,6 @@ void URopeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (!isInit)
 		return;
-	updateSplinePoints();
 	updateSplineMeshes();
 }
 
@@ -210,7 +153,14 @@ void	URopeComponent::createSplineMeshes()
 	float yScale = Thickness / boxSize.GetSize().Y;
 	float ZScale = Thickness / boxSize.GetSize().Z;
 
-	for (int pos = 0; pos < splinePoints.Num() - 1; pos++)
+	TArray<FVector>	points;
+	for (auto& node : nodes)
+		points.Add(node->GetPreviousConstraintLocation());
+	points.Add(nodes.Last()->GetNextConstraintLocation());
+	spline->SetSplinePoints(points, ESplineCoordinateSpace::World, true);
+
+	int idx = 0;
+	for (auto& node : nodes)
 	{
 		USplineMeshComponent*	splineMesh = NewObject<USplineMeshComponent>(this);
 		//splineMesh->SetupAttachment(this);
@@ -219,35 +169,69 @@ void	URopeComponent::createSplineMeshes()
 		FVector	endPoint;
 		FVector	startTangent;
 		FVector	endTangent;
-		spline->GetLocationAndTangentAtSplinePoint(pos, startPoint, startTangent, ESplineCoordinateSpace::World);
-		spline->GetLocationAndTangentAtSplinePoint(pos + 1, endPoint, endTangent, ESplineCoordinateSpace::World);
+		spline->GetLocationAndTangentAtSplinePoint(idx, startPoint, startTangent, ESplineCoordinateSpace::World);
+		spline->GetLocationAndTangentAtSplinePoint(idx + 1, endPoint, endTangent, ESplineCoordinateSpace::World);
 		splineMesh->SetStartAndEnd(startPoint, startTangent, endPoint, endTangent, true);
-		
+
 		splineMesh->SetStartScale(FVector2D(yScale, ZScale));
 		splineMesh->SetEndScale(FVector2D(yScale, ZScale));
-		
-		splineMeshes.Add(splineMesh);
+
 		splineMesh->SetStaticMesh(mesh);
+		node->SetSplineMesh(splineMesh);
+		idx++;
 	}
 }
 
 void	URopeComponent::createConstraints()
 {
-	for (int pos = 0; pos < spheres.Num() - 1; pos++)
+	for (int pos = 0; pos < nodes.Num() - 1; pos++)
 	{
-		FVector	distanceNext = spheres[pos + 1]->GetComponentLocation() - spheres[pos]->GetComponentLocation();
+		FVector	distanceNext = nodes[pos + 1]->GetSphereLocation() - nodes[pos]->GetSphereLocation();
 		UPhysicsConstraintComponent* constraint = NewObject<UPhysicsConstraintComponent>(this);
 		constraint->SetupAttachment(this);
 		constraint->RegisterComponent();
-		constraint->SetWorldLocation(spheres[pos]->GetComponentLocation() + distanceNext * 0.5f);
-		constraint->SetConstrainedComponents(spheres[pos], NAME_None, spheres[pos + 1], NAME_None);
-		constraints.Add(constraint);
-	}
+		constraint->SetWorldLocation(nodes[pos]->GetSphereLocation() + distanceNext * 0.5f);
+		constraint->SetConstrainedComponents(nodes[pos]->GetSphere(), NAME_None, nodes[pos + 1]->GetSphere(), NAME_None);
+		nodes[pos + 1]->SetPreviousConstraint(constraint);
+		nodes[pos]->SetNextConstraint(constraint);
+	}	
 }
 
 void	URopeComponent::updateSplineMeshes()
 {
-	for (int pos = 0; pos < splinePoints.Num() - 1; pos++)
+	TArray<FVector>	points;
+
+	int beginIdx = 0;
+	FVector	lastPoint = FVector::ZeroVector;
+	for (auto& node : nodes)
+	{
+		if (!node.IsValid())
+		{
+			points.Add(lastPoint);
+			spline->SetSplinePoints(points, ESplineCoordinateSpace::World, true);
+			
+			for (int pos = 0; pos < points.Num() - 1; pos++)
+			{
+				FVector	startPoint;
+				FVector	endPoint;
+				FVector	startTangent;
+				FVector	endTangent;
+				spline->GetLocationAndTangentAtSplinePoint(pos, startPoint, startTangent, ESplineCoordinateSpace::World);
+				spline->GetLocationAndTangentAtSplinePoint(pos + 1, endPoint, endTangent, ESplineCoordinateSpace::World);
+				nodes[beginIdx]->UpdateSplineMesh(startPoint, startTangent, endPoint, endTangent);
+				beginIdx++;
+			}
+			points.Empty();
+			beginIdx++;
+			continue;
+		}
+		points.Add(node->GetPreviousConstraintLocation());
+		lastPoint = node->GetNextConstraintLocation();
+	}
+	points.Add(lastPoint);
+	spline->SetSplinePoints(points, ESplineCoordinateSpace::World, true);
+	
+	for (int pos = 0; pos < points.Num() - 1; pos++)
 	{
 		FVector	startPoint;
 		FVector	endPoint;
@@ -255,28 +239,58 @@ void	URopeComponent::updateSplineMeshes()
 		FVector	endTangent;
 		spline->GetLocationAndTangentAtSplinePoint(pos, startPoint, startTangent, ESplineCoordinateSpace::World);
 		spline->GetLocationAndTangentAtSplinePoint(pos + 1, endPoint, endTangent, ESplineCoordinateSpace::World);
-		splineMeshes[pos]->SetStartAndEnd(startPoint, startTangent, endPoint, endTangent, true);
+		nodes[beginIdx]->UpdateSplineMesh(startPoint, startTangent, endPoint, endTangent);
+		beginIdx++;
 	}
 }
 
-void	URopeComponent::updateSplinePoints()
+void	URopeComponent::attachBeginPrimitive()
 {
-	splinePoints.Empty(splinePoints.Num());
-
-	splinePoints.Add(spheres[0]->GetComponentLocation() + Thickness * 0.5f * (beginAttachPrimitive->GetComponentLocation() - spheres[0]->GetComponentLocation()).GetSafeNormal());
-	for (int pos = 0; pos < spheres.Num() - 1; pos++)
-		splinePoints.Add(spheres[pos]->GetComponentLocation() + (spheres[pos + 1]->GetComponentLocation() - spheres[pos]->GetComponentLocation()) * 0.5f);
-	splinePoints.Add(spheres.Last()->GetComponentLocation() + Thickness * 0.5f * (endAttachPrimitive->GetComponentLocation() - spheres.Last()->GetComponentLocation()).GetSafeNormal());
-	spline->SetSplinePoints(splinePoints, ESplineCoordinateSpace::World, true);
-}
-
-void	URopeComponent::onDestroyedSphere(EChemicalTransformation transformation, EChemicalState previousState, EChemicalState nextState)
-{
-	if (transformation == EChemicalTransformation::Burning)
+	UPrimitiveComponent*	otherPrimitive = Cast<UPrimitiveComponent>
+		(BeginComponentStickOverride.GetComponent(BeginComponentStickOverride.OtherActor ? BeginComponentStickOverride.OtherActor : GetOwner()));
+	if (!otherPrimitive)
 	{
-		if (nextState == EChemicalState::Scorched)
-			destroyRope();
+		UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find other primitive for begin stick override"), *GetOwner()->GetName());
+		return;
 	}
+	UInteractableComponent* interactable = UInteractableComponent::FindAssociatedInteractableComponent(beginAttachPrimitive);
+	if (!interactable)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find interactable component of BeginPrimitiveAttachment"), *GetOwner()->GetName());
+		return;
+	}
+	UInteractableComponent* otherInteractable = UInteractableComponent::FindAssociatedInteractableComponent(otherPrimitive);
+	if (!otherInteractable)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find other interactable component of BeginPrimitiveAttachment"), *GetOwner()->GetName());
+		return;
+	}
+	otherInteractable->AddStickConstraint(interactable, beginAttachPrimitive, NAME_None);
+
+}
+
+void	URopeComponent::attachEndPrimitive()
+{
+	UPrimitiveComponent*	otherPrimitive = Cast<UPrimitiveComponent>
+		(EndComponentStickOverride.GetComponent(EndComponentStickOverride.OtherActor ? EndComponentStickOverride.OtherActor : GetOwner()));
+	if (!otherPrimitive)
+	{	
+		UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find other primitive for end stick override"), *GetOwner()->GetName());
+		return;
+	}
+	UInteractableComponent* interactable = UInteractableComponent::FindAssociatedInteractableComponent(endAttachPrimitive);
+	if (!interactable)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find interactable component of EndPrimitiveAttachment"), *GetOwner()->GetName());
+		return;
+	}
+	UInteractableComponent* otherInteractable = UInteractableComponent::FindAssociatedInteractableComponent(otherPrimitive);
+	if (!otherInteractable)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s-rope component : Couldn't find other interactable component of EndPrimitiveAttachment"), *GetOwner()->GetName());
+		return;
+	}
+	otherInteractable->AddStickConstraint(interactable, endAttachPrimitive, NAME_None);
 }
 
 void	URopeComponent::destroyRope()
@@ -285,21 +299,11 @@ void	URopeComponent::destroyRope()
 		return;
 	isInit = false;
 
-	for (auto& constraint : constraints)
+	for (auto& node : nodes)
 	{
-		constraint->BreakConstraint();
-		constraint->DestroyComponent();
+		if (node.IsValid())
+			node->DestroyComponent();
 	}
-	constraints.Empty();
-	for (auto& wood : chemicalComponents)
-		wood->DestroyComponent();
-	chemicalComponents.Empty();
-	for (auto& sphere : spheres)
-		sphere->DestroyComponent();
-	spheres.Empty();
-	for (auto& splineMesh : splineMeshes)
-		splineMesh->DestroyComponent();
-	splineMeshes.Empty();
-	splinePoints.Empty();
+	nodes.Empty();
 	spline->DestroyComponent();
 }

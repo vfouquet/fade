@@ -3,6 +3,8 @@
 #pragma once
 
 #include "Containers/SparseArray.h"
+#include "ChemicalComponent.h"
+#include "InteractableComponent.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
