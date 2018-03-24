@@ -15,10 +15,10 @@ class BREATH_API UMainCharacterMovementComponent : public UCharacterMovementComp
 	GENERATED_BODY()
 	
 public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	virtual bool CheckFall(const FFindFloorResult& OldFloor, const FHitResult& Hit, const FVector& Delta, const FVector& OldLocation, float remainingTime, float timeTick, int32 Iterations, bool bMustJump) override;	
-	virtual FVector GetAirControl(float DeltaTime, float TickAirControl, const FVector& FallAcceleration) override;
-	virtual bool DoJump(bool bReplayingMoves) override;
+	virtual void	TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	//virtual bool	CheckFall(const FFindFloorResult& OldFloor, const FHitResult& Hit, const FVector& Delta, const FVector& OldLocation, float remainingTime, float timeTick, int32 Iterations, bool bMustJump) override;	
+	virtual bool	DoJump(bool bReplayingMoves) override;
+	virtual void	SetPostLandedPhysics(const FHitResult& Hit) override;
 
 	void	ProcessPushAndPull(float const& coeff, float holdingObjectMass);
 	void	ProcessRotateHeavyObject(bool direction, float holdingObjectMass, FVector holdingObjectLocation);
@@ -47,15 +47,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
 	float	ThrowRotationSpeed = 100.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Movement")
-	float	CoyoteTime = 0.5f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Movement")
-	float	AirControlPower = 500.0f;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Movement")
+	//float	CoyoteTime = 0.5f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Forward Jump")
 	float	LateralJumpForce = 300.0f;
 
 private:
 	FVector	jumpDirection;
-	float	currentCoyoteTime = 0.0f;
+	//float	currentCoyoteTime = 0.0f;
 	FVector	lastOffsetLocation = FVector::ZeroVector;
 };

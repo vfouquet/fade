@@ -11,6 +11,7 @@ void UMainCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick 
 	lastOffsetLocation = LastUpdateLocation - last;
 }
 
+/*
 bool UMainCharacterMovementComponent::CheckFall(const FFindFloorResult& OldFloor, const FHitResult& Hit, const FVector& Delta, const FVector& OldLocation, float remainingTime, float timeTick, int32 Iterations, bool bMustJump)
 {
 	if (!HasValidData())
@@ -35,15 +36,8 @@ bool UMainCharacterMovementComponent::CheckFall(const FFindFloorResult& OldFloor
 	}
 	return false;
 }
-	
-FVector UMainCharacterMovementComponent::GetAirControl(float DeltaTime, float TickAirControl, const FVector& FallAcceleration)
-{
-	FVector	fallDir;
-	float	fallAccel;
-	FallAcceleration.ToDirectionAndLength(fallDir, fallAccel);
-	return  fallDir * AirControlPower;
-}
-	
+*/
+
 bool UMainCharacterMovementComponent::DoJump(bool bReplayingMoves)
 {
 	if (CharacterOwner && CharacterOwner->CanJump())
@@ -53,10 +47,19 @@ bool UMainCharacterMovementComponent::DoJump(bool bReplayingMoves)
 			Velocity += FVector::UpVector * JumpZVelocity + jumpDirection * LateralJumpForce;
 			SetMovementMode(MOVE_Falling);
 			jumpDirection = FVector::ZeroVector;
+			bOrientRotationToMovement = false;
 			return true;
 		}
 	}
 	return false;
+}
+	
+void UMainCharacterMovementComponent::SetPostLandedPhysics(const FHitResult& Hit)
+{
+	Super::SetPostLandedPhysics(Hit);
+
+	if (MovementMode == EMovementMode::MOVE_Walking)
+		bOrientRotationToMovement = true;
 }
 	
 void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, float holdingObjectMass)
