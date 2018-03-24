@@ -46,30 +46,6 @@ FVector UMainCharacterMovementComponent::GetAirControl(float DeltaTime, float Ti
 	
 bool UMainCharacterMovementComponent::DoJump(bool bReplayingMoves)
 {
-	//FVector velocity = Velocity;
-	//FVector	project = velocity.ProjectOnTo(GetOwner()->GetActorForwardVector());
-	//float factor = project.Size() / velocity.Size();
-	//UE_LOG(LogTemp, Warning, TEXT("%f"), factor);
-	/*
-	if (Velocity.Size() > 0.0f)
-	{
-		if (CharacterOwner && CharacterOwner->CanJump())
-		{
-			if (!bConstrainToPlane || FMath::Abs(PlaneConstraintNormal.Z) != 1.f)
-			{
-				//SEE IN DOC
-				FVector direction = CharacterOwner->GetActorForwardVector();
-				direction = (direction.Rotation() + FRotator(ForwardJumpAngle, 0.0f, 0.0f)).Vector();
-				Velocity += direction * ForwardJumpForce;
-				SetMovementMode(MOVE_Falling);
-				return true;
-			}
-		}
-	}
-	else
-		return Super::DoJump(bReplayingMoves);
-	*/
-
 	if (CharacterOwner && CharacterOwner->CanJump())
 	{
 		if (!bConstrainToPlane || FMath::Abs(PlaneConstraintNormal.Z) != 1.f)

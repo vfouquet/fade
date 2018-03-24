@@ -52,10 +52,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Movement")
 	float	AirControlPower = 500.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Forward Jump")
-	float	ForwardJumpAngle = 45.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Forward Jump")
-	float	ForwardJumpForce = 450.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Forward Jump")
 	float	LateralJumpForce = 300.0f;
 
 private:
