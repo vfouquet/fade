@@ -49,6 +49,11 @@ void UInteractableComponent::BeginPlay()
 			AddStickConstraint(interactable, prim, NAME_None);
 		}
 	}	
+	else
+	{
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Warning, TEXT("%s - %s : Cannot find primitive component, reference is wrong"), owner? *owner->GetName() : *FString("Error"), *GetName());
+	}
 }
 
 

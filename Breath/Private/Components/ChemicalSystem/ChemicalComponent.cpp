@@ -27,11 +27,16 @@ void UChemicalComponent::BeginPlay()
 
 	// ...
 	AActor* owner = GetOwner();
-	if (!owner) return;
+	if (!owner) 
+		return;
 
 	associatedComponent = Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(owner));
-	if (!associatedComponent) return;
-	
+	if (!associatedComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s - %s : Cannot find primitive component, reference is wrong"), *owner->GetName(), *GetName());
+		return;
+	}
+
 	bindDelegates();
 	addPropagationComponents();
 	refreshChangersWithCurrentInteractions();
@@ -151,7 +156,11 @@ void	UChemicalComponent::EraseIdentity()
 void	UChemicalComponent::GiveIdentity(EChemicalState previousState)
 {
 	if (state != EChemicalState::NoIdentity)
+	{
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Warning, TEXT("%s - %s : Trying to give identity, but the component already have an identity"), owner ? *owner->GetName() : *FString("Error"), *GetName());
 		return;
+	}
 	state = previousState;
 	stateChangedDelegate.Broadcast(EChemicalTransformation::GivingIdentity, EChemicalState::NoIdentity, previousState);
 	refreshChangersWithCurrentInteractions();
@@ -168,7 +177,11 @@ void	UChemicalComponent::AddHitComponent(UChemicalComponent* chemicalComp)
 void	UChemicalComponent::OverrideAssociatedComponent(UPrimitiveComponent* newValue)
 {
 	if (!newValue)
+	{
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Warning, TEXT("%s - %s : Can't override the associated component, given value is nullptr"), owner ? *owner->GetName() : *FString("Error"), *GetName());
 		return;
+	}
 	associatedComponent = newValue;
 
 	bindDelegates();
@@ -330,10 +343,18 @@ void	UChemicalComponent::addPropagationComponents()
 	{
 		UPrimitiveComponent* otherPrimitive = Cast<UPrimitiveComponent>(propagationComp.GetComponent(propagationComp.OtherActor));
 		if (!otherPrimitive)
+		{
+			AActor* owner = GetOwner();
+			UE_LOG(LogTemp, Warning, TEXT("%s - %s : Cannot add propagation component, the primitive reference is wrong"), owner? *owner->GetName() : *FString("Error"), *GetName());
 			continue;
+		}
 		UChemicalComponent* otherChemicalComp = FindAssociatedChemicalComponent(otherPrimitive);
 		if (otherChemicalComp)
-			return;
+		{
+			AActor* owner = GetOwner();
+			UE_LOG(LogTemp, Warning, TEXT("%s - %s : Cannot add propagation component, the primitive reference doesn't have chemical component associated"), owner ? *owner->GetName() : *FString("Error"), *GetName());
+			continue;
+		}
 		FChemicalPropagation	propagationParams;
 		propagationParams.component = otherChemicalComp;
 		propagationParams.primitive = otherPrimitive;
@@ -350,10 +371,18 @@ void	UChemicalComponent::addPropagationComponents()
 	{
 		UPrimitiveComponent* otherPrimitive = Cast<UPrimitiveComponent>(propagationComp.GetComponent(propagationComp.OtherActor));
 		if (!otherPrimitive)
+		{
+			AActor* owner = GetOwner();
+			UE_LOG(LogTemp, Warning, TEXT("%s - %s : Cannot add static propagation component, the primitive reference is wrong"), owner ? *owner->GetName() : *FString("Error"), *GetName());
 			continue;
+		}
 		UChemicalComponent* otherChemicalComp = FindAssociatedChemicalComponent(otherPrimitive);
 		if (!otherChemicalComp)
-			return;
+		{
+			AActor* owner = GetOwner();
+			UE_LOG(LogTemp, Warning, TEXT("%s - %s : Cannot add static propagation component, the primitive reference doesn't have chemical component associated"), owner ? *owner->GetName() : *FString("Error"), *GetName());
+			continue;
+		}
 		FChemicalPropagation	propagationParams;
 		propagationParams.component = otherChemicalComp;
 		propagationParams.primitive = otherPrimitive;
