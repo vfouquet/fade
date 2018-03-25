@@ -55,12 +55,17 @@ void UCharacterHealthComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	if (bIsGod)
 		return;
 
+	if (!mainCharacter)
+		return;
+	if (mainCharacter->isDead())
+		return;
+
 	bool ascending = false;
 	if (moveComponent && moveComponent->IsFalling(ascending) && !ascending)
 	{
 		jumpZOffset -= moveComponent->GetLastMovementOffset().Z;
-		//if (jumpZOffset >= FatalJumpHeight)
-		//	Die();
+		if (jumpZOffset >= FatalJumpHeight)
+			Die();
 	}
 	else
 		jumpZOffset = 0.0f;
@@ -88,9 +93,21 @@ void UCharacterHealthComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 void	UCharacterHealthComponent::OnCapsuleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
+	if (!mainCharacter)
+		return;
+	if (mainCharacter->isDead())
+		return;
+
 	UIdentityEraserComponent* identityEraser = Cast<UIdentityEraserComponent>(OtherComp);
 	if (identityEraser)
+	{
 		eraseZoneCount++;
+		if (memoryZoneCount == 0)
+		{
+			currentFireTime = 0.0f;
+			currentCondition = ECharacterCondition::None;
+		}
+	}
 
 	UMemoryZoneComponent* memoryZoneEraser = Cast<UMemoryZoneComponent>(OtherComp);
 	if (memoryZoneEraser)
@@ -129,10 +146,23 @@ void	UCharacterHealthComponent::OnCapsuleEndOverlap(UPrimitiveComponent* Overlap
 
 void	UCharacterHealthComponent::OnCapsuleHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	/*
-	if (bIsDead)
+	if (!mainCharacter)
+		return;
+	if (mainCharacter->isDead())
 		return;
 
+	if (Hit.Component.IsValid())
+	{
+		FVector		rA = Hit.Location - HitComponent->GetComponentLocation();
+		FVector		rB = Hit.Location - OtherComp->GetComponentLocation();
+		FVector		vAi = HitComponent->GetComponentLocation() + FVector::CrossProduct(HitComponent->GetPhysicsAngularVelocity(), rA);
+		FVector		vBi = OtherComp->GetComponentLocation() + FVector::CrossProduct(OtherComp->GetPhysicsAngularVelocity(), rB);
+		float VRel = FVector::DotProduct(vBi - vAi, Hit.Normal);
+
+		//UE_LOG(LogTemp, Warning, TEXT("Vrel : %f"), VRel);
+	}
+
+	/*
 	UChemicalComponent*	comp = UChemicalComponent::FindAssociatedChemicalComponent(OtherComp);
 	if (comp)
 	{
