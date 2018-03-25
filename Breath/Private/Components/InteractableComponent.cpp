@@ -22,9 +22,9 @@ void UInteractableComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (Grab.ComponentProperty != NAME_None)
+	associatedComponent = Cast<UPrimitiveComponent>(Grab.GetComponent(GetOwner()));
+	if (associatedComponent)
 	{
-		associatedComponent = Cast<UPrimitiveComponent>(Grab.GetComponent(GetOwner()));
 		FScriptDelegate	hitOverlap;
 		hitOverlap.BindUFunction(this, "OnHit");
 		associatedComponent->OnComponentHit.Add(hitOverlap);

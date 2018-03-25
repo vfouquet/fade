@@ -58,6 +58,7 @@ void	URopeNodeComponent::CreateSphere(float size, FVector location)
 	sphere->SetCollisionProfileName("SmallInteractable");
 	sphere->SetEnableGravity(true);
 	sphere->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+	sphere->SetMassOverrideInKg(NAME_None, size * 0.1f);
 }
 	
 UChemicalWoodComponent*	URopeNodeComponent::CreateWoodProperty(UPrimitiveComponent* prevPrim, UPrimitiveComponent* nextPrim)
