@@ -55,7 +55,7 @@ void	URopeNodeComponent::CreateSphere(float size, FVector location)
 	sphere->SetWorldLocation(location);
 	sphere->SetSimulatePhysics(true);
 	sphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	sphere->SetCollisionProfileName("SmallInteractable");
+	sphere->SetCollisionProfileName("Rope");
 	sphere->SetEnableGravity(true);
 	sphere->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 	sphere->SetMassOverrideInKg(NAME_None, size * 0.1f);

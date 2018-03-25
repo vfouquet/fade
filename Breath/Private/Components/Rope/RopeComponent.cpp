@@ -121,7 +121,6 @@ void URopeComponent::BeginPlay()
 	endConstraint->SetupAttachment(this);
 	endConstraint->RegisterComponent();
 	endConstraint->SetWorldLocation(sphereEndPoint);
-	endConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 5.0f);
 	endConstraint->SetConstrainedComponents(endAttachPrimitive, NAME_None, nodes.Last()->GetSphere(), NAME_None);
 	nodes.Last()->SetNextConstraint(endConstraint);
 
@@ -182,6 +181,9 @@ void	URopeComponent::createSplineMeshes()
 		splineMesh->SetEndScale(FVector2D(yScale, ZScale));
 
 		splineMesh->SetStaticMesh(mesh);
+		//TO DO BETTER OPTI
+		splineMesh->CastShadow = 0;
+
 		node->SetSplineMesh(splineMesh);
 		idx++;
 	}

@@ -293,6 +293,7 @@ void	UHoldComponent::Stick()
 		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Sticking);
 
 		mainCharacter->UnblockCharacter();
+		mainCharacter->SetHoldingObject(false);
 		currentHoldingState = EHoldingState::None;
 		holdingStateChangedDelegate.Broadcast(EHoldingState::Sticking, EHoldingState::None);
 	}
@@ -415,12 +416,12 @@ void	UHoldComponent::detectInteractableAround()
 	TArray<FHitResult>			hitResults;
 	FCollisionQueryParams		queryParams;
 	queryParams.AddIgnoredActor(GetOwner());
+	if (holdingObject.IsValid())
+		queryParams.AddIgnoredActor(holdingObject->GetOwner());
 
-	GetWorld()->SweepMultiByChannel(hitResults, characterCapsule->GetComponentLocation(),
-		characterCapsule->GetComponentLocation() + GetOwner()->GetActorForwardVector() * ((currentHoldingState == EHoldingState::LightGrabbing)? HoldingDetectionOffset : DetectionOffset),
-		FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2,
-		FCollisionShape::MakeCapsule(characterCapsule->GetScaledCapsuleRadius(), characterCapsule->GetScaledCapsuleHalfHeight()),
-		queryParams);
+	FVector traceLocation = characterCapsule->GetComponentLocation() + GetOwner()->GetActorForwardVector() * 2.0f * characterCapsule->GetScaledCapsuleRadius();
+	GetWorld()->SweepMultiByChannel(hitResults, traceLocation, traceLocation, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2,
+		FCollisionShape::MakeCapsule(characterCapsule->GetScaledCapsuleRadius(), characterCapsule->GetScaledCapsuleHalfHeight()), queryParams);
 	
 	if (hitResults.Num() > 0)
 	{
