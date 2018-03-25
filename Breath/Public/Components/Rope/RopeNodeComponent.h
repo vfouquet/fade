@@ -30,9 +30,9 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void OnComponentDestroyed(bool destroyedHierarchy) override;
 
-	void	CreateSphere(float size, FVector location);
-	void	CreateWoodProperty(UPrimitiveComponent* prevPrim, UPrimitiveComponent* nextPrim);
-	void	UpdateSplineMesh(FVector beginPoint, FVector beginTangent, FVector endPoint, FVector endTangent);
+	void					CreateSphere(float size, FVector location);
+	UChemicalWoodComponent*	CreateWoodProperty(UPrimitiveComponent* prevPrim, UPrimitiveComponent* nextPrim);
+	void					UpdateSplineMesh(FVector beginPoint, FVector beginTangent, FVector endPoint, FVector endTangent);
 
 	void	SetSplineMesh(USplineMeshComponent* value) { splineMesh = value; }
 	void	SetPreviousConstraint(UPhysicsConstraintComponent* value) { previousConstraint = value; }

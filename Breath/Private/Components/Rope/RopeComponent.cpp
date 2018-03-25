@@ -5,6 +5,7 @@
 #include "InteractableComponent.h"
 #include "RopeAttachmentComponent.h"
 #include "Engine/StaticMesh.h"
+#include "ChemicalWoodComponent.h"
 
 // Sets default values for this component's properties
 URopeComponent::URopeComponent()
@@ -95,12 +96,16 @@ void URopeComponent::BeginPlay()
 	{
 		for (int idx = 0; idx < nodes.Num(); idx++)
 		{
+			UChemicalWoodComponent* tempWood = nullptr;
 			if (idx == 0)
-				nodes[idx]->CreateWoodProperty(beginAttachPrimitive, nodes[idx + 1]->GetSphere());
+				tempWood = nodes[idx]->CreateWoodProperty(beginAttachPrimitive, nodes[idx + 1]->GetSphere());
 			else if (idx == nodes.Num() - 1)
-				nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), endAttachPrimitive);
+				tempWood = nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), endAttachPrimitive);
 			else
-				nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), nodes[idx + 1]->GetSphere());
+				tempWood = nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), nodes[idx + 1]->GetSphere());
+			tempWood->normalToLit = normalToLit;
+			tempWood->litToBurning = litToBurning;
+			tempWood->burningToScorched = burningToScorched;
 		}
 	}
 

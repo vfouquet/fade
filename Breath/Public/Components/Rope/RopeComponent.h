@@ -44,6 +44,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Rope")
 	FComponentReference	EndComponentReference;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Burning Options")
+	float	normalToLit = 3.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Burning Options")
+	float	litToBurning = 5.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Burning Options")
+	float	burningToScorched = 4.0f;
+
 	UPROPERTY(EditAnywhere, Category = "Stick options")
 	FComponentReference	BeginComponentStickOverride;
 	UPROPERTY(EditAnywhere, Category = "Stick options")

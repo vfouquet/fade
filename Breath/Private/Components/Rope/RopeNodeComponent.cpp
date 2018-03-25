@@ -60,7 +60,7 @@ void	URopeNodeComponent::CreateSphere(float size, FVector location)
 	sphere->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 }
 	
-void	URopeNodeComponent::CreateWoodProperty(UPrimitiveComponent* prevPrim, UPrimitiveComponent* nextPrim)
+UChemicalWoodComponent*	URopeNodeComponent::CreateWoodProperty(UPrimitiveComponent* prevPrim, UPrimitiveComponent* nextPrim)
 {
 	woodComponent = NewObject<UChemicalWoodComponent>(GetOwner());
 	woodComponent->RegisterComponent();
@@ -80,6 +80,7 @@ void	URopeNodeComponent::CreateWoodProperty(UPrimitiveComponent* prevPrim, UPrim
 	FScriptDelegate	woodDel;
 	woodDel.BindUFunction(this, "onSphereChemicalStateChanged");
 	woodComponent->stateChangedDelegate.Add(woodDel);
+	return woodComponent;
 }
 	
 void	URopeNodeComponent::UpdateSplineMesh(FVector startPoint, FVector startTangent, FVector endPoint, FVector endTangent)
@@ -113,7 +114,6 @@ FVector	URopeNodeComponent::GetNextConstraintLocation() const
 	
 void	URopeNodeComponent::onSphereChemicalStateChanged(EChemicalTransformation transformation, EChemicalState previous, EChemicalState next) 
 {
-	UE_LOG(LogTemp, Warning, TEXT("Trans : %d   prev : %d     next %d"), (int)transformation, (int)previous, (int)next);
 	if (transformation == EChemicalTransformation::Burning && next == EChemicalState::Scorched)
 		DestroyComponent();
 }
