@@ -103,10 +103,7 @@ void	UCharacterHealthComponent::OnCapsuleOverlap(UPrimitiveComponent* Overlapped
 	{
 		eraseZoneCount++;
 		if (memoryZoneCount == 0)
-		{
 			currentFireTime = 0.0f;
-			currentCondition = ECharacterCondition::None;
-		}
 	}
 
 	UMemoryZoneComponent* memoryZoneEraser = Cast<UMemoryZoneComponent>(OtherComp);
