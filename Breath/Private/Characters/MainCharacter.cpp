@@ -34,11 +34,7 @@ void AMainCharacter::BeginPlay()
 	holdComponent = FindComponentByClass<UHoldComponent>();
 	mainCharacterMovement = Cast<UMainCharacterMovementComponent>(GetCharacterMovement());
 
-	//TEMP CLIMB TRICK
-	if (auto* mesh = GetMesh())
-		rootHipsOffset = mesh->GetBoneLocation("Maori_Hip_JNT") - GetActorLocation();
-
-#if WITH_EDITOR
+#if WITH_EDITO
 	if (bIsThirdPersonCamera == true)
 	{
 		CameraComponent = NewObject<UPlayerCameraComponent>(this, UPlayerCameraComponent::StaticClass());
@@ -53,17 +49,13 @@ void AMainCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	//CLIMB TRICK
-	/*
 	if (isClimbing)
 	{
-		FVector translation = GetMesh()->GetBoneLocation("Maori_Hip_JNT") - rootHipsOffset - GetActorLocation();
+		FVector translation = GetMesh()->GetBoneLocation("Maori_Hip_JNT") - hipBeginLocation;
 		FVector newLoc = beginClimbActorLocation + translation;
 		SetActorLocation(newLoc);
-		GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -92.0f) - translation);
+		GetMesh()->SetWorldLocation(newLoc - FVector(0.0f, 0.0f, 92.0f) - translation);
 	}
-	*/
-
-	//updateClimbAnimationTranslation();
 
 	if (bBlocked)
 		return;	
@@ -180,8 +172,8 @@ void	AMainCharacter::Jump(FVector direction)
 bool	AMainCharacter::Climb()
 {
 	FVector	normal, hitLocation, topPoint;
-	bool firstRes = climbTrace(hitLocation, normal, topPoint);
-	if (!firstRes)
+	climbType = climbTrace(hitLocation, normal, topPoint);
+	if (climbType == EClimbType::None)
 		return false;
 	
 	float angle = FMath::RadiansToDegrees(FMath::Acos(GetActorForwardVector() | (normal * -1.0f)));
@@ -190,7 +182,6 @@ bool	AMainCharacter::Climb()
 	
 	FVector	newLoc = hitLocation + normal * 50.0f;
 	newLoc.Z = GetActorLocation().Z;
-	climbPointTarget = topPoint;
 
 	FLatentActionInfo	latentInfo;
 	latentInfo.CallbackTarget = this;
@@ -237,31 +228,10 @@ void	AMainCharacter::HeadLookAt(FVector lookAtLocation)
 	}
 }
 
-void	AMainCharacter::EndClimb()
-{
-	isClimbing = false;
-	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	//GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -92.0f));
-	UnblockCharacter();
-	/*
-	if (auto* mesh = GetMesh())
-	{
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *centerSpineBoneOffset.ToString());
-	FVector tempLoc = mesh->GetBoneLocation("Maori_Hip_JNT");
-	SetActorLocation(tempLoc + centerSpineBoneOffset);
-	}
-	*/
-	UCapsuleComponent*	characterCapsule = FindComponentByClass<UCapsuleComponent>();
-	if (!characterCapsule)
-		return;
-	SetActorLocation(climbPointTarget + FVector::UpVector * (characterCapsule->GetScaledCapsuleHalfHeight() + 10.0f),
-		false, nullptr, ETeleportType::TeleportPhysics);
-}
-
 void	AMainCharacter::SetWalkMode()
 {
 	if (!bCustomSpeedEnabled)
-mainCharacterMovement->SetWalkMode();
+	mainCharacterMovement->SetWalkMode();
 }
 
 void	AMainCharacter::SetJogMode()
@@ -330,7 +300,7 @@ FVector	AMainCharacter::GetTwoHandsLocation() const
 	return FVector::ZeroVector;
 }
 
-bool	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint)
+EClimbType	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint)
 {
 	UCapsuleComponent* capsuleComponent = GetCapsuleComponent();
 		FCollisionShape	firstCapsule = FCollisionShape::MakeCapsule(capsuleComponent->GetScaledCapsuleRadius(), 49);
@@ -364,9 +334,9 @@ bool	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVe
 			twoMeterHitResult.GetComponent()->GetClosestPointOnCollision(upperEnd, outTopPoint);
 			outHitLocation = twoMeterHitResult.Location - twoMeterHitResult.Normal * secondCapsule.GetCapsuleRadius();
 			outNormal = twoMeterHitResult.Normal;
-			return true;
+			return EClimbType::TwoMetersClimb;
 		}
-		return false;
+		return EClimbType::None;
 	}
 	else
 	{
@@ -390,44 +360,60 @@ bool	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVe
 				oneMeterHitResult.GetComponent()->GetClosestPointOnCollision(twoMeterEnd, outTopPoint);
 				outHitLocation = oneMeterHitResult.Location - oneMeterHitResult.Normal * firstCapsule.GetCapsuleRadius();
 				outNormal = oneMeterHitResult.Normal;
-				return true;
+				return EClimbType::OneMeterClimb;
 			}
-			return false;
+			return EClimbType::None;
 		}
-		return false;
+		return EClimbType::None;
 	}
+}
+
+void	AMainCharacter::onEndMontage(UAnimMontage* montage, bool bInterrupted)
+{
+	if (bInterrupted)
+		return;
+	if (montage == Climb2MetersMontage)
+		endClimb();
+	else if (montage == Climb1MeterMontage)
+		endClimb();
 }
 
 void	AMainCharacter::endCharacterClimbSnap()
 {
-	PlayAnimMontage(ClimbMontage);
 	beginClimbActorLocation = GetActorLocation();
-	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	isClimbing = true;
-}
 	
-void	AMainCharacter::updateClimbAnimationTranslation()
-{
-	UAnimMontage* montage = GetCurrentMontage();
-	if (montage == ClimbMontage && GetMesh())
+	if (auto* mesh = GetMesh())
 	{
-		UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
-		if (animInstance)
-		{
-			float outZValue = 0.0f;
-			float outXValue = 0.0f;
-			animInstance->GetCurveValue("ZOffset", outZValue);
-			animInstance->GetCurveValue("XOffset", outXValue);
-			FVector newLoc = beginClimbActorLocation + FVector(outXValue, 0.0f, outZValue);
-			SetActorLocation(newLoc);
-		}
+		hipBeginLocation = mesh->GetBoneLocation("Maori_Hip_JNT");
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		PlayAnimMontage(climbType == EClimbType::OneMeterClimb ? Climb1MeterMontage : Climb2MetersMontage);
+		isClimbing = true;
+
+		FOnMontageEnded	endDel;
+		endDel.BindUObject(this, &AMainCharacter::onEndMontage);
+		GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(endDel, climbType == EClimbType::OneMeterClimb? Climb1MeterMontage : Climb2MetersMontage);
 	}
 }
 	
+void	AMainCharacter::endClimb()
+{
+	isClimbing = false;
+	FVector temp = GetMesh()->GetBoneLocation("Maori_Hip_JNT") - hipBeginLocation;
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -92.0f));
+	//SetActorLocation(beginClimbActorLocation + temp);
+	//UE_LOG(LogTemp, Warning, TEXT("Tra : %s"), *temp.ToString());
+	UnblockCharacter();
+}
+
 void	AMainCharacter::stopCurrentPlayingMontage()
 {
 	UAnimMontage*	montage = GetCurrentMontage();
-	if (montage == ClimbMontage)
+	if (montage == Climb1MeterMontage)
+	{
+
+	}
+	else if (montage == Climb2MetersMontage)
 	{
 
 	}

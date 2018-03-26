@@ -5,6 +5,14 @@
 #include "Array.h"
 #include "MainCharacterMovementComponent.h"
 
+UENUM(BlueprintType)
+enum class EClimbType : uint8
+{
+	None = 0 UMETA(DisplayName = "None"),
+	OneMeterClimb = 1 UMETA(DisplayName = "OneMeterClimb"),
+	TwoMetersClimb = 2 UMETA(DisplayName = "TwoMetersClimb")
+};
+
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "MainCharacter.generated.h"
@@ -58,10 +66,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void	HeadLookAt(FVector lookAtLocation);
-
-	//NOTIFY CALLBACK
-	UFUNCTION(BlueprintCallable)
-	void	EndClimb();
 
 	void	SetWalkMode();
 	void	SetJogMode();
@@ -123,7 +127,9 @@ public:
 	FDeathDelegate	OnDie;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
-	UAnimMontage*	ClimbMontage = nullptr;
+	UAnimMontage*	Climb1MeterMontage = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage*	Climb2MetersMontage = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	LightGrabAnim = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
@@ -136,11 +142,13 @@ public:
 	UAnimMontage*	HeavyPushAnim = nullptr;
 
 private:
-	bool	climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint);
+	EClimbType	climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint);
+	UFUNCTION()
+	void	onEndMontage(UAnimMontage* montage, bool bInterrupted);
 	UFUNCTION()
 	void	endCharacterClimbSnap();
-	void	updateClimbAnimationTranslation();
-public:
+	UFUNCTION()
+	void	endClimb();
 	UFUNCTION(BlueprintCallable)
 	void	stopCurrentPlayingMontage();
 
@@ -152,7 +160,6 @@ private:
 	UMainCharacterMovementComponent*	mainCharacterMovement = nullptr;
 
 	FTimerHandle		climbSnapTimerHandle;
-	FVector				climbPointTarget;
 
 	FRotator			headRotation;
 
@@ -169,7 +176,8 @@ private:
 	float	pushingAxis = 0.0f;
 
 	//TEMP CLIMB TRICK SHIT
+	EClimbType	climbType;
 	bool	isClimbing = false;
-	FVector	rootHipsOffset;
 	FVector	beginClimbActorLocation;
+	FVector	hipBeginLocation;
 };
