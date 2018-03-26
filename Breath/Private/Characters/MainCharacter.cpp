@@ -277,6 +277,38 @@ void	AMainCharacter::DisableMovingHeavyObjectMode()
 	bMovingHeavyObject = false;
 }
 
+void	AMainCharacter::PlayLightGrabMontage(bool oneMeter)
+{ 
+	PlayAnimMontage(oneMeter ? LightGrabOneMeterAnim : LightGrabAnim);
+	FOnMontageEnded	endDel;
+	endDel.BindUObject(this, &AMainCharacter::onEndMontage);
+	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(endDel, oneMeter ? LightGrabOneMeterAnim : LightGrabAnim);
+}
+
+void	AMainCharacter::PlayLightThrowMontage()
+{ 
+	PlayAnimMontage(LightThrowAnim); 
+	FOnMontageEnded	endDel;
+	endDel.BindUObject(this, &AMainCharacter::onEndMontage);
+	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(endDel, LightThrowAnim);
+}
+
+void	AMainCharacter::PlayHeavyGrabMontage()
+{ 
+	PlayAnimMontage(HeavyGrabAnim); 
+	FOnMontageEnded	endDel;
+	endDel.BindUObject(this, &AMainCharacter::onEndMontage);
+	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(endDel, HeavyGrabAnim);
+}
+
+void	AMainCharacter::PlayHeavyThrowMontage()
+{
+	PlayAnimMontage(HeavyPushAnim); 
+	FOnMontageEnded	endDel;
+	endDel.BindUObject(this, &AMainCharacter::onEndMontage);
+	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(endDel, HeavyPushAnim);
+}
+
 bool	AMainCharacter::CanThrow() const
 {
 	return bHoldingObject || bMovingHeavyObject;
@@ -370,12 +402,39 @@ EClimbType	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNorma
 
 void	AMainCharacter::onEndMontage(UAnimMontage* montage, bool bInterrupted)
 {
-	if (bInterrupted)
+	if (montage == Climb1MeterMontage || montage == Climb2MetersMontage)
+	{
+		endClimb();
 		return;
-	if (montage == Climb2MetersMontage)
-		endClimb();
-	else if (montage == Climb1MeterMontage)
-		endClimb();
+	}
+	else if (montage == LightGrabAnim)
+	{
+		if (bInterrupted && holdComponent && !bThrowingObject)
+			holdComponent->CancelLightGrab();
+		else if (holdComponent)
+				holdComponent->EndLightGrab();
+	}
+	else if (montage == LightThrowAnim)
+	{
+		if (bInterrupted && holdComponent)
+			holdComponent->CancelThrow();
+		else if (holdComponent)
+			holdComponent->EndThrow();
+	}
+	else if (montage == HeavyGrabAnim)
+	{
+		if (bInterrupted && holdComponent)
+			holdComponent->CancelHeavyGrab();
+		else if (holdComponent)
+			holdComponent->EndHeavyGrab();
+	}
+	else if (montage == HeavyPushAnim)
+	{
+		if (bInterrupted && holdComponent)
+			holdComponent->CancelHeavyThrow();
+		else if (holdComponent)
+			holdComponent->EndThrow();
+	}
 }
 
 void	AMainCharacter::endCharacterClimbSnap()
@@ -404,41 +463,4 @@ void	AMainCharacter::endClimb()
 	//SetActorLocation(beginClimbActorLocation + temp);
 	//UE_LOG(LogTemp, Warning, TEXT("Tra : %s"), *temp.ToString());
 	UnblockCharacter();
-}
-
-void	AMainCharacter::stopCurrentPlayingMontage()
-{
-	UAnimMontage*	montage = GetCurrentMontage();
-	if (montage == Climb1MeterMontage)
-	{
-
-	}
-	else if (montage == Climb2MetersMontage)
-	{
-
-	}
-	else if (montage == LightGrabAnim)
-	{
-		if (holdComponent)
-			holdComponent->CancelLightGrab();
-		StopAnimMontage(montage);
-	}
-	else if (montage == LightThrowAnim)
-	{
-		if (holdComponent)
-			holdComponent->CancelThrow();
-		StopAnimMontage(montage);
-	}
-	else if (montage == HeavyGrabAnim)
-	{
-		if (holdComponent)
-			holdComponent->CancelHeavyGrab();
-		StopAnimMontage(montage);
-	}
-	else if (montage == HeavyPushAnim)
-	{
-		if (holdComponent)
-			holdComponent->CancelHeavyThrow();
-		StopAnimMontage(montage);
-	}
 }

@@ -90,10 +90,10 @@ public:
 	void	SetThrowingObject(bool const value) { bThrowingObject = value; }
 	void	SetHoldingObject(bool const value) { bHoldingObject = value; }
 
-	void	PlayLightGrabMontage(bool oneMeter = false) { PlayAnimMontage(oneMeter? LightGrabOneMeterAnim : LightGrabAnim); }
-	void	PlayLightThrowMontage() { PlayAnimMontage(LightThrowAnim); }
-	void	PlayHeavyGrabMontage() { PlayAnimMontage(HeavyGrabAnim); }
-	void	PlayHeavyThrowMontage() { PlayAnimMontage(HeavyPushAnim); }
+	void	PlayLightGrabMontage(bool oneMeter = false);
+	void	PlayLightThrowMontage();
+	void	PlayHeavyGrabMontage();
+	void	PlayHeavyThrowMontage();
 	void	StopLightGrabMontage() { StopAnimMontage(LightGrabAnim); }
 	void	StopHeavyGrabMontage() { StopAnimMontage(HeavyGrabAnim); }
 
@@ -149,8 +149,9 @@ private:
 	void	endCharacterClimbSnap();
 	UFUNCTION()
 	void	endClimb();
+public:
 	UFUNCTION(BlueprintCallable)
-	void	stopCurrentPlayingMontage();
+		void	stopCurrentPlayingMontage() { StopAnimMontage(); }
 
 private:
 	UPROPERTY(VisibleAnywhere)
