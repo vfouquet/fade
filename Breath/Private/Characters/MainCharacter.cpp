@@ -180,7 +180,7 @@ bool	AMainCharacter::Climb()
 	if (angle > ClimbAngleTolerence)
 		return false;
 	
-	FVector	newLoc = hitLocation + normal * 50.0f;
+	FVector	newLoc = hitLocation + normal * (climbType == EClimbType::TwoMetersClimb? 50.0f : 65.0f);
 	newLoc.Z = GetActorLocation().Z;
 
 	FLatentActionInfo	latentInfo;
