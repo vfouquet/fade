@@ -115,6 +115,7 @@ protected:
 	UPrimitiveComponent*								associatedComponent = nullptr;
 	EChemicalType										type = EChemicalType::None;
 	EChemicalState										state = EChemicalState::None;
+	bool												bAlreadyTick = false;
 
 private:
 	void	notifyChemicalStateChanged(EChemicalTransformation transformation, EChemicalState previous, EChemicalState next);

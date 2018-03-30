@@ -25,6 +25,7 @@ public:
 	UIdentityZoneComponent() { PrimaryComponentTick.bCanEverTick = true; }
 
 	virtual void	BeginPlay() override;
+	virtual void	TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION()
 	virtual void	OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult) {}
@@ -33,4 +34,5 @@ public:
 
 protected:
 	AIdentityZoneManager*	manager = nullptr;
+	bool					bAlreadyTick = false;
 };

@@ -24,6 +24,11 @@ void	UIdentityZoneComponent::BeginPlay()
 	FScriptDelegate	endOverlapDelegate;
 	endOverlapDelegate.BindUFunction(this, "OnEndOverlap");
 	OnComponentEndOverlap.AddUnique(endOverlapDelegate);
+}
+	
+void	UIdentityZoneComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	TArray<UPrimitiveComponent*>	primitives;
 	GetOverlappingComponents(primitives);

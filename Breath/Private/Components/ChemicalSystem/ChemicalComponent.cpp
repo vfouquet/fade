@@ -39,7 +39,6 @@ void UChemicalComponent::BeginPlay()
 
 	bindDelegates();
 	addPropagationComponents();
-	refreshChangersWithCurrentInteractions();
 }
 
 
@@ -50,6 +49,12 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 	if (!associatedComponent)
 		return;
+
+	if (!bAlreadyTick)
+	{
+		refreshChangersWithCurrentInteractions();
+		bAlreadyTick = true;
+	}
 
 	// ...
 	for (auto& hitComp : hitChemicalComponents)
