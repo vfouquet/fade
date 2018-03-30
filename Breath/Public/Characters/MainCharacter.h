@@ -10,7 +10,9 @@ enum class EClimbType : uint8
 {
 	None = 0 UMETA(DisplayName = "None"),
 	OneMeterClimb = 1 UMETA(DisplayName = "OneMeterClimb"),
-	TwoMetersClimb = 2 UMETA(DisplayName = "TwoMetersClimb")
+	TwoMetersClimb = 2 UMETA(DisplayName = "TwoMetersClimb"),
+	AirOneMeterClimb = 3 UMETA(DisplayName = "AirOneMeterClimb"),
+	AirTwoMetersClimb = 4 UMETA(DisplayName = "AirTwoMetersClimb")
 };
 
 #include "CoreMinimal.h"
@@ -98,6 +100,8 @@ public:
 	void	StopHeavyGrabMontage() { StopAnimMontage(HeavyGrabAnim); }
 
 	UFUNCTION(BlueprintPure)
+	bool			IsClimbing() const { return isClimbing; }
+	UFUNCTION(BlueprintPure)
 	bool			IsHeavyModeEnabled() const { return bMovingHeavyObject; }
 	UFUNCTION(BlueprintPure)
 	bool			IsRotatingLeft() const { return rotatingLeft; }
@@ -181,4 +185,5 @@ private:
 	bool	isClimbing = false;
 	FVector	beginClimbActorLocation;
 	FVector	hipBeginLocation;
+	float	zClimbTarget = 0.0f;
 };
