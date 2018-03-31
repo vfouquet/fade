@@ -80,7 +80,9 @@ public:
 	bool	GetDebugRight();
 	UFUNCTION(BlueprintCallable)
 	bool	GetDebugBack();
-	
+	UFUNCTION(BlueprintPure)
+	bool	IsThrown() const { return thrown; }
+
 	FVector							tempExtent; //NON UPDATED EXTENT (CORRECT IF ROTATION IS 0,0,0 AT BEGIN PLAY)
 	//
 
