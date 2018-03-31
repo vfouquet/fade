@@ -97,12 +97,21 @@ AIdentityZoneManager::FErasedObjectProperties&	AIdentityZoneManager::createNewPr
 		}
 	}
 
-	properties.bWasSimulatingPhysics = primitiveComponent->IsSimulatingPhysics();
-	if (properties.bWasSimulatingPhysics)
+	UIdentityPhysicsOverrideComponent*	physicsOverrider = UIdentityPhysicsOverrideComponent::FindAssociatedPhysicsOverriderComponent(primitiveComponent);
+	if (physicsOverrider)
 	{
-		properties.initialVelocity = primitiveComponent->GetComponentVelocity();
-		properties.bDecelerating = true;
-		properties.maxDeceleratingTime = decelerationTime;
+		properties.physicsOverrider = physicsOverrider;
+		physicsOverrider->EraseIdentity();
+	}
+	else
+	{
+		properties.bWasSimulatingPhysics = primitiveComponent->IsSimulatingPhysics();
+		if (properties.bWasSimulatingPhysics)
+		{
+			properties.initialVelocity = primitiveComponent->GetComponentVelocity();
+			properties.bDecelerating = true;
+			properties.maxDeceleratingTime = decelerationTime;
+		}
 	}
 
 	UChemicalComponent*	chemicalComp = UChemicalComponent::FindAssociatedChemicalComponent(primitiveComponent);
@@ -141,23 +150,26 @@ void	AIdentityZoneManager::updateObjectProperties(AIdentityZoneManager::FErasedO
 		properties.interactableComponent->EraseIdentity();
 	}
 
-	properties.bWasSimulatingPhysics = properties.primitiveComponent->IsSimulatingPhysics();
-	if (properties.bWasSimulatingPhysics)
+	if (!properties.physicsOverrider.IsValid())
 	{
-		properties.initialVelocity = properties.primitiveComponent->GetComponentVelocity();
-		properties.bDecelerating = true;
-
-		TArray<UPrimitiveComponent*>	actorComponents;
-		properties.primitiveComponent->GetOverlappingComponents(actorComponents);
-		float	maxTime = FLT_MAX;
-		for (auto& primitiveComp : actorComponents)
+		properties.bWasSimulatingPhysics = properties.primitiveComponent->IsSimulatingPhysics();
+		if (properties.bWasSimulatingPhysics)
 		{
-			UIdentityEraserComponent* eraserZone = Cast<UIdentityEraserComponent>(primitiveComp);
-			if (eraserZone && eraserZone->DecelerationTime <= maxTime)
-				maxTime = eraserZone->DecelerationTime;
+			properties.initialVelocity = properties.primitiveComponent->GetComponentVelocity();
+			properties.bDecelerating = true;
+
+			TArray<UPrimitiveComponent*>	actorComponents;
+			properties.primitiveComponent->GetOverlappingComponents(actorComponents);
+			float	maxTime = FLT_MAX;
+			for (auto& primitiveComp : actorComponents)
+			{
+				UIdentityEraserComponent* eraserZone = Cast<UIdentityEraserComponent>(primitiveComp);
+				if (eraserZone && eraserZone->DecelerationTime <= maxTime)
+					maxTime = eraserZone->DecelerationTime;
+			}
+			if (maxTime != FLT_MAX)
+				properties.maxDeceleratingTime = maxTime;
 		}
-		if (maxTime != FLT_MAX)
-			properties.maxDeceleratingTime = maxTime;
 	}
 
 	if (properties.chemicalComponent.IsValid())
@@ -176,12 +188,15 @@ void	AIdentityZoneManager::updateObjectProperties(AIdentityZoneManager::FErasedO
 		properties.interactableComponent->EraseIdentity();
 	}
 
-	properties.bWasSimulatingPhysics = properties.primitiveComponent->IsSimulatingPhysics();
-	if (properties.bWasSimulatingPhysics)
+	if (!properties.physicsOverrider.IsValid())
 	{
-		properties.initialVelocity = properties.primitiveComponent->GetComponentVelocity();
-		properties.bDecelerating = true;
-		properties.maxDeceleratingTime = decelerationTime;
+		properties.bWasSimulatingPhysics = properties.primitiveComponent->IsSimulatingPhysics();
+		if (properties.bWasSimulatingPhysics)
+		{
+			properties.initialVelocity = properties.primitiveComponent->GetComponentVelocity();
+			properties.bDecelerating = true;
+			properties.maxDeceleratingTime = decelerationTime;
+		}
 	}
 
 	if (properties.chemicalComponent.IsValid())

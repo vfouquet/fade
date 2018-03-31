@@ -5,6 +5,7 @@
 #include "Containers/SparseArray.h"
 #include "ChemicalComponent.h"
 #include "InteractableComponent.h"
+#include "IdentityPhysicsOverrideComponent.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -20,9 +21,10 @@ class BREATH_API AIdentityZoneManager : public AActor
 public:	
 	struct FErasedObjectProperties
 	{
-		TWeakObjectPtr<UPrimitiveComponent>		primitiveComponent = nullptr;
-		TWeakObjectPtr<UChemicalComponent>		chemicalComponent = nullptr;
-		TWeakObjectPtr<UInteractableComponent>	interactableComponent = nullptr;
+		TWeakObjectPtr<UPrimitiveComponent>					primitiveComponent = nullptr;
+		TWeakObjectPtr<UChemicalComponent>					chemicalComponent = nullptr;
+		TWeakObjectPtr<UInteractableComponent>				interactableComponent = nullptr;
+		TWeakObjectPtr<UIdentityPhysicsOverrideComponent>	physicsOverrider = nullptr;
 		FVector								initialVelocity;
 		EChemicalState						previousChemicalState;
 		float								currentDecelerationTime = 0.0f;

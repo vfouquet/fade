@@ -30,13 +30,17 @@ void	UIdentityZoneComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	TArray<UPrimitiveComponent*>	primitives;
-	GetOverlappingComponents(primitives);
-
-	for (auto& prim : primitives)
+	if (!bAlreadyTick)
 	{
-		AActor* otherActor = prim->GetOwner();
-		if (otherActor != GetOwner())
-			OnBeginOverlap(nullptr, otherActor, prim, 0, false, FHitResult()); //DANGEROUS SHIT
+		bAlreadyTick = true;
+		TArray<UPrimitiveComponent*>	primitives;
+		GetOverlappingComponents(primitives);
+
+		for (auto& prim : primitives)
+		{
+			AActor* otherActor = prim->GetOwner();
+			if (otherActor != GetOwner())
+				OnBeginOverlap(nullptr, otherActor, prim, 0, false, FHitResult()); //DANGEROUS SHIT
+		}
 	}
 }

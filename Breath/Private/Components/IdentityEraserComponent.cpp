@@ -64,8 +64,13 @@ void	UIdentityEraserComponent::OnEndOverlap(UPrimitiveComponent* OverlappedCompo
 			outProperty->erasedZoneNbr--;
 		else if (outProperty->erasedZoneNbr == 1)
 		{
-			if (outProperty->bWasSimulatingPhysics)
-				OtherComp->SetSimulatePhysics(true);
+			if (outProperty->physicsOverrider.IsValid())
+				outProperty->physicsOverrider->GiveIdentity();
+			else
+			{
+				if (outProperty->bWasSimulatingPhysics)
+					OtherComp->SetSimulatePhysics(true);
+			}
 			if (outProperty->chemicalComponent.IsValid())
 				outProperty->chemicalComponent->GiveIdentity(outProperty->previousChemicalState);
 			if (outProperty->interactableComponent.IsValid())
