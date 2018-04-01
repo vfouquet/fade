@@ -204,7 +204,7 @@ void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* Ot
 		return;
 	if (thrown)
 		thrown = false;
-	if (!OtherActor || isSticked)
+	if (!CanBeSticked || !OtherActor || isSticked)
 		return;
 	UInteractableComponent*	otherInteractble = OtherActor->FindComponentByClass<UInteractableComponent>();
 	if (!otherInteractble)
