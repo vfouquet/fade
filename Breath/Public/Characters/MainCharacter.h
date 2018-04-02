@@ -84,6 +84,10 @@ public:
 	void	SetPushingAxis(float const& value) { pushingAxis = value; }	
 	
 	UFUNCTION(BlueprintCallable)
+	void	BlockCharacterJump() { bJumpLocked = true; }
+	UFUNCTION(BlueprintCallable)
+	void	UnblockCharacterJump() { bJumpLocked = false; }
+	UFUNCTION(BlueprintCallable)
 	void	BlockCharacter() { bBlocked = true; }
 	UFUNCTION(BlueprintCallable)
 	void	UnblockCharacter() { bBlocked = false; }
@@ -170,6 +174,7 @@ private:
 
 	bool	bCustomSpeedEnabled = false;
 	bool	bBlocked = false;
+	bool	bJumpLocked = false;
 	bool	bMovingHeavyObject = false;
 	bool	bThrowingObject = false;
 	bool	bHoldingObject = false;

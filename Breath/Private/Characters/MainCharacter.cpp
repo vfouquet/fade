@@ -161,7 +161,7 @@ void	AMainCharacter::Stick()
 
 void	AMainCharacter::Jump(FVector direction)
 {
-	if (bBlocked)
+	if (bBlocked || bJumpLocked)
 		return;
 	if (Climb())
 		return;
