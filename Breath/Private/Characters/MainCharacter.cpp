@@ -495,4 +495,5 @@ void	AMainCharacter::endClimb()
 	mainCharacterMovement->SetMovementMode(EMovementMode::MOVE_Walking);
 	UnblockCharacter();
 	mainCharacterMovement->bOrientRotationToMovement = true;
+	climbType = EClimbType::None;
 }
