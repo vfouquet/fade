@@ -22,10 +22,4 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Erased object properties")
 		float	DecelerationTime = 0.1f;
-
-	UFUNCTION(BlueprintPure)
-		int	GetIndex() const { return erasedIndex; }
-
-private:
-	int	erasedIndex = 0;
 };

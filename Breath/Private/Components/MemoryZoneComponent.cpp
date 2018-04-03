@@ -5,6 +5,22 @@
 #include "GameFramework/Character.h"
 #include "IdentityZoneManager.h"
 
+void	UMemoryZoneComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (manager)
+		manager->AddMemoryZone(this);
+}
+	
+void	UMemoryZoneComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
+{
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
+
+	if (manager)
+		manager->RemoveZone(this);
+}
+
 void	UMemoryZoneComponent::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
 	if (!manager)

@@ -6,6 +6,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "IdentityEraserComponent.h"
 #include "MemoryZoneComponent.h"
+#include "Engine/World.h"
 
 // Sets default values
 AIdentityZoneManager::AIdentityZoneManager()
@@ -27,6 +28,8 @@ void AIdentityZoneManager::BeginPlay()
 	whiteZoneMaterial = UMaterialInstanceDynamic::Create(materialInterface, this);
 	
 	postProcessComponent->Settings.AddBlendable(whiteZoneMaterial, 1.0f);
+	if (auto* cont = GetWorld()->GetFirstPlayerController())
+		character = cont->GetPawn();
 }
 
 // Called every frame
@@ -34,7 +37,7 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	affectedObjects.RemoveAll([](const FErasedObjectProperties& p1) { return p1.primitiveComponent.IsStale(); });
+	affectedObjects.RemoveAll([](const FErasedObjectProperties& p1) { return !p1.primitiveComponent.IsValid(); });
 	for (auto& erasedObject : affectedObjects)
 	{
 		if (erasedObject.interactableComponent.IsValid() && erasedObject.interactableComponent->MemoryInteractable)
@@ -58,27 +61,73 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 	if (!whiteZoneMaterial)
 		return;
 
-	for (TSparseArray<UIdentityEraserComponent*>::TConstIterator 
-		it = erasedZones.CreateConstIterator(); it; ++it)
-	{
-		FString indexStr = FString::FromInt(it.GetIndex() + 1);
+	if (!character)
+		return;
 
-		whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), (*it)->GetScaledSphereRadius());
-		whiteZoneMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), (*it)->GetComponentLocation());
+	erasedZones.RemoveAll([](const TWeakObjectPtr<UIdentityEraserComponent>& p1) { return !p1.IsValid(); });
+
+	FVector sourceLocation = character->GetActorLocation();
+	erasedZones.Sort([sourceLocation](const TWeakObjectPtr<UIdentityEraserComponent>& A, const TWeakObjectPtr<UIdentityEraserComponent>& B)
+	{
+		float distA = FVector::DistSquared(sourceLocation, A->GetComponentLocation());
+		float distB = FVector::DistSquared(sourceLocation, B->GetComponentLocation());
+		return distA < distB;
+	});
+
+	int maxIdx = erasedZones.Num();
+	if (maxIdx > 15)
+		maxIdx = 15;
+
+	int pos = 0;
+	for (pos; pos < maxIdx; pos++)
+	{
+		FString indexStr = FString::FromInt(pos + 1);
+
+		whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius());
+		whiteZoneMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
+	}
+	for (pos; pos < 15; pos++)
+	{
+		FString indexStr = FString::FromInt(pos + 1);
+		whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), 0.0f);
+	}
+
+	memoryZones.RemoveAll([](const TWeakObjectPtr<UMemoryZoneComponent>& p1) { return !p1.IsValid(); });
+
+	memoryZones.Sort([sourceLocation](const TWeakObjectPtr<UMemoryZoneComponent>& A, const TWeakObjectPtr<UMemoryZoneComponent>& B)
+	{
+		float distA = FVector::DistSquared(sourceLocation, A->GetComponentLocation());
+		float distB = FVector::DistSquared(sourceLocation, B->GetComponentLocation());
+		return distA < distB;
+	});
+
+	maxIdx = memoryZones.Num();
+	if (maxIdx > 5)
+		maxIdx = 5;
+
+	pos = 0;
+	for (pos; pos < maxIdx; pos++)
+	{
+		FString indexStr = FString::FromInt(pos + 1);
+
+		//whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius());
+		//whiteZoneMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
+	}
+	for (pos; pos < 5; pos++)
+	{
+		//FString indexStr = FString::FromInt(pos + 1);
+		//whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), 0.0f);
 	}
 }
 
-void	AIdentityZoneManager::RemoveZone(int value)
+void	AIdentityZoneManager::RemoveZone(UIdentityEraserComponent* value)
 {
-	if (erasedZones.IsAllocated(value))
-	{
-		if (whiteZoneMaterial)
-		{
-			FString indexStr = FString::FromInt(value + 1);
-			whiteZoneMaterial->SetScalarParameterValue(FName(*("Scale_" + indexStr)), 0.0f);
-		}
-		erasedZones.RemoveAt(value, 1);
-	}
+	erasedZones.Remove(value);
+}
+
+void	AIdentityZoneManager::RemoveZone(UMemoryZoneComponent* value)
+{
+	memoryZones.Remove(value);
 }
 
 AIdentityZoneManager::FErasedObjectProperties&	AIdentityZoneManager::createNewProperties(UPrimitiveComponent* primitiveComponent, float decelerationTime)

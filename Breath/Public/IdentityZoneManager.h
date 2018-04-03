@@ -2,16 +2,16 @@
 
 #pragma once
 
-#include "Containers/SparseArray.h"
+#include "Containers/Array.h"
 #include "ChemicalComponent.h"
 #include "InteractableComponent.h"
 #include "IdentityPhysicsOverrideComponent.h"
+#include "IdentityEraserComponent.h"
+#include "MemoryZoneComponent.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "IdentityZoneManager.generated.h"
-
-class UIdentityEraserComponent;
 
 UCLASS()
 class BREATH_API AIdentityZoneManager : public AActor
@@ -40,7 +40,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	int		AddErasedZone(UIdentityEraserComponent* value) { return erasedZones.Add(value); }
-	void	RemoveZone(int idx);
+	void	RemoveZone(UIdentityEraserComponent* value);
+	int		AddMemoryZone(UMemoryZoneComponent* value) { return memoryZones.Add(value); }
+	void	RemoveZone(UMemoryZoneComponent* value);
 	void	RemoveAffectedObject(int id) { affectedObjects.RemoveAt(id); }
 
 	FErasedObjectProperties&	createNewProperties(UPrimitiveComponent* primitiveComponent, float decelerationTime = 0.0f);
@@ -56,7 +58,9 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	TArray<FErasedObjectProperties>			affectedObjects;
-	TSparseArray<UIdentityEraserComponent*>	erasedZones;
-	UMaterialInstanceDynamic*				whiteZoneMaterial = nullptr;
+	AActor*												character = nullptr;
+	TArray<FErasedObjectProperties>						affectedObjects;
+	TArray<TWeakObjectPtr<UIdentityEraserComponent>>	erasedZones;
+	TArray<TWeakObjectPtr<UMemoryZoneComponent>>		memoryZones;
+	UMaterialInstanceDynamic*							whiteZoneMaterial = nullptr;
 };

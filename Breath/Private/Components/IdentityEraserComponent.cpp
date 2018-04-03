@@ -12,13 +12,14 @@ void	UIdentityEraserComponent::BeginPlay()
 	Super::BeginPlay();
 
 	if (manager)
-		erasedIndex = manager->AddErasedZone(this);
+		manager->AddErasedZone(this);
 }
 
 void	UIdentityEraserComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
 	if (manager)
-		manager->RemoveZone(erasedIndex);
+		manager->RemoveZone(this);
 }
 
 void	UIdentityEraserComponent::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
