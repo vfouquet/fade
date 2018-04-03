@@ -234,6 +234,7 @@ void	UInteractableComponent::OnComponentDestroyed(bool bDestroyHierarchy)
 void	UInteractableComponent::EraseIdentity()
 {
 	identityErased = true;
+	thrown = false;
 	if (holder)
 	{
 		holder->UniversalRelease();
