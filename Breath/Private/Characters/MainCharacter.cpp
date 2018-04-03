@@ -472,18 +472,26 @@ void	AMainCharacter::endCharacterClimbSnap()
 	{
 		hipBeginLocation = mesh->GetBoneLocation("Maori_Hip_JNT");
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		if (climbType == EClimbType::OneMeterClimb)
-			PlayAnimMontage(Climb1MeterMontage);
-		else if (climbType == EClimbType::TwoMetersClimb || climbType == EClimbType::AirTwoMetersClimb)
-			PlayAnimMontage(Climb2MetersMontage);
-		else if (climbType == EClimbType::AirOneMeterClimb)
-			PlayAnimMontage(Climb1MeterMontage, 1.0f, "InAir");
-		isClimbing = true;
-		mainCharacterMovement->SetMovementMode(EMovementMode::MOVE_Flying);
-
+		
 		FOnMontageEnded	endDel;
 		endDel.BindUObject(this, &AMainCharacter::onEndMontage);
-		mesh->GetAnimInstance()->Montage_SetEndDelegate(endDel, climbType == EClimbType::TwoMetersClimb ? Climb2MetersMontage : Climb1MeterMontage);
+		if (climbType == EClimbType::OneMeterClimb)
+		{
+			PlayAnimMontage(Climb1MeterMontage);
+			mesh->GetAnimInstance()->Montage_SetEndDelegate(endDel, Climb1MeterMontage);
+		}
+		else if (climbType == EClimbType::TwoMetersClimb || climbType == EClimbType::AirTwoMetersClimb)
+		{
+			PlayAnimMontage(Climb2MetersMontage);
+			mesh->GetAnimInstance()->Montage_SetEndDelegate(endDel, Climb2MetersMontage);
+		}
+		else if (climbType == EClimbType::AirOneMeterClimb)
+		{
+			PlayAnimMontage(Climb1MeterMontage, 1.0f, "InAir");
+			mesh->GetAnimInstance()->Montage_SetEndDelegate(endDel, Climb1MeterMontage);
+		}
+		isClimbing = true;
+		mainCharacterMovement->SetMovementMode(EMovementMode::MOVE_Flying);	
 	}
 }
 	
