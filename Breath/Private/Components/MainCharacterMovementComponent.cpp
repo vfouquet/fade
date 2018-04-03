@@ -47,7 +47,7 @@ bool UMainCharacterMovementComponent::DoJump(bool bReplayingMoves)
 			Velocity += FVector::UpVector * JumpZVelocity + jumpDirection * LateralJumpForce;
 			SetMovementMode(MOVE_Falling);
 			jumpDirection = FVector::ZeroVector;
-			bOrientRotationToMovement = false;
+			//bOrientRotationToMovement = false;
 			return true;
 		}
 	}
@@ -58,8 +58,8 @@ void UMainCharacterMovementComponent::SetPostLandedPhysics(const FHitResult& Hit
 {
 	Super::SetPostLandedPhysics(Hit);
 
-	if (MovementMode == EMovementMode::MOVE_Walking)
-		bOrientRotationToMovement = true;
+	//if (MovementMode == EMovementMode::MOVE_Walking)
+	//	bOrientRotationToMovement = true;
 }
 	
 void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, float holdingObjectMass)
