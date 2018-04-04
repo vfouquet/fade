@@ -10,6 +10,7 @@
 #include "IdentityEraserComponent.h"
 
 #include "MainCharacterMovementComponent.h"
+#include "AkAudio/Classes/AkGameplayStatics.h"
 
 // Sets default values for this component's properties
 UCharacterHealthComponent::UCharacterHealthComponent()
@@ -101,6 +102,14 @@ void	UCharacterHealthComponent::OnCapsuleOverlap(UPrimitiveComponent* Overlapped
 	UIdentityEraserComponent* identityEraser = Cast<UIdentityEraserComponent>(OtherComp);
 	if (identityEraser)
 	{
+		if (eraseZoneCount == 0 && memoryZoneCount == 0)
+		{
+			UAkGameplayStatics::SetState("MAIN_FEATURE", "Brain");
+			if (mainCharacter)
+				mainCharacter->PlayMeteorEvent();
+			UAkGameplayStatics::PostEvent(identityEraser->AudioCinematic, GetOwner());
+			//SET STATE IN
+		}
 		eraseZoneCount++;
 		if (memoryZoneCount == 0)
 			currentFireTime = 0.0f;
@@ -108,7 +117,14 @@ void	UCharacterHealthComponent::OnCapsuleOverlap(UPrimitiveComponent* Overlapped
 
 	UMemoryZoneComponent* memoryZoneEraser = Cast<UMemoryZoneComponent>(OtherComp);
 	if (memoryZoneEraser)
+	{
+		if (memoryZoneCount == 0 && eraseZoneCount != 0)
+		{
+			UAkGameplayStatics::SetState("MAIN_FEATURE", "Normal");
+			//SET OTHER STATE OUT
+		}
 		memoryZoneCount++;
+	}
 
 	UChemicalComponent*	comp = UChemicalComponent::FindAssociatedChemicalComponent(OtherComp);
 	if (!comp)
@@ -128,11 +144,27 @@ void	UCharacterHealthComponent::OnCapsuleEndOverlap(UPrimitiveComponent* Overlap
 {
 	UIdentityEraserComponent* identityEraser = Cast<UIdentityEraserComponent>(OtherComp);
 	if (identityEraser)
+	{
+		if (memoryZoneCount == 0 && eraseZoneCount == 1)
+		{
+			UAkGameplayStatics::SetState("MAIN_FEATURE", "Normal");
+			//SET OUT
+		}
 		eraseZoneCount--;
+	}
 
 	UMemoryZoneComponent* memoryZoneEraser = Cast<UMemoryZoneComponent>(OtherComp);
 	if (memoryZoneEraser)
+	{
+		if (memoryZoneCount == 1 && eraseZoneCount > 0)
+		{
+			UAkGameplayStatics::SetState("MAIN_FEATURE", "Brain");
+			if (mainCharacter)
+				mainCharacter->PlayMeteorEvent();
+			//SET IN
+		}
 		memoryZoneCount--;
+	}
 
 	UChemicalComponent*	comp = UChemicalComponent::FindAssociatedChemicalComponent(OtherComp);
 	if (!comp)

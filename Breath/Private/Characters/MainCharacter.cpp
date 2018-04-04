@@ -14,6 +14,7 @@
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "AkAudio/Classes/AkGameplayStatics.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer)
@@ -330,6 +331,11 @@ void	AMainCharacter::PlayHeavyThrowMontage()
 	FOnMontageEnded	endDel;
 	endDel.BindUObject(this, &AMainCharacter::onEndMontage);
 	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(endDel, HeavyPushAnim);
+}
+
+void	AMainCharacter::PlayMeteorEvent()
+{
+	UAkGameplayStatics::PostEvent(MeteorEvent, this);
 }
 
 bool	AMainCharacter::CanThrow() const

@@ -4,6 +4,7 @@
 
 #include "Array.h"
 #include "MainCharacterMovementComponent.h"
+#include "AkAudio/Classes/AkAudioEvent.h"
 
 UENUM(BlueprintType)
 enum class EClimbType : uint8
@@ -103,6 +104,8 @@ public:
 	void	StopLightGrabMontage() { StopAnimMontage(LightGrabAnim); }
 	void	StopHeavyGrabMontage() { StopAnimMontage(HeavyGrabAnim); }
 
+	void	PlayMeteorEvent();
+
 	UFUNCTION(BlueprintPure)
 	bool			IsClimbing() const { return isClimbing; }
 	UFUNCTION(BlueprintPure)
@@ -148,6 +151,8 @@ public:
 	UAnimMontage*	HeavyGrabAnim = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	HeavyPushAnim = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	UAkAudioEvent*	MeteorEvent = nullptr;
 
 private:
 	EClimbType	climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint);
