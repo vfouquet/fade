@@ -116,7 +116,8 @@ void	UCharacterHealthComponent::OnCapsuleOverlap(UPrimitiveComponent* Overlapped
 	if ((comp->GetType() == EChemicalType::Fire && comp->GetState() == EChemicalState::None) ||
 		((comp->GetType() == EChemicalType::Rock || comp->GetType() == EChemicalType::Wood) && comp->GetState() == EChemicalState::Burning))
 	{
-		takeFireDamage();
+		if (currentCondition != ECharacterCondition::Burning)
+			takeFireDamage();
 		fireCount++;
 	}
 	else if (comp->GetType() == EChemicalType::Water)
