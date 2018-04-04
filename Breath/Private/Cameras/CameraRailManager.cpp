@@ -82,6 +82,7 @@ void ACameraRailManager::AttachCamera(ARailCamera* CameraToAttach, AActor* Playe
 		if (bTeleport == true)
 		{
 			this->CurrentDistanceAlongSpline = GetDistanceAlongSplineAtWorldLocation(PlayerActor->GetActorLocation());
+			this->CurrentDistanceAlongSplineWithOffset = this->CurrentDistanceAlongSpline;
 		}
 
 		this->SetActorTickEnabled(true);
