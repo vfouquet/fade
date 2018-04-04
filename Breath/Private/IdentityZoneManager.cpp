@@ -37,6 +37,9 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (auto* cont = GetWorld()->GetFirstPlayerController())
+		character = cont->GetPawn();
+
 	affectedObjects.RemoveAll([](const FErasedObjectProperties& p1) { return !p1.primitiveComponent.IsValid(); });
 	for (auto& erasedObject : affectedObjects)
 	{
