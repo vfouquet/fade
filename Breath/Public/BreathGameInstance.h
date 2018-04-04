@@ -7,6 +7,7 @@
 #include "BreathGameInstance.generated.h"
 
 class UStoryChapter;
+class UDataTable;
 
 /**
  * 
@@ -15,7 +16,12 @@ UCLASS()
 class BREATH_API UBreathGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-	
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UDataTable* DataTable;
+
+private:
 	UFUNCTION(exec, BlueprintCallable)
 	void	SaveGame();
 	UFUNCTION(exec, BlueprintCallable)
@@ -30,6 +36,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TAssetPtr<UStoryChapter>	CurrentChapter;
 
+	
 public:
 	virtual void LoadComplete(const float LoadTime, const FString& MapName) override;
 

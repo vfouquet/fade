@@ -2,6 +2,9 @@
 
 #include "StoryChapter.h"
 
+#include "Engine/World.h"
+#include "Engine/Level.h"
+
 #include "MainPlayerStart.h"
 
 #if WITH_EDITOR
@@ -14,7 +17,7 @@ void UStoryChapter::PostEditChangeProperty(struct FPropertyChangedEvent& Propert
 		if (this->Spawn.IsValid())
 		{
 			FString LevelName;
-			LevelName = this->Spawn->GetLevel()->GetOuter()->GetName();
+			LevelName = this->Spawn->GetLevel()->OwningWorld->GetName();
 			this->LevelName = LevelName;
 		}
 		else

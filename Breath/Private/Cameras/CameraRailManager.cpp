@@ -73,12 +73,33 @@ void ACameraRailManager::AttachCamera(ARailCamera* CameraToAttach)
 
 void ACameraRailManager::AttachCamera(ARailCamera* CameraToAttach, AActor* PlayerActor, bool bTeleport)
 {
-	if (CameraToAttach != nullptr && PlayerActor != nullptr)
+	if (CameraToAttach != nullptr)
+	{
+		this->RailCamera = CameraToAttach;
+		
+		if (PlayerActor != nullptr)
+		{
+			this->PlayerActor = PlayerActor;
+			this->CurrentInputKey = FlatSplineComponent->FindInputKeyClosestToWorldLocation(PlayerActor->GetActorLocation());
+
+			if (bTeleport == true)
+			{
+				this->CurrentDistanceAlongSpline = GetDistanceAlongSplineAtWorldLocation(PlayerActor->GetActorLocation());
+				this->CurrentDistanceAlongSplineWithOffset = this->CurrentDistanceAlongSpline;
+			}
+
+			this->SetActorTickEnabled(true);
+		}
+	}
+}
+
+void	ACameraRailManager::ChangePlayer(AActor* PlayerActor, bool bTeleport)
+{
+	if (this->RailCamera != nullptr && PlayerActor != nullptr)
 	{
 		this->PlayerActor = PlayerActor;
-		this->RailCamera = CameraToAttach;
 		this->CurrentInputKey = FlatSplineComponent->FindInputKeyClosestToWorldLocation(PlayerActor->GetActorLocation());
-		
+
 		if (bTeleport == true)
 		{
 			this->CurrentDistanceAlongSpline = GetDistanceAlongSplineAtWorldLocation(PlayerActor->GetActorLocation());

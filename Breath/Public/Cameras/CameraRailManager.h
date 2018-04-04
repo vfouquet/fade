@@ -35,6 +35,7 @@ public:
 	void	AttachCamera(ARailCamera* CameraToAttach);
 	void	AttachCamera(ARailCamera* CameraToAttach, AActor* PlayerActor, bool bTeleport = false);
 	void	DetachCamera();
+	void	ChangePlayer(AActor* PlayerActor, bool bTeleport = false);
 
 protected:
 	virtual void BeginPlay() override;

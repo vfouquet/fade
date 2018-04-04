@@ -23,7 +23,7 @@ public:
 	}
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TAssetPtr<UStoryChapter>	Chapter;
+	UStoryChapter*	Chapter;
 
 };
 

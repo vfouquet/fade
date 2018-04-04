@@ -65,6 +65,7 @@ void ABreathGameModeBase::LoadGameToChapter(UStoryChapter* Chapter)
 {
 	if (Chapter != nullptr)
 	{
+		Chapter->Spawn.LoadSynchronous();
 		if (Chapter->Spawn.IsValid())
 		{
 			AMainPlayerController*  PC = Cast<AMainPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
@@ -83,6 +84,16 @@ void ABreathGameModeBase::LoadGameToChapter(UStoryChapter* Chapter)
 				{
 					PlayerPawn = this->GetWorld()->SpawnActor<APawn>(this->DefaultPawnClass, Chapter->Spawn->GetTransform());
 					PC->Possess(PlayerPawn);
+
+					ARailCamera* Camera = Cast<ARailCamera>(PC->GetCameraActor());
+					
+					if (Camera != nullptr)
+					{
+						Camera->ChangePlayer(PlayerPawn, true);
+					}
+
+
+					//Chapter->Spawn->InitPlayer();
 					/*TArray<AActor*>	OutActors;
 					UGameplayStatics::GetAllActorsOfClass(PC, AMainPlayerStart::StaticClass(), OutActors);
 

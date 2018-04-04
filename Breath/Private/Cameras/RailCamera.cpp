@@ -83,6 +83,14 @@ void ARailCamera::AttachToRailWithPlayer(ACameraRailManager* CameraRailManager, 
 	}
 }
 
+void	ARailCamera::ChangePlayer(AActor* PlayerActor, bool bTeleport)
+{
+	if (this->CurrentRailManager != nullptr && PlayerActor != nullptr)
+	{
+		this->CurrentRailManager->ChangePlayer(PlayerActor, bTeleport);
+	}
+}
+
 void ARailCamera::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);

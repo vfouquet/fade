@@ -25,7 +25,7 @@ public:
 	FString	LevelName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Info")
-	TAssetPtr<UTexture2D> Screenshot;
+	UTexture2D* Screenshot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Info")
 	bool	bAvailableToSelection;

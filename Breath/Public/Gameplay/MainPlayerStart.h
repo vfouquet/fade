@@ -19,5 +19,7 @@ class BREATH_API AMainPlayerStart : public APlayerStart
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TAssetPtr<ACameraRailManager>	CameraRailManager;
-	
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void	InitPlayer();
 };

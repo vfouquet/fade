@@ -8,10 +8,12 @@
 #include "Misc/StringAssetReference.h"
 #include "FileManager.h"
 #include "Misc/Paths.h"
+#include "Engine/DataTable.h"
 
 #include "GameModes/BreathGameModeBase.h"
 #include "Systems/BreathSaveGame.h"
 #include "Story/StoryChapter.h"
+#include "Story/StoryManager.h"
 
 void UBreathGameInstance::SaveGame()
 {
@@ -93,14 +95,39 @@ void UBreathGameInstance::Init()
 {
 	Super::Init();
 
-	TArray<FString> ChapterFiles;
-	IFileManager::Get().FindFilesRecursive(ChapterFiles, *(FPaths::GameContentDir() + "/Gameplay/Story/Chapters/"), TEXT("*.uasset"), true, false, false);
+	UE_LOG(LogTemp, Warning, TEXT("INIT"));
+
+	if (this->DataTable != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("INIT OK"));
+		FString ContextString;
+		TArray<FStoryOrderData*> OutRowArray;
+
+		this->DataTable->GetAllRows<FStoryOrderData>(ContextString, OutRowArray);
+
+
+		for (FStoryOrderData* Row : OutRowArray)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("TEST ROW"));
+			if (Row != nullptr)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("ROW OK"));
+				//Row->Chapter.LoadSynchronous();
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("INIT NULL"));
+	}
+	/*TArray<FString> ChapterFiles;
+	IFileManager::Get().FindFilesRecursive(ChapterFiles, *(FPaths::GameContentDir() + "/Gameplay/Story/Chapters/"), TEXT("*.uasset"), true, false, true);
 
 	for (FString ChapterName : ChapterFiles)
 	{
 		FStreamableManager AssetLoader;
-		FStringAssetReference MyAssetPath("/Game/Gameplay/Story/Chapters/" + ChapterName + ".uasset");
+		FStringAssetReference MyAssetPath(ChapterName);
 		UObject* MyAsset = MyAssetPath.TryLoad();
-	}
+	}*/
 }
 
