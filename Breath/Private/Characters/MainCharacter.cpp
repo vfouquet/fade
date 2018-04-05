@@ -210,7 +210,9 @@ bool	AMainCharacter::Climb()
 
 	FLatentActionInfo	latentInfo;
 	latentInfo.CallbackTarget = this;
-	UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), newLoc, FQuat::Identity.Rotator(), true, true, interpTime, true, EMoveComponentAction::Type::Move, latentInfo);
+	FRotator newRotation = FRotator::ZeroRotator;
+	newRotation.Yaw = (-1.0f * normal).Rotation().Yaw;
+	UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), newLoc, newRotation, true, true, interpTime, true, EMoveComponentAction::Type::Move, latentInfo);
 	FTimerDelegate	del;
 	del.BindUFunction(this, "endCharacterClimbSnap");
 	GetWorldTimerManager().SetTimer(climbSnapTimerHandle, del, interpTime, false);
