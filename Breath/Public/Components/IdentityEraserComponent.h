@@ -8,6 +8,8 @@
 #include "IdentityZoneComponent.h"
 #include "IdentityEraserComponent.generated.h"
 
+class UParticleSystemComponent;
+
 UCLASS(meta=(DisplayName = "IdentityEraser", BlueprintSpawnableComponent) )
 class BREATH_API UIdentityEraserComponent : public UIdentityZoneComponent
 {
@@ -15,6 +17,7 @@ class BREATH_API UIdentityEraserComponent : public UIdentityZoneComponent
 
 public:
 	virtual void	BeginPlay() override;
+	virtual void	TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void	OnComponentDestroyed(bool bDestroyingHierarchy) override;
 
 	UFUNCTION()
@@ -26,4 +29,9 @@ public:
 	float	DecelerationTime = 0.1f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound properties")
 	UAkAudioEvent*	AudioCinematic = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Particle properties")
+	UParticleSystem*	WaveParticleTemplate = nullptr;
+
+private:
+	UParticleSystemComponent*	particleSystem = nullptr;
 };
