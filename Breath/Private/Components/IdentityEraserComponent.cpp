@@ -97,9 +97,6 @@ void	UIdentityEraserComponent::OnEndOverlap(UPrimitiveComponent* OverlappedCompo
 	if (!manager)
 		return;
 
-	if (ACharacter* character = Cast<ACharacter>(OtherActor))
-		return;
-
 	bool isPropertyExisting = false;
 	int id = 0;
 	AIdentityZoneManager::FErasedObjectProperties* outProperty = manager->containsErasedObjectProperties(OtherComp, isPropertyExisting, id);
