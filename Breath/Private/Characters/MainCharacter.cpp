@@ -25,7 +25,7 @@ AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer)
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(this->GetRootComponent());
-
+	mainCharacterMovement = Cast<UMainCharacterMovementComponent>(GetCharacterMovement());
 }
 
 // Called when the game starts or when spawned
@@ -33,7 +33,7 @@ void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	holdComponent = FindComponentByClass<UHoldComponent>();
-	mainCharacterMovement = Cast<UMainCharacterMovementComponent>(GetCharacterMovement());
+	
 
 #if WITH_EDITOR
 	if (bIsThirdPersonCamera == true)
