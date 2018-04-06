@@ -30,7 +30,7 @@ void ABreathGameModeBase::SaveGame()
 	if (UGameplayStatics::SaveGameToSlot(SaveGameInstance, "MainSlot", 0))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Game saved."));
-		//UE_LOG(LogTemp, Warning, TEXT("Current Chatper Name : %s"), this->CurrentChapter->Name);
+		//UE_LOG(LogTemp, Warning, TEXT("Current Chapter Name : %s"), this->CurrentChapter->Name);
 	}
 	else
 	{
@@ -89,7 +89,9 @@ void ABreathGameModeBase::LoadGameToChapter(UStoryChapter* Chapter)
 					}
 					else
 					{
-						PlayerPawn->SetActorTransform(Chapter->Spawn->GetTransform());
+						FTransform transform = Chapter->Spawn->GetTransform();
+						transform.SetScale3D(PlayerPawn->GetActorScale());
+						PlayerPawn->SetActorTransform(transform);
 					}
 
 					ARailCamera* Camera = Cast<ARailCamera>(PC->GetCameraActor());
