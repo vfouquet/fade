@@ -113,13 +113,13 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 	{
 		FString indexStr = FString::FromInt(pos + 1);
 
-		//whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius());
-		//whiteZoneMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
+		whiteZoneMaterial->SetScalarParameterValue(FName(*("Memory_Size_" + indexStr)), memoryZones[pos]->GetScaledSphereRadius());
+		whiteZoneMaterial->SetVectorParameterValue(FName(*("Memory_Position_" + indexStr)), memoryZones[pos]->GetComponentLocation());
 	}
 	for (pos; pos < 5; pos++)
 	{
-		//FString indexStr = FString::FromInt(pos + 1);
-		//whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), 0.0f);
+		FString indexStr = FString::FromInt(pos + 1);
+		whiteZoneMaterial->SetScalarParameterValue(FName(*("Memory_Size_" + indexStr)), 0.0f);
 	}
 }
 
