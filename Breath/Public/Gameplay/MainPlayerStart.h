@@ -12,14 +12,7 @@ class ACameraRailManager;
  * 
  */
 UCLASS()
-class BREATH_API AMainPlayerStart : public APlayerStart
+class BREATH_API AMainPlayerStart : public AActor
 {
 	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TAssetPtr<ACameraRailManager>	CameraRailManager;
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void	InitPlayer();
 };

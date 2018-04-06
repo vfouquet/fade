@@ -66,8 +66,6 @@ void ACameraRailManager::AttachCamera(ARailCamera* CameraToAttach)
 	if (CameraToAttach != nullptr )
 	{
 		this->RailCamera = CameraToAttach;
-		CurrentInputKey = FlatSplineComponent->FindInputKeyClosestToWorldLocation(PlayerActor->GetActorLocation());
-		this->SetActorTickEnabled(true);
 	}
 }
 

@@ -97,10 +97,10 @@ void AMainPlayerController::Possess(APawn* aPawn)
 		this->SetViewTarget(CameraActor);
 
 		SpringArmComponent = MainCharacter->FindComponentByClass<USpringArmComponent>();
-	
+
 		/*
 		FScriptDelegate	onDieDel;
-		onDieDel.BindUFunction(this, "UnPossess");
+		onDieDel.BindUFunction(this, "UnPossess");a
 		MainCharacter->OnDie.Add(onDieDel);
 		*/
 	}

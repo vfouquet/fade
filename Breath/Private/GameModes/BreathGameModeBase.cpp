@@ -73,17 +73,24 @@ void ABreathGameModeBase::LoadGameToChapter(UStoryChapter* Chapter)
 			if (PC != nullptr)
 			{
 				APawn* PlayerPawn = PC->GetPawnOrSpectator();
-				PC->UnPossess();
+				//PC->UnPossess();
 
-				if (PlayerPawn != nullptr)
+				/*if (PlayerPawn != nullptr)
 				{
 					PlayerPawn->Destroy();
-				}
+				}*/
 
 				if (Chapter->Spawn != nullptr)
 				{
-					PlayerPawn = this->GetWorld()->SpawnActor<APawn>(this->DefaultPawnClass, Chapter->Spawn->GetTransform());
-					PC->Possess(PlayerPawn);
+					if (PlayerPawn == nullptr)
+					{
+						PlayerPawn = this->GetWorld()->SpawnActor<APawn>(this->DefaultPawnClass, Chapter->Spawn->GetTransform());
+						PC->Possess(PlayerPawn);
+					}
+					else
+					{
+						PlayerPawn->SetActorTransform(Chapter->Spawn->GetTransform());
+					}
 
 					ARailCamera* Camera = Cast<ARailCamera>(PC->GetCameraActor());
 					

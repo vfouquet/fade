@@ -5,9 +5,11 @@
 #include "DrawDebugHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Engine/World.h"
 
 #include "Cameras/CameraRailManager.h"
 #include "Cameras/CameraRailPoint.h"
+#include "Systems/BreathLevelScriptActor.h"
 
 ARailCamera::ARailCamera(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -28,6 +30,12 @@ USceneComponent* ARailCamera::GetCameraArm()
 void ARailCamera::BeginPlay()
 {
 	Super::BeginPlay();
+
+	ABreathLevelScriptActor* LevelScript = Cast<ABreathLevelScriptActor>(this->GetWorld()->GetLevelScriptActor());
+	if (LevelScript != nullptr && LevelScript->CameraRailManager != nullptr)
+	{
+		this->AttachToRail(LevelScript->CameraRailManager);
+	}
 
 #if WITH_EDITOR
 	this->SetActorLabel(TEXT("RailCamera"));
