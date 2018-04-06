@@ -7,5 +7,5 @@
 
 UBreathSaveGame::UBreathSaveGame()
 {
-	Chapter.Reset();
+	Chapter = nullptr;
 }

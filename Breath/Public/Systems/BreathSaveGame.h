@@ -19,7 +19,7 @@ class BREATH_API UBreathSaveGame : public USaveGame
 	
 public:
 	UPROPERTY(VisibleAnywhere)
-	TAssetPtr<UStoryChapter>	Chapter;
+	UStoryChapter*	Chapter;
 	
 	UBreathSaveGame();
 };

@@ -98,11 +98,11 @@ void AMainPlayerController::Possess(APawn* aPawn)
 
 		SpringArmComponent = MainCharacter->FindComponentByClass<USpringArmComponent>();
 
-		/*
+		
 		FScriptDelegate	onDieDel;
-		onDieDel.BindUFunction(this, "UnPossess");a
+		onDieDel.BindUFunction(this, "OnPawnDeath");
 		MainCharacter->OnDie.Add(onDieDel);
-		*/
+
 	}
 }
 

@@ -46,7 +46,7 @@ void ABreathGameModeBase::LoadGame()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Game loaded."));
 
-		if (LoadGameInstance->Chapter.IsValid())
+		if (LoadGameInstance->Chapter != nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Chapter name: %s"), *LoadGameInstance->Chapter->Name);
 		}

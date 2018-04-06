@@ -21,6 +21,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UDataTable* DataTable;
 
+	UFUNCTION(BlueprintCallable)
+	void	SetCurrentChapter(UStoryChapter* Chapter) { this->CurrentChapter = CurrentChapter; }
+
 private:
 	UFUNCTION(exec, BlueprintCallable)
 	void	SaveGame();
@@ -29,14 +32,19 @@ private:
 	UFUNCTION(exec, BlueprintCallable)
 	void	LoadGameToChapter(FString ChapterToLoad);
 	
+	void	LoadChapter(UStoryChapter* Chapter);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UWorld*	PersistentLevel;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TAssetPtr<UStoryChapter>	CurrentChapter;
+	UStoryChapter*	CurrentChapter;
 
 	
+
+	virtual void OnStart() override;
+
 public:
 	virtual void LoadComplete(const float LoadTime, const FString& MapName) override;
 

@@ -28,17 +28,25 @@ void UBreathGameInstance::SaveGame()
 
 void UBreathGameInstance::LoadGame()
 {
-	UGameplayStatics::OpenLevel(this, "DevSandbox");
+	UBreathSaveGame* LoadGameInstance = LoadGameInstance = Cast<UBreathSaveGame>(UGameplayStatics::LoadGameFromSlot("MainSlot", 0));
 
-	ABreathGameModeBase* GM = Cast<ABreathGameModeBase>(UGameplayStatics::GetGameMode(this));
-
-	if (GM != nullptr)
+	if (LoadGameInstance != nullptr)
 	{
-		GM->LoadGame();
+		UE_LOG(LogTemp, Warning, TEXT("Game loaded."));
+
+		if (LoadGameInstance->Chapter != nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Chapter name: %s"), *LoadGameInstance->Chapter->Name);
+			LoadChapter(LoadGameInstance->Chapter);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("No Chapter"));
+		}
 	}
 	else
 	{
-		// return to main menu
+		UE_LOG(LogTemp, Error, TEXT("Failed to load game!"));
 	}
 }
 
@@ -75,6 +83,41 @@ void UBreathGameInstance::LoadGameToChapter(FString ChapterToLoad)
 	}
 }
 
+void UBreathGameInstance::LoadChapter(UStoryChapter* Chapter)
+{
+	if (Chapter != nullptr)
+	{
+		this->CurrentChapter = Chapter;
+		UGameplayStatics::OpenLevel(this, *Chapter->LevelName);
+	}
+}
+
+void UBreathGameInstance::OnStart()
+{
+	Super::OnStart();
+
+	UBreathSaveGame* LoadGameInstance = LoadGameInstance = Cast<UBreathSaveGame>(UGameplayStatics::LoadGameFromSlot("MainSlot", 0));
+
+	if (LoadGameInstance != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Game loaded."));
+
+		if (LoadGameInstance->Chapter != nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Chapter name: %s"), *LoadGameInstance->Chapter->Name);
+			this->CurrentChapter = LoadGameInstance->Chapter;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("No Chapter"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load save slot!"));
+	}
+}
+
 void UBreathGameInstance::LoadComplete(const float LoadTime, const FString& MapName)
 {
 	Super::LoadComplete(LoadTime, MapName);
@@ -83,7 +126,7 @@ void UBreathGameInstance::LoadComplete(const float LoadTime, const FString& MapN
 
 	if (GM != nullptr)
 	{
-		GM->LoadGameToChapter(CurrentChapter.Get());
+		GM->LoadGameToChapter(CurrentChapter);
 	}
 	else
 	{

@@ -23,7 +23,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool	bGameStarted;
 
-	//UFUNCTION(exec)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStoryChapter*	CurrentChapter;
+
+	UFUNCTION(BlueprintCallable)
 	void	SaveGame();
 	//UFUNCTION(exec)
 	void	LoadGame();
@@ -31,8 +34,7 @@ public:
 	void	LoadGameToChapter(UStoryChapter* Chapter);
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TAssetPtr<UStoryChapter>	CurrentChapter;
+	
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TAssetPtr<UWorld>	PersistentLevel;

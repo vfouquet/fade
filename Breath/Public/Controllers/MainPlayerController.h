@@ -52,6 +52,9 @@ public:
 	UFUNCTION(Exec)
 	void	DisableGodMode();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void	OnPawnDeath();
+
 	float		GetInputAngle() const { return FMath::RadiansToDegrees(FMath::Atan2(GetInputAxisValue("MoveForward"), GetInputAxisValue("MoveRight"))); }
 	FRotator	GetCameraRotation() const { return PlayerCameraManager->GetCameraRotation(); }
 
