@@ -120,6 +120,8 @@ void	UCharacterHealthComponent::OnCapsuleOverlap(UPrimitiveComponent* Overlapped
 	{
 		if (memoryZoneCount == 0 && eraseZoneCount != 0)
 		{
+			if (mainCharacter)
+				mainCharacter->StopMeteorEvent();
 			UAkGameplayStatics::SetState("MAIN_FEATURE", "Normal");
 			//SET OTHER STATE OUT
 		}
@@ -148,6 +150,8 @@ void	UCharacterHealthComponent::OnCapsuleEndOverlap(UPrimitiveComponent* Overlap
 		if (memoryZoneCount == 0 && eraseZoneCount == 1)
 		{
 			UAkGameplayStatics::SetState("MAIN_FEATURE", "Normal");
+			if (mainCharacter)
+				mainCharacter->StopMeteorEvent();
 			//SET OUT
 		}
 		eraseZoneCount--;

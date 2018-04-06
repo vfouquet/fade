@@ -105,6 +105,7 @@ public:
 	void	StopHeavyGrabMontage() { StopAnimMontage(HeavyGrabAnim); }
 
 	void	PlayMeteorEvent();
+	void	StopMeteorEvent();
 
 	UFUNCTION(BlueprintPure)
 	bool			IsClimbing() const { return isClimbing; }
@@ -153,6 +154,8 @@ public:
 	UAnimMontage*	HeavyPushAnim = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	UAkAudioEvent*	MeteorEvent = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	UAkAudioEvent*	StoppingMeteorEvent = nullptr;
 
 private:
 	EClimbType	climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint);

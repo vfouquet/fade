@@ -340,6 +340,11 @@ void	AMainCharacter::PlayMeteorEvent()
 	UAkGameplayStatics::PostEvent(MeteorEvent, this);
 }
 
+void	AMainCharacter::StopMeteorEvent()
+{
+	UAkGameplayStatics::PostEvent(StoppingMeteorEvent, this);
+}
+
 bool	AMainCharacter::CanThrow() const
 {
 	return bHoldingObject || bMovingHeavyObject;
