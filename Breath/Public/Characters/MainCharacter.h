@@ -63,6 +63,10 @@ public:
 	void	Stick();
 	void	Jump(FVector direction = FVector::ZeroVector);
 	bool	Climb();
+	UFUNCTION(BlueprintCallable)
+	void	EndThrow();
+	UFUNCTION(BlueprintCallable)
+	void	BeginGrabPositionUpdate();
 
 	void	OnDamage();
 	void	Die(FVector impact = FVector::ZeroVector, FVector impactLoc = FVector::ZeroVector, FName boneName = NAME_None);
@@ -126,6 +130,8 @@ public:
 	FRotator const	GetHeadRotation() const { return headRotation; }
 	UFUNCTION(BlueprintPure)
 	FVector			GetTwoHandsLocation() const;
+	UFUNCTION(BlueprintPure)
+	AActor*			GetHeldActor();
 
 public:
 	/*Roll isn't used*/
@@ -158,6 +164,7 @@ public:
 	UAkAudioEvent*	StoppingMeteorEvent = nullptr;
 
 private:
+	void		updateCharacterRotation(float deltaTime);
 	EClimbType	climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint);
 	UFUNCTION()
 	void	onEndMontage(UAnimMontage* montage, bool bInterrupted);
@@ -165,9 +172,7 @@ private:
 	void	endCharacterClimbSnap();
 	UFUNCTION()
 	void	endClimb();
-public:
-	UFUNCTION(BlueprintCallable)
-		void	stopCurrentPlayingMontage() { StopAnimMontage(); }
+	void	stopCurrentPlayingMontage() { StopAnimMontage(); }
 
 private:
 	UPROPERTY(VisibleAnywhere)

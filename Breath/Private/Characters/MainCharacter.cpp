@@ -49,6 +49,8 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	updateCharacterRotation(DeltaTime);
+
 	//CLIMB TRICK
 	if (isClimbing)
 	{
@@ -110,7 +112,10 @@ void	AMainCharacter::Move(FVector Value)
 	if (bBlocked || bMovingHeavyObject || bThrowingObject)
 		return;
 	if (!bMovingHeavyObject)
+	{
 		GetCharacterMovement()->AddInputVector(Value);
+		//GetMesh()->SetWorldRotation(Value.Rotation().Quaternion());
+	}
 }
 
 void AMainCharacter::RotateHorizontal(float Value)
@@ -218,6 +223,18 @@ bool	AMainCharacter::Climb()
 	GetWorldTimerManager().SetTimer(climbSnapTimerHandle, del, interpTime, false);
 	BlockCharacter();
 	return true;
+}
+
+void	AMainCharacter::EndThrow()
+{
+	if (holdComponent)
+		holdComponent->EndThrow();
+}
+
+void	AMainCharacter::BeginGrabPositionUpdate()
+{
+	if (holdComponent)
+		holdComponent->BeginLightGrabPositionUpdate();
 }
 
 void	AMainCharacter::OnDamage()
@@ -366,6 +383,32 @@ FVector	AMainCharacter::GetTwoHandsLocation() const
 		return leftHandLocation + distance * 0.5f;
 	}
 	return FVector::ZeroVector;
+}
+	
+AActor*	AMainCharacter::GetHeldActor()
+{
+	if (holdComponent)
+	{
+		auto* heldObject = holdComponent->GetCurrentHeldObject();
+		return heldObject ? heldObject->GetOwner() : nullptr;
+	}
+	return nullptr;
+}
+
+void	AMainCharacter::updateCharacterRotation(float deltaTime)
+{
+	if (!mainCharacterMovement) return;
+
+	FRotator	currentRotator = GetActorRotation();
+	FVector		velocity = mainCharacterMovement->Velocity;
+	
+	if (velocity.Equals(FVector::ZeroVector))
+		return;
+
+	float velocityLength = velocity.Size();
+	velocity.Z = 0.0f;
+	float interpSpeed = FMath::GetMappedRangeValueClamped(FVector2D(0.0f, mainCharacterMovement->JogSpeed), FVector2D(0.0f, 10.0f), velocityLength);
+	SetActorRotation(FMath::RInterpTo(currentRotator, velocity.Rotation(), deltaTime, interpSpeed));
 }
 
 EClimbType	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint)

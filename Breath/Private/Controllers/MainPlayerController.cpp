@@ -119,9 +119,11 @@ void	AMainPlayerController::MoveForward(float Value)
 {
 	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 	{
+		lastStickInput.Y = Value;
 		updateCharacterValues();
 
-		if (Value < WalkStickThreshold && Value > -WalkStickThreshold)
+		float stickLength = lastStickInput.Size();
+		if (stickLength < WalkStickThreshold && stickLength > -WalkStickThreshold)
 		{
 			MainCharacter->Move(FVector::ZeroVector);
 			return;
@@ -130,10 +132,7 @@ void	AMainPlayerController::MoveForward(float Value)
 		FRotator CamRot = GetCameraRotation();
 		CamRot.Pitch = 0.0f;
 		FVector MoveDir = CamRot.Vector();
-		if (Value < 0.0f)
-			MainCharacter->Move(MoveDir * -1.0f);
-		else
-			MainCharacter->Move(MoveDir);
+		MainCharacter->Move(MoveDir * Value);
 	}
 	else if (this->GetSpectatorPawn())
 	{
@@ -145,8 +144,10 @@ void	AMainPlayerController::MoveRight(float Value)
 {
 	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 	{
+		lastStickInput.X = Value;
+		float stickLength = lastStickInput.Size();
 		updateCharacterValues();
-		if (Value < WalkStickThreshold && Value > -WalkStickThreshold)
+		if (stickLength < WalkStickThreshold && stickLength > -WalkStickThreshold)
 		{
 			MainCharacter->Move(FVector::ZeroVector);
 			return;
@@ -155,10 +156,7 @@ void	AMainPlayerController::MoveRight(float Value)
 		FRotator CamRot = GetCameraRotation();
 		CamRot.Pitch = 0.0f;
 		FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
-		if (Value < 0.0f)
-			MainCharacter->Move(MoveDir * -1.0f);
-		else
-			MainCharacter->Move(MoveDir);
+		MainCharacter->Move(MoveDir * Value);
 	}
 	else if (this->GetSpectatorPawn())
 	{
@@ -187,7 +185,7 @@ void AMainPlayerController::Jump()
 		else
 		{
 			float cameraDiffAngle = GetCameraRotation().Yaw - MainCharacter->GetActorRotation().Yaw;
-			float	stickLength = getStickLength();
+			float	stickLength = lastStickInput.Size();
 
 			if (stickLength < JumpStickThreshold)
 			{
@@ -246,7 +244,7 @@ void	AMainPlayerController::DebugPauseEditor()
 	
 void	AMainPlayerController::updateCharacterValues()
 {
-	float stickLength = getStickLength();
+	float stickLength = lastStickInput.Size();
 	if (stickLength <= JogStickThreshold)
 		MainCharacter->SetWalkMode();
 	else

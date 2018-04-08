@@ -64,7 +64,6 @@ public:
 
 private:
 	void	updateCharacterValues();
-	float	getStickLength() const { return FVector2D(this->GetInputAxisValue("MoveRight"), GetInputAxisValue("MoveForward")).Size(); }
 
 public:
 	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Speed")
@@ -87,4 +86,5 @@ protected:
 private:
 	AMainCharacter*			MainCharacter;
 	USpringArmComponent*	SpringArmComponent;
+	FVector2D				lastStickInput;
 };
