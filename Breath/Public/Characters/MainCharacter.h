@@ -164,7 +164,6 @@ public:
 	UAkAudioEvent*	StoppingMeteorEvent = nullptr;
 
 private:
-	void		updateCharacterRotation(float deltaTime);
 	EClimbType	climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint);
 	UFUNCTION()
 	void	onEndMontage(UAnimMontage* montage, bool bInterrupted);

@@ -49,8 +49,6 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	updateCharacterRotation(DeltaTime);
-
 	//CLIMB TRICK
 	if (isClimbing)
 	{
@@ -393,22 +391,6 @@ AActor*	AMainCharacter::GetHeldActor()
 		return heldObject ? heldObject->GetOwner() : nullptr;
 	}
 	return nullptr;
-}
-
-void	AMainCharacter::updateCharacterRotation(float deltaTime)
-{
-	if (!mainCharacterMovement) return;
-
-	FRotator	currentRotator = GetActorRotation();
-	FVector		velocity = mainCharacterMovement->Velocity;
-	
-	if (velocity.Equals(FVector::ZeroVector))
-		return;
-
-	float velocityLength = velocity.Size();
-	velocity.Z = 0.0f;
-	float interpSpeed = FMath::GetMappedRangeValueClamped(FVector2D(0.0f, mainCharacterMovement->JogSpeed), FVector2D(0.0f, 10.0f), velocityLength);
-	SetActorRotation(FMath::RInterpTo(currentRotator, velocity.Rotation(), deltaTime, interpSpeed));
 }
 
 EClimbType	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint)
