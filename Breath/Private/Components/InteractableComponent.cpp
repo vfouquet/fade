@@ -260,6 +260,9 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInterac
 	FVector offset = associatedComponent->Bounds.BoxExtent * (stickedObject->GetComponentLocation() - associatedComponent->GetComponentLocation()).GetSafeNormal();
 	stickConstraint->SetWorldLocation(associatedComponent->GetComponentLocation() + offset);
 	stickConstraint->SetConstrainedComponents(associatedComponent, FName("None"), stickedObject, stickedBoneName);
+	stickConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	stickConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+	stickConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
 
 	FStickConstraint	constraint;
 	constraint.physicConstraint = stickConstraint;

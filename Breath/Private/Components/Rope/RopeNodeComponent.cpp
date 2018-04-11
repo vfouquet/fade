@@ -58,7 +58,7 @@ void	URopeNodeComponent::CreateSphere(float size, FVector location)
 	sphere->SetCollisionProfileName("Rope");
 	sphere->SetEnableGravity(true);
 	sphere->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	sphere->SetMassOverrideInKg(NAME_None, size * 0.1f);
+	sphere->SetMassOverrideInKg(NAME_None, size * 0.2f);
 }
 	
 UChemicalWoodComponent*	URopeNodeComponent::CreateWoodProperty(UPrimitiveComponent* prevPrim, UPrimitiveComponent* nextPrim)

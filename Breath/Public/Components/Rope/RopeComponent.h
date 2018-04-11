@@ -39,6 +39,8 @@ public:
 	float	ExtraLength = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
 	UStaticMesh*	mesh = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
+	UMaterialInterface*	Material = nullptr;
 	UPROPERTY(EditAnywhere, Category = "Rope")
 	FComponentReference	BeginComponentReference;
 	UPROPERTY(EditAnywhere, Category = "Rope")

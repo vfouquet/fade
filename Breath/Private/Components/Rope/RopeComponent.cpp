@@ -181,6 +181,7 @@ void	URopeComponent::createSplineMeshes()
 		splineMesh->SetEndScale(FVector2D(yScale, ZScale));
 
 		splineMesh->SetStaticMesh(mesh);
+		splineMesh->SetMaterial(0, Material);
 		//TO DO BETTER OPTI
 		splineMesh->CastShadow = 0;
 
@@ -199,6 +200,9 @@ void	URopeComponent::createConstraints()
 		constraint->RegisterComponent();
 		constraint->SetWorldLocation(nodes[pos]->GetSphereLocation() + distanceNext * 0.5f);
 		constraint->SetConstrainedComponents(nodes[pos]->GetSphere(), NAME_None, nodes[pos + 1]->GetSphere(), NAME_None);
+		constraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, 45.0f);
+		constraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, 45.0f);
+		constraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
 		nodes[pos + 1]->SetPreviousConstraint(constraint);
 		nodes[pos]->SetNextConstraint(constraint);
 	}	
