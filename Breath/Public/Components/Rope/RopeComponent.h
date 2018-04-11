@@ -40,6 +40,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
 	UStaticMesh*	mesh = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
+	UStaticMesh*	ExtrimityMesh = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
 	UMaterialInterface*	Material = nullptr;
 	UPROPERTY(EditAnywhere, Category = "Rope")
 	FComponentReference	BeginComponentReference;

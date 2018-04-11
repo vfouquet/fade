@@ -90,10 +90,29 @@ void	URopeNodeComponent::UpdateSplineMesh(FVector startPoint, FVector startTange
 		splineMesh->SetStartAndEnd(startPoint, startTangent, endPoint, endTangent, true);
 }
 
-FVector	URopeNodeComponent::GetPreviousConstraintLocation() const
+void	URopeNodeComponent::SetPreviousPrimitive(UPrimitiveComponent* primitive, bool isExtremity)
 {
-	//if (previousConstraint.IsValid())
-	//	return previousConstraint->GetComponentLocation();
+	previousPrimitive = primitive;
+	bIsPreviousExtremity = isExtremity;
+}
+
+void	URopeNodeComponent::SetNextPrimitive(UPrimitiveComponent* primitive, bool isExtremity)
+{
+	nextPrimitive = primitive;
+	bIsNextExtremity = isExtremity;
+}
+
+FVector	URopeNodeComponent::GetPreviousSplinePointLocation() const
+{
+	if (previousConstraint.IsValid())
+	{
+		if (bIsPreviousExtremity)
+		{
+			FVector	direction = (sphere->GetComponentLocation() - previousPrimitive->GetComponentLocation()).GetSafeNormal();
+			return previousPrimitive->GetComponentLocation() + direction * previousPrimitive->Bounds.BoxExtent;
+		}
+		return previousPrimitive->GetComponentLocation();
+	}
 	if (!sphere)
 		return FVector::ZeroVector;
 	FVector dir = nextConstraint.IsValid() ? (nextConstraint->GetComponentLocation() - sphere->GetComponentLocation()).GetSafeNormal()
@@ -102,10 +121,17 @@ FVector	URopeNodeComponent::GetPreviousConstraintLocation() const
 	return sphere->GetComponentLocation() + dir * sphere->GetScaledSphereRadius();
 }
 
-FVector	URopeNodeComponent::GetNextConstraintLocation() const
+FVector	URopeNodeComponent::GetNextSplinePointLocation() const
 {
-	//if (nextConstraint.IsValid())
-	//	return nextConstraint->GetComponentLocation();
+	if (nextConstraint.IsValid())
+	{
+		if (bIsNextExtremity)
+		{
+			FVector	direction = (sphere->GetComponentLocation() - nextPrimitive->GetComponentLocation()).GetSafeNormal();
+			return nextPrimitive->GetComponentLocation() + direction * nextPrimitive->Bounds.BoxExtent;
+		}
+		return nextPrimitive->GetComponentLocation();
+	}
 	if (!sphere)
 		return FVector::ZeroVector;
 	FVector dir = previousConstraint.IsValid() ? (previousConstraint->GetComponentLocation() - sphere->GetComponentLocation()).GetSafeNormal() * -1.0f

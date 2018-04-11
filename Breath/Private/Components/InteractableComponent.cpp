@@ -245,13 +245,22 @@ void	UInteractableComponent::EraseIdentity()
 UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInteractableComponent* hook, UPrimitiveComponent* stickedObject, FName stickedBoneName)
 {
 	if (!CanAcceptStick)
+	{
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Warning, TEXT("%s - Interactable : Trying to add a stick constraint but the component cannot accept a stick"), owner? *owner->GetName() : *FString("Error"));
 		return nullptr;
+	}
 	if (!associatedComponent && !stickedObject)
+	{
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Warning, TEXT("%s - Interactable : Trying to add a stick constraint but the associated component is null or the other one is null"), owner ? *owner->GetName() : *FString("Error"));
 		return nullptr;
+	}
 	UPhysicsConstraintComponent* stickConstraint = NewObject<UPhysicsConstraintComponent>(this, TEXT("CustomPhysicConstraint"));
 	if (!stickConstraint)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Could not create physical constraint"));
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Error, TEXT("%s - Interactable : Could not create physical constraint"), owner ? *owner->GetName() :  *FString("Error"));
 		return nullptr;
 	}
 	stickConstraint->SetupAttachment(this);

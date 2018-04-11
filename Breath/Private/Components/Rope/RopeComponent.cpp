@@ -116,6 +116,7 @@ void URopeComponent::BeginPlay()
 	beginConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 5.0f);
 	beginConstraint->SetConstrainedComponents(beginAttachPrimitive, NAME_None, nodes[0]->GetSphere(), NAME_None);
 	nodes[0]->SetPreviousConstraint(beginConstraint);
+	nodes[0]->SetPreviousPrimitive(beginAttachPrimitive, true);
 
 	UPhysicsConstraintComponent* endConstraint = NewObject<UPhysicsConstraintComponent>(this);
 	endConstraint->SetupAttachment(this);
@@ -123,6 +124,7 @@ void URopeComponent::BeginPlay()
 	endConstraint->SetWorldLocation(sphereEndPoint);
 	endConstraint->SetConstrainedComponents(endAttachPrimitive, NAME_None, nodes.Last()->GetSphere(), NAME_None);
 	nodes.Last()->SetNextConstraint(endConstraint);
+	nodes.Last()->SetNextPrimitive(endAttachPrimitive, true);
 
 	spline = NewObject<USplineComponent>(this);
 	spline->SetupAttachment(this);
@@ -159,8 +161,8 @@ void	URopeComponent::createSplineMeshes()
 
 	TArray<FVector>	points;
 	for (auto& node : nodes)
-		points.Add(node->GetPreviousConstraintLocation());
-	points.Add(nodes.Last()->GetNextConstraintLocation());
+		points.Add(node->GetPreviousSplinePointLocation());
+	points.Add(nodes.Last()->GetNextSplinePointLocation());
 	spline->SetSplinePoints(points, ESplineCoordinateSpace::World, true);
 
 	int idx = 0;
@@ -180,7 +182,17 @@ void	URopeComponent::createSplineMeshes()
 		splineMesh->SetStartScale(FVector2D(yScale, ZScale));
 		splineMesh->SetEndScale(FVector2D(yScale, ZScale));
 
-		splineMesh->SetStaticMesh(mesh);
+		/*
+		if (node == nodes[0])
+		{
+			splineMesh->SetStaticMesh(ExtrimityMesh);
+			//splineMesh->SetRelativeScale3D(FVector(1.0f, 1.0f, -1.0f));
+		}
+		else if (node == nodes.Last())
+			splineMesh->SetStaticMesh(ExtrimityMesh);
+		else
+			*/
+			splineMesh->SetStaticMesh(mesh);
 		splineMesh->SetMaterial(0, Material);
 		//TO DO BETTER OPTI
 		splineMesh->CastShadow = 0;
@@ -204,7 +216,9 @@ void	URopeComponent::createConstraints()
 		constraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, 45.0f);
 		constraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
 		nodes[pos + 1]->SetPreviousConstraint(constraint);
+		nodes[pos + 1]->SetPreviousPrimitive(nodes[pos]->GetSphere());
 		nodes[pos]->SetNextConstraint(constraint);
+		nodes[pos]->SetNextPrimitive(nodes[pos + 1]->GetSphere());
 	}	
 }
 
@@ -236,8 +250,8 @@ void	URopeComponent::updateSplineMeshes()
 			beginIdx++;
 			continue;
 		}
-		points.Add(node->GetPreviousConstraintLocation());
-		lastPoint = node->GetNextConstraintLocation();
+		points.Add(node->GetPreviousSplinePointLocation());
+		lastPoint = node->GetNextSplinePointLocation();
 	}
 	points.Add(lastPoint);
 	spline->SetSplinePoints(points, ESplineCoordinateSpace::World, true);

@@ -37,11 +37,13 @@ public:
 	void	SetSplineMesh(USplineMeshComponent* value) { splineMesh = value; }
 	void	SetPreviousConstraint(UPhysicsConstraintComponent* value) { previousConstraint = value; }
 	void	SetNextConstraint(UPhysicsConstraintComponent* value) { nextConstraint = value; }
+	void	SetPreviousPrimitive(UPrimitiveComponent* value, bool previousExtremity = false);
+	void	SetNextPrimitive(UPrimitiveComponent* value, bool nextExtremity = false);
 
 	USphereComponent*	GetSphere() const { return sphere; }
 	FVector				GetSphereLocation() const { return sphere ? sphere->GetComponentLocation() : FVector::ZeroVector; }
-	FVector				GetPreviousConstraintLocation() const;
-	FVector				GetNextConstraintLocation() const;
+	FVector				GetPreviousSplinePointLocation() const;
+	FVector				GetNextSplinePointLocation() const;
 //private:
 	UFUNCTION()
 	void	onSphereChemicalStateChanged(EChemicalTransformation transformation, EChemicalState previous, EChemicalState next);
@@ -51,5 +53,9 @@ private:
 	USphereComponent*							sphere = nullptr;
 	TWeakObjectPtr<UPhysicsConstraintComponent>	previousConstraint;
 	TWeakObjectPtr<UPhysicsConstraintComponent>	nextConstraint;
+	UPrimitiveComponent*						previousPrimitive = nullptr;
+	UPrimitiveComponent*						nextPrimitive = nullptr;
+	bool										bIsPreviousExtremity = false;
+	bool										bIsNextExtremity = false;
 	UChemicalWoodComponent*						woodComponent = nullptr;
 };
