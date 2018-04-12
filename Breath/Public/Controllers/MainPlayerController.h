@@ -73,9 +73,9 @@ public:
 	UPROPERTY(EditAnywhere, BLueprintReadWrite, Category = "Jump")
 	float	JumpStickThreshold = 0.1f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heavy Values")
-		float	HeavyAngleTolerance = 15.0f;
+	float	HeavyAngleTolerance = 15.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb")
-		float	ClimbAngleTolerence = 45.0f;
+	float	ClimbStickAngleTolerence = 45.0f;
 
 protected:
 	UPROPERTY(VisibleAnywhere)

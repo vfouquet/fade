@@ -250,6 +250,17 @@ void	AMainPlayerController::updateCharacterValues()
 	else
 		MainCharacter->SetJogMode();
 
+	if (stickLength < WalkStickThreshold)
+		MainCharacter->SetCanAutoClimb(false);
+	else
+	{
+		//FRotator stickRot = FRotationMatrix::MakeFromX(FVector(GetInputAxisValue("MoveForward"), GetInputAxisValue("MoveRight"), 0.0f)).Rotator();
+		//float angle = FMath::RadiansToDegrees(FMath::Acos(MainCharacter->GetActorForwardVector() | stickRot.Vector()));
+		//UE_LOG(LogTemp, Warning, TEXT("%f"), MainCharacter->GetActorForwardVector() | stickRot.Vector());
+		MainCharacter->SetCanAutoClimb(true);
+		//MainCharacter->SetCanAutoClimb(angle > ClimbStickAngleTolerence);
+	}
+
 	if (FMath::IsNearlyZero(stickLength))
 	{
 		MainCharacter->SetRotatingLeft(false);

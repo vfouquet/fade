@@ -49,6 +49,13 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	bool ascending = false;
+	if (mainCharacterMovement->IsFalling(ascending) && !isClimbing && !bBlocked)
+	{
+		if (bCanAutoClimbInAir)
+			Climb();
+	}
+
 	//CLIMB TRICK
 	if (isClimbing)
 	{
@@ -220,6 +227,7 @@ bool	AMainCharacter::Climb()
 	del.BindUFunction(this, "endCharacterClimbSnap");
 	GetWorldTimerManager().SetTimer(climbSnapTimerHandle, del, interpTime, false);
 	BlockCharacter();
+	
 	return true;
 }
 

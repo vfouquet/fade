@@ -87,7 +87,8 @@ public:
 	void	SetRotatingLeft(bool const value) { rotatingLeft = value; }
 	void	SetRotatingRight(bool const value) { rotatingRight = value; }
 	void	SetPushingAxis(float const& value) { pushingAxis = value; }	
-	
+	void	SetCanAutoClimb(bool const value) { bCanAutoClimbInAir = value; }
+
 	UFUNCTION(BlueprintCallable)
 	void	BlockCharacterJump() { bJumpLocked = true; }
 	UFUNCTION(BlueprintCallable)
@@ -196,6 +197,8 @@ private:
 	bool	rotatingLeft = false;
 	bool	rotatingRight = false;
 	float	pushingAxis = 0.0f;
+	//CLIMBINPUT FROM CONTROLLER
+	bool	bCanAutoClimbInAir = false;
 
 	//TEMP CLIMB TRICK SHIT
 	EClimbType	climbType;
