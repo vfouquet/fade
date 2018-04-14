@@ -46,6 +46,7 @@ class BREATH_API AMainCharacter : public ACharacter
 	GENERATED_BODY()
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDeathDelegate);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDamageDelegate);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIdentityZoneDelegate, UIdentityEraserComponent*, Zone);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCharacterConditionDelegate, ECharacterCondition, previousCondition, ECharacterCondition, nextCondition);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCharacterDamageStateDelegate, ECharacterDamageState, previousDamageState, ECharacterDamageState, nextDamageState);
@@ -226,6 +227,8 @@ public:
 	FIdentityZoneDelegate			onCharacterErased;
 	UPROPERTY(BlueprintAssignable)
 	FIdentityZoneDelegate			onCharacterGetIdentity;
+	UPROPERTY(BlueprintAssignable)
+	FDamageDelegate					onCharacterDamage;
 
 private:
 	EClimbType	climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint);

@@ -283,6 +283,7 @@ void	AMainCharacter::OnDamage()
 	if (holdComponent)
 		holdComponent->UniversalRelease();
 	stopCurrentPlayingMontage();
+	onCharacterDamage.Broadcast();
 }
 
 void	AMainCharacter::Die(FVector impact, FVector impactLocation, FName boneName)
