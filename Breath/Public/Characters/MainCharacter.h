@@ -16,6 +16,21 @@ enum class EClimbType : uint8
 	AirTwoMetersClimb = 4 UMETA(DisplayName = "AirTwoMetersClimb")
 };
 
+UENUM(BlueprintType)
+enum class ECharacterCondition : uint8
+{
+	None = 0 UMETA(DisplayName = "None"),
+	Scalding = 1 UMETA(DisplayName = "Scalding"),
+	Burning = 2 UMETA(DisplayName = "Burning")
+};
+
+UENUM(BlueprintType)
+enum class ECharacterDamageState : uint8
+{
+	None = 0 UMETA(DisplayName = "None"),
+	Wounded = 1 UMETA(DisplayName = "Wounded"),
+};
+
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "MainCharacter.generated.h"
@@ -31,6 +46,9 @@ class BREATH_API AMainCharacter : public ACharacter
 	GENERATED_BODY()
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDeathDelegate);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIdentityZoneDelegate, UIdentityEraserComponent*, Zone);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCharacterConditionDelegate, ECharacterCondition, previousCondition, ECharacterCondition, nextCondition);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCharacterDamageStateDelegate, ECharacterDamageState, previousDamageState, ECharacterDamageState, nextDamageState);
 public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
@@ -67,16 +85,21 @@ public:
 	void	EndThrow();
 	UFUNCTION(BlueprintCallable)
 	void	BeginGrabPositionUpdate();
+	UFUNCTION(BlueprintCallable)
+	void	DealDamage(FHitResult hitResult, bool HeavyDamage = true);
 
 	void	OnDamage();
 	void	Die(FVector impact = FVector::ZeroVector, FVector impactLoc = FVector::ZeroVector, FName boneName = NAME_None);
+	UFUNCTION()
+	void	OnCapsuleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	UFUNCTION()
+	void	OnCapsuleEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION(BlueprintCallable)
 	void	HeadLookAt(FVector lookAtLocation);
 
 	void	SetWalkMode();
 	void	SetJogMode();
-	void	SetGodMode(bool value);
 	UFUNCTION(BlueprintCallable)
 	void	SetHeadRotation(FRotator value);
 	UFUNCTION(BlueprintCallable)
@@ -134,6 +157,27 @@ public:
 	UFUNCTION(BlueprintPure)
 	AActor*			GetHeldActor();
 
+	UFUNCTION(BlueprintPure)
+	ECharacterCondition	const& GetCurrentCondition() const { return currentCondition; }
+	UFUNCTION(BlueprintPure)
+	ECharacterDamageState const& GetCurrentDamageState() const { return currentDamageState; }
+	UFUNCTION(BlueprintPure)
+	bool IsGod() const { return bIsGod; }
+	UFUNCTION(BlueprintPure)
+	float const GetCurrentFireTime() const { return currentFireTime; }
+	UFUNCTION(BlueprintPure)
+	float const GetCurrentDamageTime() const { return currentDamageTime; }
+	UFUNCTION(BlueprintPure)
+	int	const GetCurrentFireZoneCount() const { return fireCount; }
+	UFUNCTION(BlueprintPure)
+	int const GetCurrentEraserZoneCount() const { return eraseZoneCount; }
+	UFUNCTION(BlueprintPure)
+	int const GetCurrentMemoryZoneCount() const { return memoryZoneCount; }
+	UFUNCTION(BlueprintPure)
+	bool const IsAffectedByFire() const { return eraseZoneCount == 0 || (eraseZoneCount > 0 && memoryZoneCount > 0); }
+	UFUNCTION(BlueprintCallable)
+	void	SetGodMode(bool value) { bIsGod = value; }
+
 public:
 	/*Roll isn't used*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Head")
@@ -164,6 +208,25 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	UAkAudioEvent*	StoppingMeteorEvent = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float	ScaldingToBurning = 3.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float	BurningToDeath = 5.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float	WoundedResetTime = 3.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float	FatalJumpHeight = 500.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float	ImpactMeshForce = 1000.0f;
+	UPROPERTY(BlueprintAssignable)
+	FCharacterConditionDelegate		onConditionChanged;
+	UPROPERTY(BlueprintAssignable)
+	FCharacterDamageStateDelegate	onDamageStateChanged;
+	UPROPERTY(BlueprintAssignable)
+	FIdentityZoneDelegate			onCharacterErased;
+	UPROPERTY(BlueprintAssignable)
+	FIdentityZoneDelegate			onCharacterGetIdentity;
+
 private:
 	EClimbType	climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint);
 	UFUNCTION()
@@ -173,6 +236,11 @@ private:
 	UFUNCTION()
 	void	endClimb();
 	void	stopCurrentPlayingMontage() { StopAnimMontage(); }
+	void	takeFireDamage();
+	void	decreaseFireCount();
+	void	applyWaterEffect();
+	void	updateHealthValues(float DelatTime);
+	bool	isAffectedByFire() const { return eraseZoneCount == 0 || (eraseZoneCount > 0 && memoryZoneCount > 0); }
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -206,4 +274,18 @@ private:
 	FVector	beginClimbActorLocation;
 	FVector	hipBeginLocation;
 	float	zClimbTarget = 0.0f;
+
+	//HEALTH SETTINGS
+	ECharacterCondition		currentCondition = ECharacterCondition::None;
+	ECharacterDamageState	currentDamageState = ECharacterDamageState::None;
+
+	float	currentFireTime = 0.0f;
+	float	currentDamageTime = 0.0f;
+
+	float	jumpZOffset = 0.0f;
+
+	int		fireCount = 0;
+	int		eraseZoneCount = 0;
+	int		memoryZoneCount = 0;
+	bool	bIsGod = false;
 };

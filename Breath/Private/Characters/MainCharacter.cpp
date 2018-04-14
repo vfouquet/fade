@@ -4,7 +4,6 @@
 
 #include "HoldComponent.h"
 #include "MainCharacterMovementComponent.h"
-#include "CharacterHealthComponent.h"
 
 #include "GameFramework/SpringArmComponent.h"
 #include "Cameras/PlayerCameraComponent.h"
@@ -15,6 +14,8 @@
 #include "TimerManager.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "AkAudio/Classes/AkGameplayStatics.h"
+#include "IdentityEraserComponent.h"
+#include "MemoryZoneComponent.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer)
@@ -26,6 +27,17 @@ AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer)
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(this->GetRootComponent());
 	mainCharacterMovement = Cast<UMainCharacterMovementComponent>(GetCharacterMovement());
+
+	UCapsuleComponent*	capsule = GetCapsuleComponent();
+	FScriptDelegate	beginOverlapDel;
+	beginOverlapDel.BindUFunction(this, "OnCapsuleOverlap");
+	capsule->OnComponentBeginOverlap.Add(beginOverlapDel);
+	FScriptDelegate	endOverlapDel;
+	endOverlapDel.BindUFunction(this, "OnCapsuleEndOverlap");
+	capsule->OnComponentEndOverlap.Add(endOverlapDel);
+	FScriptDelegate	hitOverlap;
+	hitOverlap.BindUFunction(this, "OnCapsuleHit");
+	capsule->OnComponentHit.Add(hitOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -48,6 +60,8 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	updateHealthValues(DeltaTime);
 
 	bool ascending = false;
 	if (mainCharacterMovement->IsFalling(ascending) && !isClimbing && !bBlocked)
@@ -111,7 +125,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
-
+	
 void	AMainCharacter::Move(FVector Value)
 {
 	if (bBlocked || bMovingHeavyObject || bThrowingObject)
@@ -243,6 +257,27 @@ void	AMainCharacter::BeginGrabPositionUpdate()
 		holdComponent->BeginLightGrabPositionUpdate();
 }
 
+
+void	AMainCharacter::DealDamage(FHitResult hitResult, bool HeavyDamage)
+{
+	if (bIsGod || bIsDead)
+		return;
+
+	if (!HeavyDamage)
+	{
+		if (currentDamageState == ECharacterDamageState::Wounded)
+			Die(hitResult.ImpactNormal * ImpactMeshForce, hitResult.Location, hitResult.BoneName);
+		else
+		{
+			OnDamage();
+			currentDamageState = ECharacterDamageState::Wounded;
+			onDamageStateChanged.Broadcast(ECharacterDamageState::None, ECharacterDamageState::Wounded);
+		}
+	}
+	else
+		Die(hitResult.ImpactNormal * ImpactMeshForce, hitResult.Location, hitResult.BoneName);
+}
+
 void	AMainCharacter::OnDamage()
 {
 	if (holdComponent)
@@ -255,6 +290,7 @@ void	AMainCharacter::Die(FVector impact, FVector impactLocation, FName boneName)
 	bIsDead = true;
 	OnDie.Broadcast();
 	BlockCharacter();
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	USkeletalMeshComponent* mesh = GetMesh();
 	if (!mesh)
 		return;
@@ -287,13 +323,6 @@ void	AMainCharacter::SetJogMode()
 {
 	if (!bCustomSpeedEnabled)
 		mainCharacterMovement->SetJogMode();
-}
-
-void	AMainCharacter::SetGodMode(bool value)
-{
-	UCharacterHealthComponent* healthComp = FindComponentByClass<UCharacterHealthComponent>();
-	if (healthComp)
-		healthComp->SetGodMode(value);
 }
 
 void	AMainCharacter::SetHeadRotation(FRotator value)
@@ -550,4 +579,153 @@ void	AMainCharacter::endClimb()
 	UnblockCharacter();
 	mainCharacterMovement->bOrientRotationToMovement = true;
 	climbType = EClimbType::None;
+}
+	
+void	AMainCharacter::updateHealthValues(float DeltaTime)
+{
+	if (bIsGod)
+		return;
+
+	if (bIsDead)
+		return;
+
+	bool ascending = false;
+	if (mainCharacterMovement && mainCharacterMovement->IsFalling(ascending) && !ascending)
+	{
+		jumpZOffset -= mainCharacterMovement->GetLastMovementOffset().Z;
+		if (jumpZOffset >= FatalJumpHeight)
+			Die();
+	}
+	else
+		jumpZOffset = 0.0f;
+
+	if (currentCondition != ECharacterCondition::None && isAffectedByFire())
+	{
+		currentFireTime += DeltaTime;
+		if (currentFireTime >= (currentCondition == ECharacterCondition::Scalding ? ScaldingToBurning : BurningToDeath))
+		{
+			takeFireDamage();
+			currentFireTime = 0.0f;
+		}
+	}
+	if (currentDamageState == ECharacterDamageState::Wounded)
+	{
+		currentDamageTime += DeltaTime;
+		if (currentDamageTime >= WoundedResetTime)
+		{
+			currentDamageTime = 0.0f;
+			currentDamageState = ECharacterDamageState::None;
+			onDamageStateChanged.Broadcast(ECharacterDamageState::Wounded, ECharacterDamageState::None);
+		}
+	}
+}
+
+void	AMainCharacter::takeFireDamage()
+{
+	if (currentCondition == ECharacterCondition::None)
+	{
+		if (!bIsGod)
+			OnDamage();
+		currentCondition = ECharacterCondition::Scalding;
+		onConditionChanged.Broadcast(ECharacterCondition::None, ECharacterCondition::Scalding);
+	}
+	else if (currentCondition == ECharacterCondition::Scalding)
+	{
+		currentCondition = ECharacterCondition::Burning;
+		onConditionChanged.Broadcast(ECharacterCondition::Scalding, ECharacterCondition::Burning);
+	}
+	else if (currentCondition == ECharacterCondition::Burning && !bIsGod)
+	{
+		Die();
+	}
+}
+
+void	AMainCharacter::decreaseFireCount()
+{
+	if (fireCount == 1)
+	{
+		fireCount = 0;
+		if (currentCondition == ECharacterCondition::Scalding)
+		{
+			onConditionChanged.Broadcast(ECharacterCondition::Scalding, ECharacterCondition::None);
+			currentCondition = ECharacterCondition::None;
+			currentFireTime = 0.0f;
+		}
+	}
+	else if (fireCount > 1)
+		fireCount--;
+}
+
+void	AMainCharacter::applyWaterEffect()
+{
+	if (currentCondition == ECharacterCondition::Scalding || currentCondition == ECharacterCondition::Burning)
+	{
+		onConditionChanged.Broadcast(currentCondition, ECharacterCondition::None);
+		currentCondition = ECharacterCondition::None;
+		currentFireTime = 0.0f;
+	}
+}
+
+void	AMainCharacter::OnCapsuleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+{
+	if (bIsDead)
+		return;
+
+	UIdentityEraserComponent* identityEraser = Cast<UIdentityEraserComponent>(OtherComp);
+	if (identityEraser)
+	{
+		onCharacterErased.Broadcast(identityEraser);
+		eraseZoneCount++;
+		if (memoryZoneCount == 0)
+			currentFireTime = 0.0f;
+	}
+
+	UMemoryZoneComponent* memoryZoneEraser = Cast<UMemoryZoneComponent>(OtherComp);
+	if (memoryZoneEraser)
+	{
+		if (memoryZoneCount == 0 && eraseZoneCount != 0)
+			onCharacterGetIdentity.Broadcast(nullptr);
+		memoryZoneCount++;
+	}
+
+	UChemicalComponent*	comp = UChemicalComponent::FindAssociatedChemicalComponent(OtherComp);
+	if (!comp)
+		return;
+	if ((comp->GetType() == EChemicalType::Fire && comp->GetState() == EChemicalState::None) ||
+		((comp->GetType() == EChemicalType::Rock || comp->GetType() == EChemicalType::Wood) && comp->GetState() == EChemicalState::Burning))
+	{
+		if (currentCondition != ECharacterCondition::Burning)
+			takeFireDamage();
+		fireCount++;
+	}
+	else if (comp->GetType() == EChemicalType::Water)
+		applyWaterEffect();
+}
+
+void	AMainCharacter::OnCapsuleEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	UIdentityEraserComponent* identityEraser = Cast<UIdentityEraserComponent>(OtherComp);
+	if (identityEraser)
+	{
+		if (memoryZoneCount == 0 && eraseZoneCount == 1)
+		{
+			onCharacterGetIdentity.Broadcast(nullptr);
+		}
+		eraseZoneCount--;
+	}
+
+	UMemoryZoneComponent* memoryZoneEraser = Cast<UMemoryZoneComponent>(OtherComp);
+	if (memoryZoneEraser)
+	{
+		if (memoryZoneCount == 1 && eraseZoneCount > 0)
+			onCharacterErased.Broadcast(nullptr);
+		memoryZoneCount--;
+	}
+
+	UChemicalComponent*	comp = UChemicalComponent::FindAssociatedChemicalComponent(OtherComp);
+	if (!comp)
+		return;
+	if ((comp->GetType() == EChemicalType::Fire && comp->GetState() == EChemicalState::None) ||
+		((comp->GetType() == EChemicalType::Rock || comp->GetType() == EChemicalType::Wood) && comp->GetState() == EChemicalState::Burning))
+		decreaseFireCount();
 }

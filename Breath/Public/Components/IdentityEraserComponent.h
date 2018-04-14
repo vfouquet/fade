@@ -25,6 +25,11 @@ public:
 	UFUNCTION()
 	virtual void	OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
 
+	UFUNCTION(BlueprintCallable)
+	void	SetCinematicPlayed() { cinematicPlayed = true; }
+	UFUNCTION(BlueprintPure)
+	bool	HasCinematicBeenPlayed() const { return cinematicPlayed; }
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Erased object properties")
 	float	DecelerationTime = 0.1f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound properties")
@@ -34,4 +39,5 @@ public:
 
 private:
 	UParticleSystemComponent*	particleSystem = nullptr;
+	bool						cinematicPlayed = false;
 };
