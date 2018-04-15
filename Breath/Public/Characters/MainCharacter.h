@@ -5,6 +5,7 @@
 #include "Array.h"
 #include "MainCharacterMovementComponent.h"
 #include "AkAudio/Classes/AkAudioEvent.h"
+#include "Map.h"
 
 UENUM(BlueprintType)
 enum class EClimbType : uint8
@@ -87,7 +88,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	BeginGrabPositionUpdate();
 	UFUNCTION(BlueprintCallable)
-	void	DealDamage(FHitResult hitResult, bool HeavyDamage = true);
+	void	DealDamage(FHitResult hitResult, UPrimitiveComponent* damageDealer, bool HeavyDamage = true);
 
 	void	OnDamage(FVector impactDir = FVector::ZeroVector);
 	void	Die(FVector impact = FVector::ZeroVector, FVector impactLoc = FVector::ZeroVector, FName boneName = NAME_None);
@@ -279,6 +280,8 @@ private:
 	float	zClimbTarget = 0.0f;
 
 	//HEALTH SETTINGS
+	TMap<TWeakObjectPtr<UPrimitiveComponent>, float>	damageDealers;
+
 	ECharacterCondition		currentCondition = ECharacterCondition::None;
 	ECharacterDamageState	currentDamageState = ECharacterDamageState::None;
 

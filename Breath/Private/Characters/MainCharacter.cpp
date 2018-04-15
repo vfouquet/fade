@@ -258,9 +258,13 @@ void	AMainCharacter::BeginGrabPositionUpdate()
 }
 
 
-void	AMainCharacter::DealDamage(FHitResult hitResult, bool HeavyDamage)
+void	AMainCharacter::DealDamage(FHitResult hitResult, UPrimitiveComponent* damageDealer, bool HeavyDamage)
 {
 	if (bIsGod || bIsDead)
+		return;
+
+	float* potentialValue = damageDealers.Find(damageDealer);
+	if (potentialValue)
 		return;
 
 	if (!HeavyDamage)
@@ -269,6 +273,7 @@ void	AMainCharacter::DealDamage(FHitResult hitResult, bool HeavyDamage)
 			Die(hitResult.ImpactNormal * ImpactMeshForce, hitResult.Location, hitResult.BoneName);
 		else
 		{
+			damageDealers.Add(damageDealer, 0.0f);
 			OnDamage(hitResult.ImpactNormal);
 			currentDamageState = ECharacterDamageState::Wounded;
 			onDamageStateChanged.Broadcast(ECharacterDamageState::None, ECharacterDamageState::Wounded);
@@ -584,6 +589,13 @@ void	AMainCharacter::endClimb()
 	
 void	AMainCharacter::updateHealthValues(float DeltaTime)
 {
+	for (auto& damageDealer : damageDealers)
+	{
+		damageDealer.Value += DeltaTime;
+		if (damageDealer.Value >= 0.5f)
+			damageDealers.Remove(damageDealer.Key);
+	}
+
 	if (bIsGod)
 		return;
 
