@@ -295,7 +295,7 @@ void	AMainCharacter::Die(FVector impact, FVector impactLocation, FName boneName)
 	USkeletalMeshComponent* mesh = GetMesh();
 	if (!mesh)
 		return;
-	mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	mesh->SetCollisionProfileName("CharacterMeshRagdoll");
 	mesh->SetSimulatePhysics(true);
 	mesh->WakeAllRigidBodies();
 	if (boneName != NAME_None)
