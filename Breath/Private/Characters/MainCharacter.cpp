@@ -269,7 +269,7 @@ void	AMainCharacter::DealDamage(FHitResult hitResult, bool HeavyDamage)
 			Die(hitResult.ImpactNormal * ImpactMeshForce, hitResult.Location, hitResult.BoneName);
 		else
 		{
-			OnDamage();
+			OnDamage(hitResult.ImpactNormal);
 			currentDamageState = ECharacterDamageState::Wounded;
 			onDamageStateChanged.Broadcast(ECharacterDamageState::None, ECharacterDamageState::Wounded);
 		}
@@ -278,12 +278,12 @@ void	AMainCharacter::DealDamage(FHitResult hitResult, bool HeavyDamage)
 		Die(hitResult.ImpactNormal * ImpactMeshForce, hitResult.Location, hitResult.BoneName);
 }
 
-void	AMainCharacter::OnDamage()
+void	AMainCharacter::OnDamage(FVector impactDir)
 {
 	if (holdComponent)
 		holdComponent->UniversalRelease();
 	stopCurrentPlayingMontage();
-	onCharacterDamage.Broadcast();
+	onCharacterDamage.Broadcast(impactDir);
 }
 
 void	AMainCharacter::Die(FVector impact, FVector impactLocation, FName boneName)

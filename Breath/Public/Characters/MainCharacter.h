@@ -46,7 +46,7 @@ class BREATH_API AMainCharacter : public ACharacter
 	GENERATED_BODY()
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDeathDelegate);
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDamageDelegate);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDamageDelegate, FVector, impactDir);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIdentityZoneDelegate, UIdentityEraserComponent*, Zone);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCharacterConditionDelegate, ECharacterCondition, previousCondition, ECharacterCondition, nextCondition);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCharacterDamageStateDelegate, ECharacterDamageState, previousDamageState, ECharacterDamageState, nextDamageState);
@@ -89,7 +89,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	DealDamage(FHitResult hitResult, bool HeavyDamage = true);
 
-	void	OnDamage();
+	void	OnDamage(FVector impactDir = FVector::ZeroVector);
 	void	Die(FVector impact = FVector::ZeroVector, FVector impactLoc = FVector::ZeroVector, FName boneName = NAME_None);
 	UFUNCTION()
 	void	OnCapsuleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
