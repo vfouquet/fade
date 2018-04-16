@@ -172,6 +172,8 @@ public:
 	UFUNCTION(BlueprintPure)
 	int	const GetCurrentFireZoneCount() const { return fireCount; }
 	UFUNCTION(BlueprintPure)
+	bool IsErased() const { return memoryZoneCount == 0 && eraseZoneCount > 0; }
+	UFUNCTION(BlueprintPure)
 	int const GetCurrentEraserZoneCount() const { return eraseZoneCount; }
 	UFUNCTION(BlueprintPure)
 	int const GetCurrentMemoryZoneCount() const { return memoryZoneCount; }
