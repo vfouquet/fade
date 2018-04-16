@@ -2,11 +2,17 @@
 
 #include "ChemicalCeramicComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "Engine/World.h"
+#include "Components/DestructibleComponent.h"
 
 void UChemicalCeramicComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 	type = EChemicalType::Ceramic;
+
+	FScriptDelegate	del;
+	del.BindUFunction(this, "swapTrick");
+	this->stateChangedDelegate.Add(del);
 }
 
 ChemicalStateChanger&	UChemicalCeramicComponent::addStateChanger(EChemicalTransformation transformation)
@@ -56,4 +62,54 @@ bool	UChemicalCeramicComponent::computePercussionBreakability(UPrimitiveComponen
 	if (otherComp->GetType() == EChemicalType::Rock || otherComp->GetType() == EChemicalType::Wood)
 		return true;
 	return false;
+}
+
+void	UChemicalCeramicComponent::swapTrick()
+{
+	if (!associatedComponent)
+	{
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Warning, TEXT("%s - UChemicalCeramicComponent : Couldn't do swap trick because the associtaed component is nullptr"), owner? *owner->GetName() : *FString("Error"));
+		return;
+	}
+	if (!ActorToSwap)
+	{
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Warning, TEXT("%s - UChemicalCeramicComponent : Couldn't do swap trick because the actor to swap is nullptr"), owner ? *owner->GetName() : *FString("Error"));
+		return;
+	}
+
+	FVector	linearVel = associatedComponent->GetPhysicsLinearVelocity();
+	FVector angularVelocity = associatedComponent->GetPhysicsAngularVelocity();
+	
+	associatedComponent->SetVisibility(false);
+
+	FTransform	tempTransform;
+	tempTransform.SetLocation(associatedComponent->GetComponentLocation());
+	tempTransform.SetRotation(associatedComponent->GetComponentQuat());
+
+	FActorSpawnParameters	parameters;
+	parameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	AActor* newActor = GetWorld()->SpawnActor(ActorToSwap, &tempTransform);
+	if (!newActor)
+	{
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Warning, TEXT("%s - UChemicalCeramicComponent : Couldn't do swap trick because the spawned actor is nullptr"), owner ? *owner->GetName() : *FString("Error"));
+		return;
+	}
+
+	UDestructibleComponent*	destructible = newActor->FindComponentByClass<UDestructibleComponent>();
+	if (!destructible)
+	{
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Warning, TEXT("%s - UChemicalCeramicComponent : Couldn't do swap trick because the spawned actor doesn't have a destructible mesh"), owner ? *owner->GetName() : *FString("Error"));
+		return;
+	}
+	destructible->SetPhysicsLinearVelocity(linearVel);
+	destructible->SetPhysicsAngularVelocity(angularVelocity);
+	destructible->OnComponentFracture = OnDestructibleFracture;
+
+	destructible->ApplyDamage(1.0f, destructible->GetComponentLocation(), FVector::UpVector * -1.0f, 1.0f);
+
+	associatedComponent->DestroyComponent();
 }

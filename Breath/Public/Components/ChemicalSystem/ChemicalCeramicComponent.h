@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Components/DestructibleComponent.h"
+
 #include "CoreMinimal.h"
 #include "Components/ChemicalSystem/ChemicalComponent.h"
 #include "ChemicalCeramicComponent.generated.h"
@@ -14,15 +16,27 @@ class BREATH_API UChemicalCeramicComponent : public UChemicalComponent
 {
 	GENERATED_BODY()
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBreakDelegate);
+
 public:
 	void	InitializeComponent() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire Values")
 	float	BreakByFireTime = 2.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Swap Trick (LOL)")
+	bool	DoSwapTrick = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Swap Trick (LOL)")
+	UClass*	ActorToSwap = nullptr;
+	UPROPERTY(BlueprintAssignable)
+	FComponentFractureSignature OnDestructibleFracture;
+
 private:
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const override;
 	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const override;
 	virtual ChemicalStateChanger&		addStateChanger(EChemicalTransformation transformation);
 	virtual	bool						computePercussionBreakability(UPrimitiveComponent* other) override;
+public:
+	UFUNCTION(BlueprintCallable)
+	void	swapTrick();
 };
