@@ -132,7 +132,7 @@ void	AMainPlayerController::MoveForward(float Value)
 		FRotator CamRot = GetCameraRotation();
 		CamRot.Pitch = 0.0f;
 		FVector MoveDir = CamRot.Vector();
-		MainCharacter->Move(MoveDir * Value);
+		MainCharacter->Move(MoveDir * Value * 10.0f);
 	}
 	else if (this->GetSpectatorPawn())
 	{
@@ -156,7 +156,7 @@ void	AMainPlayerController::MoveRight(float Value)
 		FRotator CamRot = GetCameraRotation();
 		CamRot.Pitch = 0.0f;
 		FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
-		MainCharacter->Move(MoveDir * Value);
+		MainCharacter->Move(MoveDir * Value * 10.0f);
 	}
 	else if (this->GetSpectatorPawn())
 	{
