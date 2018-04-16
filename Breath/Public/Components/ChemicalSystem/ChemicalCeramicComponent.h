@@ -17,6 +17,12 @@ class BREATH_API UChemicalCeramicComponent : public UChemicalComponent
 public:
 	void	InitializeComponent() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire Values")
+	float	BreakByFireTime = 2.0f;
+
 private:
+	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const override;
+	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const override;
+	virtual ChemicalStateChanger&		addStateChanger(EChemicalTransformation transformation);
 	virtual	bool						computePercussionBreakability(UPrimitiveComponent* other) override;
 };
