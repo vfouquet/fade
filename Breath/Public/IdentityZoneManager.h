@@ -52,10 +52,18 @@ public:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader")
 	UMaterialInterface*	materialInterface = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader")
+	UMaterialInterface*	DecalRoughnessMaterialInterface = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader")
+	UMaterialInterface*	DecalNormalMaterialInterface = nullptr;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+private:
+	void	createNormalDecal(FVector decalExtent);
+	void	createRoughnessDecal(FVector decalExtent);
 
 private:
 	AActor*												character = nullptr;
@@ -63,4 +71,6 @@ private:
 	TArray<TWeakObjectPtr<UIdentityEraserComponent>>	erasedZones;
 	TArray<TWeakObjectPtr<UMemoryZoneComponent>>		memoryZones;
 	UMaterialInstanceDynamic*							whiteZoneMaterial = nullptr;
+	UMaterialInstanceDynamic*							decalRoughnessMaterial = nullptr;
+	UMaterialInstanceDynamic*							decalNormalMaterial = nullptr;
 };

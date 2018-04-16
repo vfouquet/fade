@@ -7,6 +7,8 @@
 #include "IdentityEraserComponent.h"
 #include "MemoryZoneComponent.h"
 #include "Engine/World.h"
+#include "Components/DecalComponent.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 AIdentityZoneManager::AIdentityZoneManager()
@@ -30,6 +32,19 @@ void AIdentityZoneManager::BeginPlay()
 	postProcessComponent->Settings.AddBlendable(whiteZoneMaterial, 1.0f);
 	if (auto* cont = GetWorld()->GetFirstPlayerController())
 		character = cont->GetPawn();
+	
+	UBoxComponent*	boxComp = FindComponentByClass<UBoxComponent>();
+	if (!boxComp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s - Couldn't find attach box component"), *GetName());
+		return;
+	}
+	FVector boxExtent = boxComp->GetScaledBoxExtent();
+
+	if (DecalNormalMaterialInterface)
+		createNormalDecal(boxExtent);
+	if (DecalRoughnessMaterialInterface)
+		createRoughnessDecal(boxExtent);
 }
 
 // Called every frame
@@ -61,7 +76,7 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 				erasedObject.currentDecelerationTime / erasedObject.maxDeceleratingTime));
 	}
 
-	if (!whiteZoneMaterial)
+	if (!whiteZoneMaterial || !decalNormalMaterial || !decalRoughnessMaterial)
 		return;
 
 	if (!character)
@@ -88,11 +103,21 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 
 		whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius());
 		whiteZoneMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
+	
+		decalNormalMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius());
+		decalNormalMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
+
+		decalRoughnessMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius());
+		decalRoughnessMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
 	}
 	for (pos; pos < 15; pos++)
 	{
 		FString indexStr = FString::FromInt(pos + 1);
 		whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), 0.0f);
+
+		decalNormalMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), 0.0f);
+		
+		decalRoughnessMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), 0.0f);
 	}
 
 	memoryZones.RemoveAll([](const TWeakObjectPtr<UMemoryZoneComponent>& p1) { return !p1.IsValid(); });
@@ -115,11 +140,21 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 
 		whiteZoneMaterial->SetScalarParameterValue(FName(*("Memory_Size_" + indexStr)), memoryZones[pos]->GetScaledSphereRadius());
 		whiteZoneMaterial->SetVectorParameterValue(FName(*("Memory_Position_" + indexStr)), memoryZones[pos]->GetComponentLocation());
+	
+		decalNormalMaterial->SetScalarParameterValue(FName(*("Memory_Size_" + indexStr)), memoryZones[pos]->GetScaledSphereRadius());
+		decalNormalMaterial->SetVectorParameterValue(FName(*("Memory_Position_" + indexStr)), memoryZones[pos]->GetComponentLocation());
+
+		decalRoughnessMaterial->SetScalarParameterValue(FName(*("Memory_Size_" + indexStr)), memoryZones[pos]->GetScaledSphereRadius());
+		decalRoughnessMaterial->SetVectorParameterValue(FName(*("Memory_Position_" + indexStr)), memoryZones[pos]->GetComponentLocation());
 	}
 	for (pos; pos < 5; pos++)
 	{
 		FString indexStr = FString::FromInt(pos + 1);
 		whiteZoneMaterial->SetScalarParameterValue(FName(*("Memory_Size_" + indexStr)), 0.0f);
+		
+		decalNormalMaterial->SetScalarParameterValue(FName(*("Memory_Size_" + indexStr)), 0.0f);
+		
+		decalRoughnessMaterial->SetScalarParameterValue(FName(*("Memory_Size_" + indexStr)), 0.0f);
 	}
 }
 
@@ -255,5 +290,47 @@ void	AIdentityZoneManager::updateObjectProperties(AIdentityZoneManager::FErasedO
 	{
 		properties.previousChemicalState = properties.chemicalComponent->GetState();
 		properties.chemicalComponent->EraseIdentity();
+	}
+}
+
+void	AIdentityZoneManager::createNormalDecal(FVector decalExtent)
+{
+	UDecalComponent* decal = NewObject<UDecalComponent>(this, FName("NormalDecal"));
+	if (!decal)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s : Couldn't create normal decal component"), *GetName());
+		return;
+	}
+	decal->SetupAttachment(GetRootComponent());
+	decal->RegisterComponent();
+	decal->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f).Quaternion());
+	decal->DecalSize = decalExtent;
+	decalNormalMaterial = UMaterialInstanceDynamic::Create(DecalNormalMaterialInterface, this);
+	if (decalNormalMaterial)
+		decal->SetDecalMaterial(decalNormalMaterial);
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s : Couldn't create decal normal material"), *GetName());
+	}
+}
+
+void	AIdentityZoneManager::createRoughnessDecal(FVector decalExtent)
+{
+	UDecalComponent* decal = NewObject<UDecalComponent>(this, FName("RoughnessDecal"));
+	if (!decal)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s : Couldn't create roughness decal component"), *GetName());
+		return;
+	}
+	decal->SetupAttachment(GetRootComponent());
+	decal->RegisterComponent();
+	decal->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f).Quaternion());
+	decal->DecalSize = decalExtent;
+	decalRoughnessMaterial = UMaterialInstanceDynamic::Create(DecalRoughnessMaterialInterface, this);
+	if (decalRoughnessMaterial)
+		decal->SetDecalMaterial(decalRoughnessMaterial);
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s : Couldn't create decal roughness material"), *GetName());
 	}
 }
