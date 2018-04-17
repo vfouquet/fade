@@ -11,7 +11,7 @@ void UChemicalCeramicComponent::InitializeComponent()
 	type = EChemicalType::Ceramic;
 
 	FScriptDelegate	del;
-	del.BindUFunction(this, "swapTrick");
+	del.BindUFunction(this, "OnStateChanged");
 	this->stateChangedDelegate.Add(del);
 }
 
@@ -62,6 +62,14 @@ bool	UChemicalCeramicComponent::computePercussionBreakability(UPrimitiveComponen
 	if (otherComp->GetType() == EChemicalType::Rock || otherComp->GetType() == EChemicalType::Wood)
 		return true;
 	return false;
+}
+	
+void	UChemicalCeramicComponent::OnStateChanged(EChemicalTransformation tranform, EChemicalState previous, EChemicalState next)
+{
+	if (tranform == EChemicalTransformation::Burning)
+	{
+		swapTrick();
+	}
 }
 
 void	UChemicalCeramicComponent::swapTrick()

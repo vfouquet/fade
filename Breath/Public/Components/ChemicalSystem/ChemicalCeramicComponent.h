@@ -45,6 +45,8 @@ private:
 	virtual ChemicalStateChanger&		addStateChanger(EChemicalTransformation transformation);
 	virtual	bool						computePercussionBreakability(UPrimitiveComponent* other) override;
 public:
+	UFUNCTION()
+	void	OnStateChanged(EChemicalTransformation tranform, EChemicalState previous, EChemicalState next);
 	UFUNCTION(BlueprintCallable)
 	void	swapTrick();
 };
