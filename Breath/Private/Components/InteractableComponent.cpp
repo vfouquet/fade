@@ -7,6 +7,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
+#include "ChemicalCeramicComponent.h"
 
 // Sets default values for this component's properties
 UInteractableComponent::UInteractableComponent()
@@ -198,12 +199,41 @@ bool	UInteractableComponent::GetDebugBack()
 	return res;
 }
 
+//#include "MainCharacter.h"
+
 void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (!thrown)
+	{
+		UChemicalCeramicComponent* ceramicComp = Cast<UChemicalCeramicComponent>(UChemicalComponent::FindAssociatedChemicalComponent(associatedComponent));
+		if (ceramicComp)
+		{
+			float	zVel = FMath::Abs(associatedComponent->GetComponentVelocity().Z);
+			if (zVel > ceramicComp->HeightBreakThreshold)
+				ceramicComp->Break();
+			/*
+			else if (OtherComp != nullptr && OtherComp->IsSimulatingPhysics())
+			{
+				if (OtherComp->GetComponentVelocity().Size() * OtherComp->GetMass() > ceramicComp->OtherActorThreshold)
+					ceramicComp->Break();
+			}
+			else if (ACharacter* character = Cast<ACharacter>(OtherActor))
+			{
+				if (character->GetVelocity().Size() > 300.0f)
+					ceramicComp->Break();
+			}
+			*/
+		}
 		return;
-	if (thrown)
+	}
+	else
+	{
+		UChemicalCeramicComponent* ceramicComp = Cast<UChemicalCeramicComponent>(UChemicalComponent::FindAssociatedChemicalComponent(associatedComponent));
+		if (ceramicComp)
+			ceramicComp->Break();
 		thrown = false;
+	}
+
 	if (!CanBeSticked || !OtherActor || isSticked)
 		return;
 	UInteractableComponent*	otherInteractble = OtherActor->FindComponentByClass<UInteractableComponent>();
@@ -211,6 +241,11 @@ void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* Ot
 		return;
 	if (otherInteractble->CanAcceptStick)
 		otherInteractble->AddStickConstraint(this, HitComponent, NAME_None);
+}
+	
+void	UInteractableComponent::ReceiveComponentDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+
 }
 
 void	UInteractableComponent::OnComponentDestroyed(bool bDestroyHierarchy)
@@ -269,6 +304,7 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInterac
 	FVector offset = associatedComponent->Bounds.BoxExtent * (stickedObject->GetComponentLocation() - associatedComponent->GetComponentLocation()).GetSafeNormal();
 	stickConstraint->SetWorldLocation(associatedComponent->GetComponentLocation() + offset);
 	stickConstraint->SetConstrainedComponents(associatedComponent, FName("None"), stickedObject, stickedBoneName);
+	stickConstraint->SetDisableCollision(true);
 	stickConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
 	stickConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
 	stickConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);

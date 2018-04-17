@@ -20,13 +20,21 @@ class BREATH_API UChemicalCeramicComponent : public UChemicalComponent
 
 public:
 	void	InitializeComponent() override;
+	UFUNCTION(BlueprintCallable)
+	void	Break() { swapTrick(); }
 
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire Values")
 	float	BreakByFireTime = 2.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Swap Trick (LOL)")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Break Values")
+	float	HeightBreakThreshold = 400.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Break Values")
+	float	OtherActorThreshold = 10000.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Swap Trick")
 	bool	DoSwapTrick = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Swap Trick (LOL)")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Swap Trick")
 	UClass*	ActorToSwap = nullptr;
 	UPROPERTY(BlueprintAssignable)
 	FComponentFractureSignature OnDestructibleFracture;
