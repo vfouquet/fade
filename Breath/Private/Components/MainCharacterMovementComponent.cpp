@@ -47,7 +47,7 @@ bool UMainCharacterMovementComponent::DoJump(bool bReplayingMoves)
 			Velocity += FVector::UpVector * JumpZVelocity + jumpDirection * LateralJumpForce;
 			SetMovementMode(MOVE_Falling);
 			jumpDirection = FVector::ZeroVector;
-			//bOrientRotationToMovement = false;
+			bOrientRotationToMovement = false;
 			return true;
 		}
 	}
@@ -58,8 +58,8 @@ void UMainCharacterMovementComponent::SetPostLandedPhysics(const FHitResult& Hit
 {
 	Super::SetPostLandedPhysics(Hit);
 
-	//if (MovementMode == EMovementMode::MOVE_Walking)
-	//	bOrientRotationToMovement = true;
+	if (MovementMode == EMovementMode::MOVE_Walking)
+		bOrientRotationToMovement = true;
 }
 	
 void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, float holdingObjectMass)
@@ -104,6 +104,20 @@ void	UMainCharacterMovementComponent::ProcessThrowRotation(float coeff)
 	GetCharacterOwner()->SetActorRotation(characterRot);
 }
 	
+void	UMainCharacterMovementComponent::SetWalkMode()
+{
+	MaxWalkSpeed = WalkSpeed;
+	MinAnalogWalkSpeed = WalkSpeed;
+	bCanWalkOffLedges = false;
+}
+
+void	UMainCharacterMovementComponent::SetJogMode() 
+{
+	MaxWalkSpeed = JogSpeed;
+	MinAnalogWalkSpeed = JogSpeed;
+	bCanWalkOffLedges = true;
+}
+
 bool	UMainCharacterMovementComponent::IsFalling(bool& ascending)
 {
 	ascending = Velocity.Z >= 0.0f;

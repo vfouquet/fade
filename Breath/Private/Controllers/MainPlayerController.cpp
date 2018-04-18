@@ -123,7 +123,7 @@ void	AMainPlayerController::MoveForward(float Value)
 		updateCharacterValues();
 
 		float stickLength = lastStickInput.Size();
-		if (stickLength < WalkStickThreshold && stickLength > -WalkStickThreshold)
+		if (stickLength < WalkStickThreshold)
 		{
 			MainCharacter->Move(FVector::ZeroVector);
 			return;
@@ -132,7 +132,7 @@ void	AMainPlayerController::MoveForward(float Value)
 		FRotator CamRot = GetCameraRotation();
 		CamRot.Pitch = 0.0f;
 		FVector MoveDir = CamRot.Vector();
-		MainCharacter->Move(MoveDir * Value * 10.0f);
+		MainCharacter->Move(MoveDir * Value);
 	}
 	else if (this->GetSpectatorPawn())
 	{
@@ -147,7 +147,7 @@ void	AMainPlayerController::MoveRight(float Value)
 		lastStickInput.X = Value;
 		float stickLength = lastStickInput.Size();
 		updateCharacterValues();
-		if (stickLength < WalkStickThreshold && stickLength > -WalkStickThreshold)
+		if (stickLength < WalkStickThreshold && stickLength)
 		{
 			MainCharacter->Move(FVector::ZeroVector);
 			return;
@@ -156,7 +156,7 @@ void	AMainPlayerController::MoveRight(float Value)
 		FRotator CamRot = GetCameraRotation();
 		CamRot.Pitch = 0.0f;
 		FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
-		MainCharacter->Move(MoveDir * Value * 10.0f);
+		MainCharacter->Move(MoveDir * Value);
 	}
 	else if (this->GetSpectatorPawn())
 	{

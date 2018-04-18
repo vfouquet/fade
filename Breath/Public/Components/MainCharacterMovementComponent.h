@@ -24,8 +24,8 @@ public:
 	void	ProcessRotateHeavyObject(bool direction, float holdingObjectMass, FVector holdingObjectLocation);
 	void	ProcessThrowRotation(float coeff);
 
-	void	SetWalkMode() { MaxWalkSpeed = WalkSpeed; }
-	void	SetJogMode() { MaxWalkSpeed = JogSpeed; }
+	void	SetWalkMode();
+	void	SetJogMode();
 	void	SetJumpDirection(FVector value) { jumpDirection = value; }
 
 	bool	IsFalling(bool& ascending);
