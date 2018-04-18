@@ -3,7 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "Engine/GameInstance.h"
+#include "Widget.h"
+
+#include "LoadingScreenSettings.h"
+
 #include "BreathGameInstance.generated.h"
 
 class UStoryChapter;
@@ -21,18 +26,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UDataTable* DataTable;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UWidget>	LoadingScreen;
+
+public:
+	virtual void Init() override;
+
 	UFUNCTION(BlueprintCallable)
 	void	SetCurrentChapter(UStoryChapter* Chapter) { this->CurrentChapter = CurrentChapter; }
 
-private:
-	UFUNCTION(exec, BlueprintCallable)
-	void	SaveGame();
-	UFUNCTION(exec, BlueprintCallable)
-	void	LoadGame();
-	UFUNCTION(exec, BlueprintCallable)
-	void	LoadGameToChapter(FString ChapterToLoad);
-	
-	void	LoadChapter(UStoryChapter* Chapter);
+	virtual void LoadComplete(const float LoadTime, const FString& MapName) override;
+
+	UFUNCTION()
+	void HandlePrepareLoadingScreen();
+
+	UFUNCTION()
+	virtual void BeginLoadingScreen(const FLoadingScreenDescription& ScreenDescription);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -41,14 +50,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStoryChapter*	CurrentChapter;
 
-	
-
+protected:
 	virtual void OnStart() override;
 
-public:
-	virtual void LoadComplete(const float LoadTime, const FString& MapName) override;
+private:
+	UFUNCTION(exec, BlueprintCallable)
+	void	SaveGame();
+	UFUNCTION(exec, BlueprintCallable)
+	void	LoadGame();
+	UFUNCTION(exec, BlueprintCallable)
+	void	LoadGameToChapter(FString ChapterToLoad);
 
+	void	LoadChapter(UStoryChapter* Chapter);
 
-	virtual void Init() override;
+	UWidget*	CurrentScreenWidget;
 
 };

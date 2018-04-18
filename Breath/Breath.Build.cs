@@ -8,7 +8,17 @@ public class Breath : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AkAudio" });
+		PublicDependencyModuleNames.AddRange(new string[] {
+            "Core",
+            "CoreUObject",
+            "Engine",
+            "Slate",
+            "SlateCore",
+            "UMG",
+            "InputCore",
+            "MoviePlayer",
+            "AkAudio"
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
