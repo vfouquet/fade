@@ -113,6 +113,7 @@ public:
 	void	SetRotatingRight(bool const value) { rotatingRight = value; }
 	void	SetPushingAxis(float const& value) { pushingAxis = value; }	
 	void	SetCanAutoClimb(bool const value) { bCanAutoClimbInAir = value; }
+	void	SetLongJump(bool const value) { bIsLongJump = value; }
 
 	UFUNCTION(BlueprintCallable)
 	void	BlockCharacterJump() { bJumpLocked = true; }
@@ -137,6 +138,8 @@ public:
 	void	PlayMeteorEvent();
 	void	StopMeteorEvent();
 
+	UFUNCTION(BlueprintPure)
+	bool			IsLongJumping() const { return bIsLongJump; }
 	UFUNCTION(BlueprintPure)
 	bool			IsClimbing() const { return isClimbing; }
 	UFUNCTION(BlueprintPure)
@@ -273,6 +276,8 @@ private:
 	float	pushingAxis = 0.0f;
 	//CLIMBINPUT FROM CONTROLLER
 	bool	bCanAutoClimbInAir = false;
+
+	bool	bIsLongJump = false;
 
 	//TEMP CLIMB TRICK SHIT
 	EClimbType	climbType;

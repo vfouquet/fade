@@ -189,6 +189,7 @@ void AMainPlayerController::Jump()
 
 			if (stickLength < JumpStickThreshold)
 			{
+				MainCharacter->SetLongJump(false);
 				MainCharacter->Jump();
 				//pass 0
 			}
@@ -198,6 +199,7 @@ void AMainPlayerController::Jump()
 				FVector pawnForward = MainCharacter->GetActorForwardVector();
 				FRotator	stickRot(0.0f, cameraDiffAngle, 0.0f);
 				FVector direction = stickRot.RotateVector(pawnForward);
+				MainCharacter->SetLongJump(true);
 				MainCharacter->Jump();
 			}
 		}
