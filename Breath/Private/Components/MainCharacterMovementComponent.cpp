@@ -40,7 +40,9 @@ bool UMainCharacterMovementComponent::CheckFall(const FFindFloorResult& OldFloor
 
 bool UMainCharacterMovementComponent::DoJump(bool bReplayingMoves)
 {
-	if (CharacterOwner && CharacterOwner->CanJump())
+	return Super::DoJump(bReplayingMoves);
+
+	/*if (CharacterOwner && CharacterOwner->CanJump())
 	{
 		if (!bConstrainToPlane || FMath::Abs(PlaneConstraintNormal.Z) != 1.f)
 		{
@@ -51,7 +53,7 @@ bool UMainCharacterMovementComponent::DoJump(bool bReplayingMoves)
 			return true;
 		}
 	}
-	return false;
+	return false;*/
 }
 	
 void UMainCharacterMovementComponent::SetPostLandedPhysics(const FHitResult& Hit)
@@ -122,4 +124,18 @@ bool	UMainCharacterMovementComponent::IsFalling(bool& ascending)
 {
 	ascending = Velocity.Z >= 0.0f;
 	return UCharacterMovementComponent::IsFalling();
+}
+
+void UMainCharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
+{
+	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
+
+	if (PreviousMovementMode == EMovementMode::MOVE_Falling)
+	{
+		this->RotationRate.Yaw = this->MoveRotationSpeed;
+	}
+	if (this->MovementMode == EMovementMode::MOVE_Falling)
+	{
+		this->RotationRate.Yaw = this->FallingRotationSpeed;
+	}
 }

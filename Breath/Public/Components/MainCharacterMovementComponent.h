@@ -47,6 +47,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
 	float	ThrowRotationSpeed = 100.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
+	float	MoveRotationSpeed = 360.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
+	float	FallingRotationSpeed = 100.f;
+
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Movement")
 	//float	CoyoteTime = 0.5f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Forward Jump")
@@ -56,4 +61,7 @@ private:
 	FVector	jumpDirection;
 	//float	currentCoyoteTime = 0.0f;
 	FVector	lastOffsetLocation = FVector::ZeroVector;
+protected:
+	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
+
 };

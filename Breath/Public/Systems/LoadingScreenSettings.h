@@ -13,7 +13,7 @@
 USTRUCT(BlueprintType)
 struct BREATH_API FLoadingScreenDescription
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 		FLoadingScreenDescription();
 
