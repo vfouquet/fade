@@ -340,7 +340,7 @@ void	AMainCharacter::SetHeadRotation(FRotator value)
 void	AMainCharacter::SetCustomSpeed(bool customSpeed, float newSpeed)
 {
 	bCustomSpeedEnabled = true;
-	mainCharacterMovement->MaxWalkSpeed = customSpeed ? newSpeed : mainCharacterMovement->WalkSpeed;
+	mainCharacterMovement->SetCustomSpeed(customSpeed ? newSpeed : mainCharacterMovement->WalkSpeed);
 }
 
 void	AMainCharacter::UnsetCustomSpeed()

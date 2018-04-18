@@ -119,6 +119,12 @@ void	UMainCharacterMovementComponent::SetJogMode()
 	MinAnalogWalkSpeed = JogSpeed;
 	bCanWalkOffLedges = true;
 }
+	
+void	UMainCharacterMovementComponent::SetCustomSpeed(float customSpeed)
+{
+	MaxWalkSpeed = customSpeed;
+	MinAnalogWalkSpeed = customSpeed;
+}
 
 bool	UMainCharacterMovementComponent::IsFalling(bool& ascending)
 {

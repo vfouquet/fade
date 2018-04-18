@@ -26,6 +26,7 @@ public:
 
 	void	SetWalkMode();
 	void	SetJogMode();
+	void	SetCustomSpeed(float customSpeed);
 	void	SetJumpDirection(FVector value) { jumpDirection = value; }
 
 	bool	IsFalling(bool& ascending);
