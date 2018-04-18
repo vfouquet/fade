@@ -56,7 +56,6 @@ void	URopeNodeComponent::CreateSphere(float size, FVector location)
 	sphere->SetSimulatePhysics(true);
 	sphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	sphere->SetCollisionProfileName("Rope");
-	sphere->SetEnableGravity(true);
 	sphere->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 	sphere->SetMassOverrideInKg(NAME_None, size * 0.2f);
 }
@@ -109,7 +108,7 @@ FVector	URopeNodeComponent::GetPreviousSplinePointLocation() const
 		if (bIsPreviousExtremity)
 		{
 			FVector	direction = (sphere->GetComponentLocation() - previousPrimitive->GetComponentLocation()).GetSafeNormal();
-			return previousPrimitive->GetComponentLocation() + direction * previousPrimitive->Bounds.BoxExtent;
+			return sphere->GetComponentLocation() - direction * sphere->GetScaledSphereRadius();
 		}
 		return previousPrimitive->GetComponentLocation();
 	}
@@ -128,7 +127,7 @@ FVector	URopeNodeComponent::GetNextSplinePointLocation() const
 		if (bIsNextExtremity)
 		{
 			FVector	direction = (sphere->GetComponentLocation() - nextPrimitive->GetComponentLocation()).GetSafeNormal();
-			return nextPrimitive->GetComponentLocation() + direction * nextPrimitive->Bounds.BoxExtent;
+			return sphere->GetComponentLocation() - direction * sphere->GetScaledSphereRadius();
 		}
 		return nextPrimitive->GetComponentLocation();
 	}

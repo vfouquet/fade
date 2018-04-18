@@ -67,7 +67,8 @@ void URopeComponent::BeginPlay()
 	FVector	sphereBeginPoint = beginComponent->GetComponentLocation() + direction * beginActorBoxExtent;
 	FVector	sphereEndPoint = endComponent->GetComponentLocation() + direction * endActorBoxExtent * -1.0f;
 
-	float	finalLength = (sphereEndPoint - sphereBeginPoint).Size();
+	float	finalLength = UsePrecisionPercentage ? (sphereEndPoint - sphereBeginPoint).Size() * (1.0f + PrecisionPercentage * 0.01f) :
+		(sphereEndPoint - sphereBeginPoint).Size();
 
 	int parts = (int)(finalLength / Thickness);
 	if (parts == 0)
@@ -89,7 +90,8 @@ void URopeComponent::BeginPlay()
 		nodes.Add(node);
 		node->CreateSphere(Thickness * 0.5f, spawnPoint);
 
-		spawnPoint += direction * (Thickness + padding);
+		spawnPoint += UsePrecisionPercentage ? direction * ((Thickness + padding) - Thickness * PrecisionPercentage * 0.01f) :
+			direction * (Thickness + padding);
 	}
 
 	if (CanBurn)
@@ -113,8 +115,10 @@ void URopeComponent::BeginPlay()
 	beginConstraint->SetupAttachment(this);
 	beginConstraint->RegisterComponent();
 	beginConstraint->SetWorldLocation(sphereBeginPoint);
-	beginConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 5.0f);
 	beginConstraint->SetConstrainedComponents(beginAttachPrimitive, NAME_None, nodes[0]->GetSphere(), NAME_None);
+	beginConstraint->SetAngularVelocityDriveSLERP(true);
+	beginConstraint->SetAngularDriveParams(0.0f, AngularMotorStrength, 0.0f);
+	
 	nodes[0]->SetPreviousConstraint(beginConstraint);
 	nodes[0]->SetPreviousPrimitive(beginAttachPrimitive, true);
 
@@ -123,6 +127,9 @@ void URopeComponent::BeginPlay()
 	endConstraint->RegisterComponent();
 	endConstraint->SetWorldLocation(sphereEndPoint);
 	endConstraint->SetConstrainedComponents(endAttachPrimitive, NAME_None, nodes.Last()->GetSphere(), NAME_None);
+	endConstraint->SetAngularVelocityDriveSLERP(true);
+	endConstraint->SetAngularDriveParams(0.0f, AngularMotorStrength, 0.0f);
+
 	nodes.Last()->SetNextConstraint(endConstraint);
 	nodes.Last()->SetNextPrimitive(endAttachPrimitive, true);
 
@@ -155,7 +162,13 @@ void URopeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 void	URopeComponent::createSplineMeshes()
 {
-	FBox boxSize = mesh->GetBoundingBox();
+	if (!RopeMesh)
+	{
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Warning, TEXT("%s - Rope Component : Rope mesh not set"), *owner->GetName());
+		return;
+	}
+	FBox boxSize = RopeMesh->GetBoundingBox();
 	float yScale = Thickness / boxSize.GetSize().Y;
 	float ZScale = Thickness / boxSize.GetSize().Z;
 
@@ -169,7 +182,6 @@ void	URopeComponent::createSplineMeshes()
 	for (auto& node : nodes)
 	{
 		USplineMeshComponent*	splineMesh = NewObject<USplineMeshComponent>(this);
-		//splineMesh->SetupAttachment(this);
 		splineMesh->RegisterComponent();
 		FVector	startPoint;
 		FVector	endPoint;
@@ -179,20 +191,18 @@ void	URopeComponent::createSplineMeshes()
 		spline->GetLocationAndTangentAtSplinePoint(idx + 1, endPoint, endTangent, ESplineCoordinateSpace::World);
 		splineMesh->SetStartAndEnd(startPoint, startTangent, endPoint, endTangent, true);
 
-		splineMesh->SetStartScale(FVector2D(yScale, ZScale));
-		splineMesh->SetEndScale(FVector2D(yScale, ZScale));
+		//splineMesh->SetStartScale(FVector2D(yScale, ZScale));
+		//splineMesh->SetEndScale(FVector2D(yScale, ZScale));
 
-		/*
 		if (node == nodes[0])
 		{
-			splineMesh->SetStaticMesh(ExtrimityMesh);
+			splineMesh->SetStaticMesh(UseExtremityMesh? ExtrimityMesh : RopeMesh);
 			//splineMesh->SetRelativeScale3D(FVector(1.0f, 1.0f, -1.0f));
 		}
 		else if (node == nodes.Last())
-			splineMesh->SetStaticMesh(ExtrimityMesh);
+			splineMesh->SetStaticMesh(UseExtremityMesh? ExtrimityMesh : RopeMesh);
 		else
-			*/
-			splineMesh->SetStaticMesh(mesh);
+			splineMesh->SetStaticMesh(RopeMesh);
 		splineMesh->SetMaterial(0, Material);
 		//TO DO BETTER OPTI
 		splineMesh->CastShadow = 0;
@@ -212,9 +222,11 @@ void	URopeComponent::createConstraints()
 		constraint->RegisterComponent();
 		constraint->SetWorldLocation(nodes[pos]->GetSphereLocation() + distanceNext * 0.5f);
 		constraint->SetConstrainedComponents(nodes[pos]->GetSphere(), NAME_None, nodes[pos + 1]->GetSphere(), NAME_None);
-		constraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, 45.0f);
-		constraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, 45.0f);
-		constraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
+		if (UsePrecisionPercentage)
+			constraint->SetDisableCollision(true);
+		constraint->SetAngularVelocityDriveSLERP(true);
+		constraint->SetAngularDriveParams(0.0f, AngularMotorStrength, 0.0f);
+
 		nodes[pos + 1]->SetPreviousConstraint(constraint);
 		nodes[pos + 1]->SetPreviousPrimitive(nodes[pos]->GetSphere());
 		nodes[pos]->SetNextConstraint(constraint);
