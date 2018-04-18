@@ -37,8 +37,8 @@ public:
 	float	Thickness = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
 	float	AngularMotorStrength = 10.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
-	float	ExtraLength = 0.0f;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
+	//float	ExtraLength = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")
 	bool	UsePrecisionPercentage = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rope")

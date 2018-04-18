@@ -67,22 +67,35 @@ void URopeComponent::BeginPlay()
 	FVector	sphereBeginPoint = beginComponent->GetComponentLocation() + direction * beginActorBoxExtent;
 	FVector	sphereEndPoint = endComponent->GetComponentLocation() + direction * endActorBoxExtent * -1.0f;
 
-	float	finalLength = UsePrecisionPercentage ? (sphereEndPoint - sphereBeginPoint).Size() * (1.0f + PrecisionPercentage * 0.01f) :
-		(sphereEndPoint - sphereBeginPoint).Size();
+	float	finalLength = (sphereEndPoint - sphereBeginPoint).Size();
 
-	int parts = (int)(finalLength / Thickness);
+	float parts = 0.0f;
+	if (UsePrecisionPercentage)
+		parts = (finalLength / Thickness) * (1.0f + PrecisionPercentage * 0.01f);
+	else
+		parts = finalLength / Thickness;
+	int intParts = FMath::Floor(parts);
 	if (parts == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s-Rope Component : Thickness is too high for the rope distance, should be inferior to %f"), owner ? *owner->GetName() : *FString("Error"), finalLength);
 		return;
 	}
 
-	float rest = finalLength - (parts * Thickness);
-	float padding = rest / (parts - 1);
+	float padding = 0.0f;
+	if (UsePrecisionPercentage)
+	{
+		float rest = finalLength - ((parts * Thickness) * (1.0f - PrecisionPercentage * 0.01f));
+		padding = rest / (parts - 1);
+	}
+	else
+	{
+		float rest = finalLength - (parts * Thickness);
+		padding = rest / (parts - 1);
+	}
 
 	FVector	spawnPoint = sphereBeginPoint + direction * Thickness * 0.5f;
 	
-	for (int idx = 0; idx < parts; idx++)
+	for (int idx = 0; idx < intParts; idx++)
 	{
 		URopeNodeComponent*	node = NewObject<URopeNodeComponent>(this);
 		node->SetupAttachment(this);
@@ -116,6 +129,7 @@ void URopeComponent::BeginPlay()
 	beginConstraint->RegisterComponent();
 	beginConstraint->SetWorldLocation(sphereBeginPoint);
 	beginConstraint->SetConstrainedComponents(beginAttachPrimitive, NAME_None, nodes[0]->GetSphere(), NAME_None);
+	beginConstraint->SetDisableCollision(true);
 	beginConstraint->SetAngularVelocityDriveSLERP(true);
 	beginConstraint->SetAngularDriveParams(0.0f, AngularMotorStrength, 0.0f);
 	
@@ -127,6 +141,7 @@ void URopeComponent::BeginPlay()
 	endConstraint->RegisterComponent();
 	endConstraint->SetWorldLocation(sphereEndPoint);
 	endConstraint->SetConstrainedComponents(endAttachPrimitive, NAME_None, nodes.Last()->GetSphere(), NAME_None);
+	endConstraint->SetDisableCollision(true);
 	endConstraint->SetAngularVelocityDriveSLERP(true);
 	endConstraint->SetAngularDriveParams(0.0f, AngularMotorStrength, 0.0f);
 
@@ -194,13 +209,13 @@ void	URopeComponent::createSplineMeshes()
 		//splineMesh->SetStartScale(FVector2D(yScale, ZScale));
 		//splineMesh->SetEndScale(FVector2D(yScale, ZScale));
 
-		if (node == nodes[0])
+		if (node == nodes[0] && UseExtremityMesh)
 		{
-			splineMesh->SetStaticMesh(UseExtremityMesh? ExtrimityMesh : RopeMesh);
-			//splineMesh->SetRelativeScale3D(FVector(1.0f, 1.0f, -1.0f));
+			splineMesh->SetStaticMesh(ExtrimityMesh);
+			splineMesh->SetRelativeScale3D(FVector(1.0f, 1.0f, -1.0f));
 		}
-		else if (node == nodes.Last())
-			splineMesh->SetStaticMesh(UseExtremityMesh? ExtrimityMesh : RopeMesh);
+		else if (node == nodes.Last() && UseExtremityMesh)
+			splineMesh->SetStaticMesh(ExtrimityMesh);
 		else
 			splineMesh->SetStaticMesh(RopeMesh);
 		splineMesh->SetMaterial(0, Material);
