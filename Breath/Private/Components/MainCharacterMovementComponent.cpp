@@ -40,8 +40,20 @@ bool UMainCharacterMovementComponent::CheckFall(const FFindFloorResult& OldFloor
 
 bool UMainCharacterMovementComponent::DoJump(bool bReplayingMoves)
 {
-	return Super::DoJump(bReplayingMoves);
+	//ALL OF THIS IS SUPER::DOJUMP
+	if (CharacterOwner && CharacterOwner->CanJump())
+	{
+		// Don't jump if we can't move up/down.
+		if (!bConstrainToPlane || FMath::Abs(PlaneConstraintNormal.Z) != 1.f)
+		{
+			Velocity.Z = JumpZVelocity;
+			SetMovementMode(MOVE_Falling);
+			bIsJumping = true;		//EXCEPT THIS LINE (IMPRTANT FOR ANIMATIONS)
+			return true;
+		}
+	}
 
+	return false;
 	/*if (CharacterOwner && CharacterOwner->CanJump())
 	{
 		if (!bConstrainToPlane || FMath::Abs(PlaneConstraintNormal.Z) != 1.f)
@@ -60,6 +72,7 @@ void UMainCharacterMovementComponent::SetPostLandedPhysics(const FHitResult& Hit
 {
 	Super::SetPostLandedPhysics(Hit);
 
+	bIsJumping = false;
 	if (MovementMode == EMovementMode::MOVE_Walking)
 		bOrientRotationToMovement = true;
 }
@@ -105,7 +118,12 @@ void	UMainCharacterMovementComponent::ProcessThrowRotation(float coeff)
 	characterRot.Yaw += ThrowRotationSpeed * coeff;
 	GetCharacterOwner()->SetActorRotation(characterRot);
 }
-	
+
+void	UMainCharacterMovementComponent::EndJumping()
+{
+	bIsJumping = false;
+}
+
 void	UMainCharacterMovementComponent::SetWalkMode()
 {
 	MaxWalkSpeed = WalkSpeed;

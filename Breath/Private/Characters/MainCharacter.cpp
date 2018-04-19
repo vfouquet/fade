@@ -574,6 +574,7 @@ void	AMainCharacter::endCharacterClimbSnap()
 		isClimbing = true;
 		mainCharacterMovement->SetMovementMode(EMovementMode::MOVE_Flying);	
 	}
+	mainCharacterMovement->EndJumping();
 }
 	
 void	AMainCharacter::endClimb()

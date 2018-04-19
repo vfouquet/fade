@@ -195,10 +195,6 @@ void AMainPlayerController::Jump()
 			}
 			else
 			{
-				stickLength = FMath::Clamp(stickLength, 0.0f, 1.0f);
-				FVector pawnForward = MainCharacter->GetActorForwardVector();
-				FRotator	stickRot(0.0f, cameraDiffAngle, 0.0f);
-				FVector direction = stickRot.RotateVector(pawnForward);
 				MainCharacter->SetLongJump(true);
 				MainCharacter->Jump();
 			}

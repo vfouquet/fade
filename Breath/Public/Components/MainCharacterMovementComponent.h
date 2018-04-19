@@ -24,11 +24,15 @@ public:
 	void	ProcessRotateHeavyObject(bool direction, float holdingObjectMass, FVector holdingObjectLocation);
 	void	ProcessThrowRotation(float coeff);
 
+	void	EndJumping();
+
 	void	SetWalkMode();
 	void	SetJogMode();
 	void	SetCustomSpeed(float customSpeed);
 	void	SetJumpDirection(FVector value) { jumpDirection = value; }
 
+	UFUNCTION(BlueprintPure)
+	bool	IsJumping() const { return bIsJumping; }
 	bool	IsFalling(bool& ascending);
 	FVector const& 	GetLastMovementOffset() const { return lastOffsetLocation; }
 
@@ -62,6 +66,7 @@ private:
 	FVector	jumpDirection;
 	//float	currentCoyoteTime = 0.0f;
 	FVector	lastOffsetLocation = FVector::ZeroVector;
+	bool	bIsJumping = false;
 protected:
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 
