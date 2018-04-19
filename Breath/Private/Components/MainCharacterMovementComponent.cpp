@@ -48,7 +48,9 @@ bool UMainCharacterMovementComponent::DoJump(bool bReplayingMoves)
 		{
 			Velocity.Z = JumpZVelocity;
 			SetMovementMode(MOVE_Falling);
-			bIsJumping = true;		//EXCEPT THIS LINE (IMPRTANT FOR ANIMATIONS)
+			bIsJumping = true;				//EXCEPT THIS LINE (IMPRTANT FOR ANIMATIONS)
+			bCanWalkOffLedges = true;		//AND THIS ONE
+			//PerchRadiusThreshold = 0.0f;	//AND THIS ONE TOO
 			return true;
 		}
 	}
@@ -72,7 +74,7 @@ void UMainCharacterMovementComponent::SetPostLandedPhysics(const FHitResult& Hit
 {
 	Super::SetPostLandedPhysics(Hit);
 
-	bIsJumping = false;
+	EndJumping();
 	if (MovementMode == EMovementMode::MOVE_Walking)
 		bOrientRotationToMovement = true;
 }
@@ -122,6 +124,8 @@ void	UMainCharacterMovementComponent::ProcessThrowRotation(float coeff)
 void	UMainCharacterMovementComponent::EndJumping()
 {
 	bIsJumping = false;
+	bCanWalkOffLedges = true;// Velocity.Size() > WalkSpeed ? true : false;
+	//PerchRadiusThreshold = 17.0f;
 }
 
 void	UMainCharacterMovementComponent::SetWalkMode()

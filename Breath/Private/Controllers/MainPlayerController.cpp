@@ -183,22 +183,7 @@ void AMainPlayerController::Jump()
 		if (MainCharacter->CanThrow())
 			MainCharacter->Throw();
 		else
-		{
-			float cameraDiffAngle = GetCameraRotation().Yaw - MainCharacter->GetActorRotation().Yaw;
-			float	stickLength = lastStickInput.Size();
-
-			if (stickLength < JumpStickThreshold)
-			{
-				MainCharacter->SetLongJump(false);
-				MainCharacter->Jump();
-				//pass 0
-			}
-			else
-			{
-				MainCharacter->SetLongJump(true);
-				MainCharacter->Jump();
-			}
-		}
+			MainCharacter->Jump();
 	}
 }
 

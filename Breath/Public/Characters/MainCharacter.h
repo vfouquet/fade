@@ -81,7 +81,7 @@ public:
 	void	StopGrab();
 	void	Throw();
 	void	Stick();
-	void	Jump(FVector direction = FVector::ZeroVector);
+	void	Jump() override;
 	bool	Climb();
 	UFUNCTION(BlueprintCallable)
 	void	EndThrow();
@@ -113,7 +113,6 @@ public:
 	void	SetRotatingRight(bool const value) { rotatingRight = value; }
 	void	SetPushingAxis(float const& value) { pushingAxis = value; }	
 	void	SetCanAutoClimb(bool const value) { bCanAutoClimbInAir = value; }
-	void	SetLongJump(bool const value) { bIsLongJump = value; }
 
 	UFUNCTION(BlueprintCallable)
 	void	BlockCharacterJump() { bJumpLocked = true; }
@@ -196,6 +195,8 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDeathDelegate	OnDie;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump")
+	float	MinLongJumpVelocity = 250.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	Climb1MeterMontage = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")

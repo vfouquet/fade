@@ -184,14 +184,15 @@ void	AMainCharacter::Stick()
 	holdComponent->Stick();
 }
 
-void	AMainCharacter::Jump(FVector direction)
+void	AMainCharacter::Jump()
 {
 	if (bBlocked || bJumpLocked)
 		return;
 	if (Climb())
 		return;
-	mainCharacterMovement->SetJumpDirection(direction);
-	ACharacter::Jump();
+	bIsLongJump = GetVelocity().Size() >= MinLongJumpVelocity;
+	mainCharacterMovement->SetJumpDirection(FVector::ZeroVector);
+	Super::Jump();
 }
 
 bool	AMainCharacter::Climb()
