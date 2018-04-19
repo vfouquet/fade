@@ -36,6 +36,12 @@ public:
 	UAkAudioEvent*	AudioCinematic = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Particle properties")
 	UParticleSystem*	WaveParticleTemplate = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Volume Effect")
+	UStaticMesh*		SphereMesh = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Volume Effect")
+	UMaterialInterface*		SphereOpaqueMaterial = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Volume Effect")
+	UMaterialInterface*		SphereTransparentMaterial = nullptr;
 
 private:
 	UParticleSystemComponent*	particleSystem = nullptr;

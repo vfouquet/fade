@@ -101,13 +101,13 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 	{
 		FString indexStr = FString::FromInt(pos + 1);
 
-		whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius());
+		whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius() + ZoneOffset * 2.0f);
 		whiteZoneMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
 	
-		decalNormalMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius());
+		decalNormalMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius() + ZoneOffset * 2.0f);
 		decalNormalMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
 
-		decalRoughnessMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius());
+		decalRoughnessMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius() + ZoneOffset * 2.0f);
 		decalRoughnessMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
 	}
 	for (pos; pos < 15; pos++)

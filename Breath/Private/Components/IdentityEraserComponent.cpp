@@ -7,6 +7,8 @@
 #include "InteractableComponent.h"
 #include "IdentityZoneManager.h"
 #include "./Particles/ParticleSystemComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 
 void	UIdentityEraserComponent::BeginPlay()
 {
@@ -39,6 +41,41 @@ void	UIdentityEraserComponent::BeginPlay()
 	{
 		AActor* owner = GetOwner();
 		UE_LOG(LogTemp, Warning, TEXT("%s - IdentityEraserComponent : Particle template for wave not set"), owner ? *owner->GetName() : *FString("Error"));
+	}
+	if (SphereMesh && SphereOpaqueMaterial && SphereTransparentMaterial)
+	{
+		UStaticMeshComponent*	opaqueSphere = NewObject<UStaticMeshComponent>(this);
+		UStaticMeshComponent*	transparentSphere = NewObject<UStaticMeshComponent>(this);
+		if (!opaqueSphere || !transparentSphere)
+		{
+			AActor* owner = GetOwner();
+			UE_LOG(LogTemp, Warning, TEXT("%s - IdentityEraserComponent : Sphere not created"), owner ? *owner->GetName() : *FString("Error"));
+		}
+
+		opaqueSphere->SetupAttachment(this);
+		transparentSphere->SetupAttachment(this);
+		opaqueSphere->RegisterComponent();
+		transparentSphere->RegisterComponent();
+		transparentSphere->SetStaticMesh(SphereMesh);
+		opaqueSphere->SetStaticMesh(SphereMesh);
+		transparentSphere->SetMaterial(0, SphereTransparentMaterial);
+		opaqueSphere->SetMaterial(0, SphereOpaqueMaterial);
+		opaqueSphere->CustomDepthStencilValue = 255;
+		opaqueSphere->bRenderInMainPass = false;
+
+		float scale = GetUnscaledSphereRadius() / SphereMesh->ExtendedBounds.BoxExtent.X;
+		opaqueSphere->SetRelativeScale3D(FVector(scale));
+		transparentSphere->SetRelativeScale3D(FVector(scale));
+	}
+	else
+	{
+		AActor* owner = GetOwner();
+		FString meshState = SphereMesh? "OK" : "nullptr";
+		FString opaqueState = SphereOpaqueMaterial ? "OK" : "nullptr";
+		FString transparentState = SphereTransparentMaterial ? "OK" : "nullptr";
+		UE_LOG(LogTemp, Warning, 
+			TEXT("%s - IdentityEraserComponent : Cannot create sphere volume, sphere mesh state is %s, opaque state is %s and transparent state is %s"), 
+				owner ? *owner->GetName() : *FString("Error"), *meshState, *opaqueState, *transparentState);
 	}
 }
 	

@@ -56,6 +56,8 @@ public:
 	UMaterialInterface*	DecalRoughnessMaterialInterface = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader")
 	UMaterialInterface*	DecalNormalMaterialInterface = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader")
+	float	ZoneOffset = 100.0f;
 
 protected:
 	// Called when the game starts or when spawned
