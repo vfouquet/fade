@@ -101,6 +101,8 @@ public:
 	void	HeadLookAt(FVector lookAtLocation);
 
 	UFUNCTION(BlueprintCallable)
+	void	SetWalkingInDeepWater(bool const value) { bIsWalkingInDeepWater = value; }
+	UFUNCTION(BlueprintCallable)
 	void	SetCautionWalkMode(bool const value) { bIsCautionWalking = value; }
 	void	SetWalkMode();
 	void	SetJogMode();
@@ -139,6 +141,8 @@ public:
 	void	PlayMeteorEvent();
 	void	StopMeteorEvent();
 
+	UFUNCTION(BlueprintPure)
+	bool			IsWalkingInDeepWater() const { return bIsWalkingInDeepWater; }
 	UFUNCTION(BlueprintPure)
 	bool			IsCautionwalking() const { return bIsCautionWalking; }
 	UFUNCTION(BlueprintPure)
@@ -284,6 +288,7 @@ private:
 
 	bool	bIsLongJump = false;
 	bool	bIsCautionWalking = false;
+	bool	bIsWalkingInDeepWater = false;
 
 	//TEMP CLIMB TRICK SHIT
 	EClimbType	climbType;
