@@ -49,8 +49,9 @@ EChemicalState	UChemicalCeramicComponent::getNextState(EChemicalTransformation c
 
 bool	UChemicalCeramicComponent::computePercussionBreakability(UPrimitiveComponent* other)
 {
+	/*
 	UChemicalComponent*	otherComp = FindAssociatedChemicalComponent(other);
-	if (!otherComp || !associatedComponent)
+	if (!otherComp || !associatedComponent.Is)
 	{
 
 		return false;
@@ -61,6 +62,7 @@ bool	UChemicalCeramicComponent::computePercussionBreakability(UPrimitiveComponen
 		return false;
 	if (otherComp->GetType() == EChemicalType::Rock || otherComp->GetType() == EChemicalType::Wood)
 		return true;
+	*/
 	return false;
 }
 	
@@ -74,7 +76,7 @@ void	UChemicalCeramicComponent::OnStateChanged(EChemicalTransformation tranform,
 
 void	UChemicalCeramicComponent::swapTrick()
 {
-	if (!associatedComponent)
+	if (!associatedComponent.IsValid())
 	{
 		AActor* owner = GetOwner();
 		UE_LOG(LogTemp, Warning, TEXT("%s - UChemicalCeramicComponent : Couldn't do swap trick because the associtaed component is nullptr"), owner? *owner->GetName() : *FString("Error"));

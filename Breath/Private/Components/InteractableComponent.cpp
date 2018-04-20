@@ -24,7 +24,7 @@ void UInteractableComponent::BeginPlay()
 	Super::BeginPlay();
 
 	associatedComponent = Cast<UPrimitiveComponent>(Grab.GetComponent(GetOwner()));
-	if (associatedComponent)
+	if (associatedComponent.IsValid())
 	{
 		FScriptDelegate	hitOverlap;
 		hitOverlap.BindUFunction(this, "OnHit");
@@ -66,7 +66,7 @@ void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 bool	UInteractableComponent::GetDebugLeft()
 {
-	if (!associatedComponent)
+	if (!associatedComponent.IsValid())
 		return false;
 
 	FVector tempExtent2 = tempExtent * 1.0f;
@@ -84,7 +84,7 @@ bool	UInteractableComponent::GetDebugLeft()
 
 bool	UInteractableComponent::CanRotateLeft(FVector characterForward)
 {
-	if (!associatedComponent)
+	if (!associatedComponent.IsValid())
 		return false;
 	bool res = false;
 	float dotRes = FVector::DotProduct(characterForward, associatedComponent->GetForwardVector());
@@ -105,7 +105,7 @@ bool	UInteractableComponent::CanRotateLeft(FVector characterForward)
 
 bool	UInteractableComponent::CanRotateRight(FVector characterForward)
 {
-	if (!associatedComponent)
+	if (!associatedComponent.IsValid())
 		return false;
 	bool res = false;
 	float dotRes = FVector::DotProduct(characterForward, associatedComponent->GetForwardVector());
@@ -126,7 +126,7 @@ bool	UInteractableComponent::CanRotateRight(FVector characterForward)
 
 bool	UInteractableComponent::CanPushForward(FVector characterForward)
 {
-	if (!associatedComponent)
+	if (!associatedComponent.IsValid())
 		return false;
 	bool res = false;
 	float dotRes = FVector::DotProduct(characterForward, associatedComponent->GetForwardVector());
@@ -147,7 +147,7 @@ bool	UInteractableComponent::CanPushForward(FVector characterForward)
 
 bool	UInteractableComponent::GetDebugRight()
 {
-	if (!associatedComponent)
+	if (!associatedComponent.IsValid())
 		return false;
 
 	FVector	tempExtent2 = tempExtent * 1.0f;
@@ -165,7 +165,7 @@ bool	UInteractableComponent::GetDebugRight()
 
 bool	UInteractableComponent::GetDebugCenter()
 {
-	if (!associatedComponent)
+	if (!associatedComponent.IsValid())
 		return false;
 
 	FVector	tempExtent2 = tempExtent * 1.0f;
@@ -183,7 +183,7 @@ bool	UInteractableComponent::GetDebugCenter()
 
 bool	UInteractableComponent::GetDebugBack()
 {
-	if (!associatedComponent)
+	if (!associatedComponent.IsValid())
 		return false;
 
 	FVector	tempExtent2 = tempExtent * 1.0f;
@@ -203,9 +203,11 @@ bool	UInteractableComponent::GetDebugBack()
 
 void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (!thrown)
+	if (!associatedComponent.IsValid())
+		return;
+	if (!thrown && associatedComponent.IsValid())
 	{
-		UChemicalCeramicComponent* ceramicComp = Cast<UChemicalCeramicComponent>(UChemicalComponent::FindAssociatedChemicalComponent(associatedComponent));
+		UChemicalCeramicComponent* ceramicComp = Cast<UChemicalCeramicComponent>(UChemicalComponent::FindAssociatedChemicalComponent(associatedComponent.Get()));
 		if (ceramicComp)
 		{
 			float	zVel = FMath::Abs(associatedComponent->GetComponentVelocity().Z);
@@ -228,7 +230,7 @@ void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* Ot
 	}
 	else
 	{
-		UChemicalCeramicComponent* ceramicComp = Cast<UChemicalCeramicComponent>(UChemicalComponent::FindAssociatedChemicalComponent(associatedComponent));
+		UChemicalCeramicComponent* ceramicComp = Cast<UChemicalCeramicComponent>(UChemicalComponent::FindAssociatedChemicalComponent(associatedComponent.Get()));
 		if (ceramicComp)
 			ceramicComp->Break();
 		thrown = false;
@@ -285,7 +287,7 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInterac
 		UE_LOG(LogTemp, Warning, TEXT("%s - Interactable : Trying to add a stick constraint but the component cannot accept a stick"), owner? *owner->GetName() : *FString("Error"));
 		return nullptr;
 	}
-	if (!associatedComponent && !stickedObject)
+	if (!associatedComponent.IsValid() && !stickedObject)
 	{
 		AActor* owner = GetOwner();
 		UE_LOG(LogTemp, Warning, TEXT("%s - Interactable : Trying to add a stick constraint but the associated component is null or the other one is null"), owner ? *owner->GetName() : *FString("Error"));
@@ -303,7 +305,7 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInterac
 	//stickConstraint->SetDisableCollision(true);
 	FVector offset = associatedComponent->Bounds.BoxExtent * (stickedObject->GetComponentLocation() - associatedComponent->GetComponentLocation()).GetSafeNormal();
 	stickConstraint->SetWorldLocation(associatedComponent->GetComponentLocation() + offset);
-	stickConstraint->SetConstrainedComponents(associatedComponent, FName("None"), stickedObject, stickedBoneName);
+	stickConstraint->SetConstrainedComponents(associatedComponent.Get(), FName("None"), stickedObject, stickedBoneName);
 	stickConstraint->SetDisableCollision(true);
 	stickConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
 	stickConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);

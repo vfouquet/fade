@@ -68,7 +68,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	EChemicalState const&	GetState() const { return state; }
 	UFUNCTION(BlueprintPure)
-	UPrimitiveComponent* GetAssociatedComponent() const { return associatedComponent; }
+	UPrimitiveComponent* GetAssociatedComponent() const { return associatedComponent.IsValid()? associatedComponent.Get() : nullptr; }
 
 	UFUNCTION(BlueprintCallable)
 	void	SetState(EChemicalState const value) { state = value; }
@@ -112,7 +112,7 @@ protected:
 	TArray<FChemicalPropagation>		propagationComponents;
 
 	TMap<EChemicalTransformation, ChemicalStateChanger>	currentChangers;
-	UPrimitiveComponent*								associatedComponent = nullptr;
+	TWeakObjectPtr<UPrimitiveComponent>					associatedComponent = nullptr;
 	EChemicalType										type = EChemicalType::None;
 	EChemicalState										state = EChemicalState::None;
 	bool												bAlreadyTick = false;

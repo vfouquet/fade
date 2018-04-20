@@ -31,7 +31,7 @@ void UChemicalComponent::BeginPlay()
 		return;
 
 	associatedComponent = Cast<UPrimitiveComponent>(AssociatedComponent.GetComponent(owner));
-	if (!associatedComponent)
+	if (!associatedComponent.IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s - %s : Cannot find primitive component, reference is wrong"), *owner->GetName(), *GetName());
 		return;
@@ -47,7 +47,7 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (!associatedComponent)
+	if (!associatedComponent.IsValid())
 		return;
 
 	if (!bAlreadyTick)
@@ -173,7 +173,7 @@ void	UChemicalComponent::GiveIdentity(EChemicalState previousState)
 
 void	UChemicalComponent::AddHitComponent(UChemicalComponent* chemicalComp)
 {
-	if (!chemicalComp || !chemicalComp->GetAssociatedComponent() || !associatedComponent)
+	if (!chemicalComp || !chemicalComp->GetAssociatedComponent() || !associatedComponent.IsValid())
 		return;
 	if (!hitChemicalComponents.Contains(chemicalComp))
 		hitChemicalComponents.Add(chemicalComp, FVector::Distance(associatedComponent->GetComponentLocation(), chemicalComp->GetAssociatedComponent()->GetComponentLocation()));
@@ -262,11 +262,17 @@ void	UChemicalComponent::updateImpact(UChemicalComponent* otherChemical, UPrimit
 
 void	UChemicalComponent::refreshChangersWithCurrentInteractions()
 {
+	if (!associatedComponent.IsValid())
+	{
+		DestroyComponent();
+		return;
+	}
+
 	EChemicalTransformation	transformation = getPotentialSelfNextTransformation();
 	if (transformation != EChemicalTransformation::None)
 	{
 		ChemicalStateChanger& stateChanger = addStateChanger(transformation);
-		stateChanger.AddImpactingComponent(associatedComponent);
+		stateChanger.AddImpactingComponent(associatedComponent.Get());
 	}
 
 	TArray<UPrimitiveComponent*>	overlappingPrimitives;
@@ -276,7 +282,7 @@ void	UChemicalComponent::refreshChangersWithCurrentInteractions()
 		UChemicalComponent*	comp = FindAssociatedChemicalComponent(*It);
 		if (!comp)
 			continue;
-		comp->updateImpact(this, associatedComponent);
+		comp->updateImpact(this, associatedComponent.Get());
 		EChemicalTransformation transformation = getEffectiveEffect(comp->GetType(), comp->GetState());
 		if (transformation == EChemicalTransformation::None)
 			continue;
@@ -290,7 +296,7 @@ void	UChemicalComponent::refreshChangersWithCurrentInteractions()
 	}
 	for (auto& hitComp : hitChemicalComponents)
 	{
-		hitComp.Key->updateImpact(this, associatedComponent);
+		hitComp.Key->updateImpact(this, associatedComponent.Get());
 		EChemicalTransformation transformation = getEffectiveEffect(hitComp.Key->GetType(), hitComp.Key->GetState());
 		if (transformation == EChemicalTransformation::None)
 			continue;
@@ -305,7 +311,7 @@ void	UChemicalComponent::refreshChangersWithCurrentInteractions()
 
 	for (auto& propagationComp : propagationComponents)
 	{
-		propagationComp.component->updateImpact(this, associatedComponent);
+		propagationComp.component->updateImpact(this, associatedComponent.Get());
 		EChemicalTransformation transformation = getEffectiveEffect(propagationComp.component->GetType(), propagationComp.component->GetState());
 		if (transformation == EChemicalTransformation::None)
 			continue;

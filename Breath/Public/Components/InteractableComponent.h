@@ -62,9 +62,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	FVector&	GetTempExtent() { return tempExtent; }
 	UFUNCTION(BlueprintPure)
-	UPrimitiveComponent* GetAssociatedComponent() const { return associatedComponent; }
+	UPrimitiveComponent* GetAssociatedComponent() const { return associatedComponent.IsValid()? associatedComponent.Get() : nullptr; }
 
-	bool	IsGrabable() const { return CanBeGrabbed && !identityErased && associatedComponent; }
+	bool	IsGrabable() const { return CanBeGrabbed && !identityErased && associatedComponent.IsValid(); }
 
 	//ALL THIS SHIT ARE SECURITY TEST FOR TEMPORARY PUSH/PULL
 	UFUNCTION(BlueprintCallable)
@@ -114,11 +114,11 @@ public:
 	FConditionDelegate	onEndStick;
 
 private:
-	TArray<FStickConstraint>		stickingConstraints;
-	UPrimitiveComponent*			associatedComponent = nullptr;
-	UHoldComponent*					holder = nullptr;
+	TArray<FStickConstraint>			stickingConstraints;
+	TWeakObjectPtr<UPrimitiveComponent>	associatedComponent = nullptr;
+	UHoldComponent*						holder = nullptr;
 
-	bool							thrown = false;
-	bool							isSticked = false;
-	bool							identityErased = false;
+	bool								thrown = false;
+	bool								isSticked = false;
+	bool								identityErased = false;
 };
