@@ -231,6 +231,7 @@ bool	AMainCharacter::Climb()
 		newLoc.Z = topPoint.Z - 200.0f + 92.0f;
 		interpTime = 0.1f;
 	}
+	interpTime = ClimbSnapTime;
 	zClimbTarget = topPoint.Z;
 
 	FLatentActionInfo	latentInfo;

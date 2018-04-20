@@ -199,7 +199,9 @@ public:
 	/*Time to validate climb by walking**/
 	UPROPERTY(EditAnywhere, Category = "Climb")
 	float	ClimbAngleTolerence = 45.0f;
-	
+	UPROPERTY(EditAnywhere, Category = "Climb")
+	float	ClimbSnapTime = 0.1f;
+
 	UPROPERTY(BlueprintAssignable)
 	FDeathDelegate	OnDie;
 	
