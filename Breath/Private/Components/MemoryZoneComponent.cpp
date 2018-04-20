@@ -11,6 +11,52 @@ void	UMemoryZoneComponent::BeginPlay()
 
 	if (manager)
 		manager->AddMemoryZone(this);
+	else
+	{
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Warning, TEXT("%s - MemoryZoneComponent : Identity Zone Manager doesn't exist"), owner ? *owner->GetName() : *FString("Error"));
+	}
+
+	if (MemoryVolumeMesh && MemoryOpaqueMaterial && MemoryTransparentMaterial)
+	{
+		UStaticMeshComponent*	opaqueSphere = NewObject<UStaticMeshComponent>(this);
+		UStaticMeshComponent*	transparentSphere = NewObject<UStaticMeshComponent>(this);
+		if (!opaqueSphere || !transparentSphere)
+		{
+			AActor* owner = GetOwner();
+			UE_LOG(LogTemp, Warning, TEXT("%s - MemoryZoneComponent : Sphere not created"), owner ? *owner->GetName() : *FString("Error"));
+		}
+
+		opaqueSphere->SetupAttachment(this);
+		transparentSphere->SetupAttachment(this);
+		opaqueSphere->RegisterComponent();
+		transparentSphere->RegisterComponent();
+		transparentSphere->SetStaticMesh(MemoryVolumeMesh);
+		opaqueSphere->SetStaticMesh(MemoryVolumeMesh);
+		transparentSphere->SetMaterial(0, MemoryTransparentMaterial);
+		opaqueSphere->SetMaterial(0, MemoryOpaqueMaterial);
+		opaqueSphere->bRenderCustomDepth = true;
+		opaqueSphere->CustomDepthStencilValue = 252;
+		opaqueSphere->bRenderInMainPass = false;
+		opaqueSphere->SetSimulatePhysics(false);
+		opaqueSphere->SetCollisionProfileName("NoCollision");
+		transparentSphere->SetSimulatePhysics(false);
+		transparentSphere->SetCollisionProfileName("NoCollision");
+
+		float scale = GetUnscaledSphereRadius() / MemoryVolumeMesh->ExtendedBounds.BoxExtent.X;
+		opaqueSphere->SetRelativeScale3D(FVector(scale));
+		transparentSphere->SetRelativeScale3D(FVector(scale));
+	}
+	else
+	{
+		AActor* owner = GetOwner();
+		FString meshState = MemoryVolumeMesh ? "OK" : "nullptr";
+		FString materialState = MemoryOpaqueMaterial ? "OK" : "nullptr";
+		FString materialTransparentState = MemoryTransparentMaterial ? "OK" : "nullptr";
+		UE_LOG(LogTemp, Warning,
+			TEXT("%s - MemoryZoneComponent : Cannot create sphere volume, sphere mesh state is %s, opaque material state is %s and transparent state is %s"),
+			owner ? *owner->GetName() : *FString("Error"), *meshState, *materialState, *materialTransparentState);
+	}
 }
 	
 void	UMemoryZoneComponent::OnComponentDestroyed(bool bDestroyingHierarchy)

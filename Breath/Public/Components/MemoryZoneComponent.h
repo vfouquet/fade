@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Engine/StaticMesh.h"
+
 #include "CoreMinimal.h"
 #include "IdentityZoneComponent.h"
 #include "MemoryZoneComponent.generated.h"
@@ -22,5 +24,11 @@ public:
 	UFUNCTION()
 	virtual void	OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
 	
-	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Volume Effect")
+	UMaterialInterface*	MemoryOpaqueMaterial = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Volume Effect")
+	UMaterialInterface*	MemoryTransparentMaterial = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Volume Effect")
+	UStaticMesh*		MemoryVolumeMesh = nullptr;
 };

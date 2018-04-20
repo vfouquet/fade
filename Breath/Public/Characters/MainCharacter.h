@@ -100,6 +100,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	HeadLookAt(FVector lookAtLocation);
 
+	UFUNCTION(BlueprintCallable)
+	void	SetCautionWalkMode(bool const value) { bIsCautionWalking = value; }
 	void	SetWalkMode();
 	void	SetJogMode();
 	UFUNCTION(BlueprintCallable)
@@ -137,6 +139,8 @@ public:
 	void	PlayMeteorEvent();
 	void	StopMeteorEvent();
 
+	UFUNCTION(BlueprintPure)
+	bool			IsCautionwalking() const { return bIsCautionWalking; }
 	UFUNCTION(BlueprintPure)
 	bool			IsLongJumping() const { return bIsLongJump; }
 	UFUNCTION(BlueprintPure)
@@ -279,6 +283,7 @@ private:
 	bool	bCanAutoClimbInAir = false;
 
 	bool	bIsLongJump = false;
+	bool	bIsCautionWalking = false;
 
 	//TEMP CLIMB TRICK SHIT
 	EClimbType	climbType;

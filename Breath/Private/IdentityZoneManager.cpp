@@ -93,8 +93,8 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 	});
 
 	int maxIdx = erasedZones.Num();
-	if (maxIdx > 15)
-		maxIdx = 15;
+	if (maxIdx > 30)
+		maxIdx = 30;
 
 	int pos = 0;
 	for (pos; pos < maxIdx; pos++)
@@ -110,7 +110,7 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 		decalRoughnessMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius() + ZoneOffset * 2.0f);
 		decalRoughnessMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
 	}
-	for (pos; pos < 15; pos++)
+	for (pos; pos < 30; pos++)
 	{
 		FString indexStr = FString::FromInt(pos + 1);
 		whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), 0.0f);
