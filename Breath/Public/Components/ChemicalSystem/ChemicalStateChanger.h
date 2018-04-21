@@ -24,6 +24,7 @@ public:
 
 	bool	Contains(UPrimitiveComponent* prim) const { return impactingComponents.Contains(prim); }
 	int32	GetImpactingComponentsNumber() const { return impactingComponents.Num(); }
+	float	GetStatus() const { return currentTime / targetTime; }
 
 private:
 	TArray<UPrimitiveComponent*>		impactingComponents;

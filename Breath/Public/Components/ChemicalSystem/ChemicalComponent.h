@@ -43,6 +43,7 @@ protected:
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void OnComponentDestroyed(bool destroyedHierarchy) override;
 
 	UFUNCTION()
 	void	OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
@@ -61,6 +62,8 @@ public:
 	void	AddHitComponent(UChemicalComponent* primComp);
 	void	OverrideAssociatedComponent(UPrimitiveComponent* newValue);
 
+	UFUNCTION(BlueprintCallable)
+	float	GetChangerStatus(EChemicalTransformation transformation, bool& hasTransformation);
 	UFUNCTION(BlueprintPure)
 	static UChemicalComponent*	FindAssociatedChemicalComponent(UPrimitiveComponent* referenceComponent);
 	UFUNCTION(BlueprintPure)
@@ -118,6 +121,7 @@ protected:
 	bool												bAlreadyTick = false;
 
 private:
+	void	removeComponentAllChangers(UPrimitiveComponent* component);
 	void	notifyChemicalStateChanged(EChemicalTransformation transformation, EChemicalState previous, EChemicalState next);
 	void	addComponentToChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent);
 	void	removeComponentFromChangers(EChemicalTransformation transformation, UPrimitiveComponent* primComponent);

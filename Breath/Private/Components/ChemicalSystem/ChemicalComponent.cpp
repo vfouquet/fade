@@ -38,7 +38,6 @@ void UChemicalComponent::BeginPlay()
 	}
 
 	bindDelegates();
-	addPropagationComponents();
 }
 
 
@@ -52,6 +51,7 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 	if (!bAlreadyTick)
 	{
+		addPropagationComponents();
 		refreshChangersWithCurrentInteractions();
 		bAlreadyTick = true;
 	}
@@ -59,6 +59,16 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	// ...
 	for (auto& hitComp : hitChemicalComponents)
 	{
+		if (!hitComp.Key->GetAssociatedComponent())
+		{
+			hitChemicalComponents.Remove(hitComp.Key);
+			for (auto& stateChanger : currentChangers)
+			{
+				if (stateChanger.Value.RemoveIfNeeded(hitComp.Key->GetAssociatedComponent()) && !bPersistantTransformation)
+					currentChangers.Remove(stateChanger.Key);
+			}
+		}
+
 		float distance = FVector::Distance(associatedComponent->GetComponentLocation(), hitComp.Key->GetAssociatedComponent()->GetComponentLocation());
 		if (distance > hitComp.Value + 25.0f)
 		{
@@ -106,6 +116,29 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 			notifyChemicalStateChanged(previousTransformation, previousState, state);
 			break;
 		}
+	}
+}
+	
+void	UChemicalComponent::OnComponentDestroyed(bool destroyedHierarchy)
+{
+	for (auto& hitComp : hitChemicalComponents)
+	{
+		float distance = FVector::Distance(associatedComponent->GetComponentLocation(), hitComp.Key->GetAssociatedComponent()->GetComponentLocation());
+		if (distance > hitComp.Value + 25.0f)
+		{
+			hitChemicalComponents.Remove(hitComp.Key);
+			for (auto& stateChanger : currentChangers)
+			{
+				if (stateChanger.Value.RemoveIfNeeded(hitComp.Key->GetAssociatedComponent()) && !bPersistantTransformation)
+					currentChangers.Remove(stateChanger.Key);
+			}
+		}
+	}
+
+	for (auto& propagationComp : propagationComponents)
+	{
+		if (propagationComp.component)
+			propagationComp.component->removeComponentAllChangers(associatedComponent.Get());
 	}
 }
 
@@ -193,7 +226,19 @@ void	UChemicalComponent::OverrideAssociatedComponent(UPrimitiveComponent* newVal
 	addPropagationComponents();
 	refreshChangersWithCurrentInteractions();
 }
-	
+
+float	UChemicalComponent::GetChangerStatus(EChemicalTransformation transformation, bool& hasTransformation)
+{
+	float	res = 0.0f;
+	if (ChemicalStateChanger* changer = currentChangers.Find(transformation))
+	{
+		res = changer->GetStatus();
+		hasTransformation = true;
+	}
+
+	return res;
+}
+
 ChemicalStateChanger&	UChemicalComponent::addStateChanger(EChemicalTransformation transformation)
 {
 	ChemicalStateChanger	temp(2.0f);
@@ -215,6 +260,15 @@ UChemicalComponent*	UChemicalComponent::FindAssociatedChemicalComponent(UPrimiti
 			return chemicalComp;
 	}
 	return nullptr;
+}
+	
+void	UChemicalComponent::removeComponentAllChangers(UPrimitiveComponent* component)
+{
+	for (auto& changer : currentChangers)
+	{
+		if (changer.Value.RemoveIfNeeded(component) && !bPersistantTransformation)
+			currentChangers.Remove(changer.Key);
+	}
 }
 	
 void	UChemicalComponent::notifyChemicalStateChanged(EChemicalTransformation previousTransformation, EChemicalState previous, EChemicalState next)
