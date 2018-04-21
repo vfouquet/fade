@@ -50,7 +50,6 @@ bool UMainCharacterMovementComponent::DoJump(bool bReplayingMoves)
 			SetMovementMode(MOVE_Falling);
 			bIsJumping = true;				//EXCEPT THIS LINE (IMPRTANT FOR ANIMATIONS)
 			bCanWalkOffLedges = true;		//AND THIS ONE
-			//PerchRadiusThreshold = 0.0f;	//AND THIS ONE TOO
 			return true;
 		}
 	}
@@ -124,8 +123,7 @@ void	UMainCharacterMovementComponent::ProcessThrowRotation(float coeff)
 void	UMainCharacterMovementComponent::EndJumping()
 {
 	bIsJumping = false;
-	bCanWalkOffLedges = true;// Velocity.Size() > WalkSpeed ? true : false;
-	//PerchRadiusThreshold = 17.0f;
+	bCanWalkOffLedges = true;
 }
 
 void	UMainCharacterMovementComponent::SetWalkMode()
