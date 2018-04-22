@@ -27,7 +27,7 @@ public:
 	float	GetStatus() const { return currentTime / targetTime; }
 
 private:
-	TArray<UPrimitiveComponent*>		impactingComponents;
-	float								targetTime = 0.0f;
-	float								currentTime = 0.0f;
+	TArray<TWeakObjectPtr<UPrimitiveComponent>>		impactingComponents;
+	float											targetTime = 0.0f;
+	float											currentTime = 0.0f;
 };

@@ -8,6 +8,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "ChemicalCeramicComponent.h"
+#include "GameFramework/Character.h"
 
 // Sets default values for this component's properties
 UInteractableComponent::UInteractableComponent()
@@ -230,10 +231,13 @@ void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* Ot
 	}
 	else
 	{
-		UChemicalCeramicComponent* ceramicComp = Cast<UChemicalCeramicComponent>(UChemicalComponent::FindAssociatedChemicalComponent(associatedComponent.Get()));
-		if (ceramicComp)
-			ceramicComp->Break();
-		thrown = false;
+		if (!Cast<ACharacter>(OtherActor))
+		{
+			UChemicalCeramicComponent* ceramicComp = Cast<UChemicalCeramicComponent>(UChemicalComponent::FindAssociatedChemicalComponent(associatedComponent.Get()));
+			if (ceramicComp)
+				ceramicComp->Break();
+			thrown = false;
+		}
 	}
 
 	if (!CanBeSticked || !OtherActor || isSticked)

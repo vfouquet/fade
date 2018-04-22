@@ -71,6 +71,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	EChemicalState const&	GetState() const { return state; }
 	UFUNCTION(BlueprintPure)
+	bool	IsValid() const { return associatedComponent.IsValid(); }
+	UFUNCTION(BlueprintPure)
 	UPrimitiveComponent* GetAssociatedComponent() const { return associatedComponent.IsValid()? associatedComponent.Get() : nullptr; }
 
 	UFUNCTION(BlueprintCallable)

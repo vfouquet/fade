@@ -59,14 +59,10 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	// ...
 	for (auto& hitComp : hitChemicalComponents)
 	{
-		if (!hitComp.Key->GetAssociatedComponent())
+		if (!hitComp.Key->IsValid())
 		{
 			hitChemicalComponents.Remove(hitComp.Key);
-			for (auto& stateChanger : currentChangers)
-			{
-				if (stateChanger.Value.RemoveIfNeeded(hitComp.Key->GetAssociatedComponent()) && !bPersistantTransformation)
-					currentChangers.Remove(stateChanger.Key);
-			}
+			continue;
 		}
 
 		float distance = FVector::Distance(associatedComponent->GetComponentLocation(), hitComp.Key->GetAssociatedComponent()->GetComponentLocation());
@@ -123,6 +119,8 @@ void	UChemicalComponent::OnComponentDestroyed(bool destroyedHierarchy)
 {
 	for (auto& hitComp : hitChemicalComponents)
 	{
+		if (!IsValid() || !(hitComp.Key && hitComp.Key->IsValid()))
+			continue;
 		float distance = FVector::Distance(associatedComponent->GetComponentLocation(), hitComp.Key->GetAssociatedComponent()->GetComponentLocation());
 		if (distance > hitComp.Value + 25.0f)
 		{
