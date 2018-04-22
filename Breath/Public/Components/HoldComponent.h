@@ -17,6 +17,7 @@ enum class EHoldingState : uint8
 	Throwing UMETA(DisplayName = "Throwing"),
 	HeavyThrowing UMETA(DisplayName = "HeavyThrowing"),
 	Sticking UMETA(DisplayName = "Sticking"),
+	ReleasingLightGrab UMETA(DisplayName = "ReleasingLightGrab")
 };
 
 class AMainCharacter;
@@ -48,10 +49,9 @@ public:
 	void	Grab();
 	UFUNCTION(BlueprintCallable)
 	void	BeginLightGrabPositionUpdate();
-	UFUNCTION(BlueprintCAllable)
-	void	EndLightGrab();
 	UFUNCTION(BlueprintCallable)
 	void	EndHeavyGrab();
+	void	EndLightGrabRelease();
 	void	StopGrab();
 	void	Throw();
 	UFUNCTION(BlueprintCallable)

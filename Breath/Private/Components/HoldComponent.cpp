@@ -69,7 +69,7 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 		//
 	}
-	else if (currentHoldingState == EHoldingState::Throwing)
+	else if (currentHoldingState == EHoldingState::Throwing || currentHoldingState == EHoldingState::ReleasingLightGrab)
 		handleComponent->SetTargetLocation(mainCharacter->GetTwoHandsLocation());
 	else
 		releaseCurrentTime = 0.0f;
@@ -174,11 +174,6 @@ void	UHoldComponent::BeginLightGrabPositionUpdate()
 	holdingStateChangedDelegate.Broadcast(EHoldingState::PreLightGrabbing, EHoldingState::LightGrabbing);
 }
 
-void	UHoldComponent::EndLightGrab()
-{
-	
-}
-
 void	UHoldComponent::EndHeavyGrab()
 {
 	currentHoldingState = EHoldingState::HeavyGrabbing;
@@ -188,6 +183,15 @@ void	UHoldComponent::EndHeavyGrab()
 	mainCharacter->UnblockCharacter();
 	createHandConstraint();
 	holdingObject->SetHoldComponent(this);
+}
+	
+void	UHoldComponent::EndLightGrabRelease()
+{
+	releaseLightGrabbedObject();
+	mainCharacter->SetHoldingObject(false);
+	mainCharacter->UnblockCharacter();
+	currentHoldingState = EHoldingState::None;
+	holdingStateChangedDelegate.Broadcast(EHoldingState::ReleasingLightGrab, EHoldingState::None);
 }
 
 void	UHoldComponent::StopGrab()
@@ -211,11 +215,10 @@ void	UHoldComponent::StopGrab()
 	}
 	else if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
-		releaseLightGrabbedObject();
-		mainCharacter->SetHoldingObject(false);
-		mainCharacter->StopLightGrabMontage();
-		currentHoldingState = EHoldingState::None;
-		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::None);
+		mainCharacter->PlayLightGrabReleaseMontage();
+		mainCharacter->BlockCharacter();
+		currentHoldingState = EHoldingState::ReleasingLightGrab;
+		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::ReleasingLightGrab);
 	}
 	else if (currentHoldingState == EHoldingState::HeavyGrabbing)
 	{

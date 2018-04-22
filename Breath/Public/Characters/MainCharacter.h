@@ -88,6 +88,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	BeginGrabPositionUpdate();
 	UFUNCTION(BlueprintCallable)
+	void	EndReleaseLightGrab();
+	UFUNCTION(BlueprintCallable)
 	void	DealDamage(FHitResult hitResult, UPrimitiveComponent* damageDealer, bool HeavyDamage = true);
 
 	void	OnDamage(FVector impactDir = FVector::ZeroVector);
@@ -132,6 +134,7 @@ public:
 	void	SetHoldingObject(bool const value) { bHoldingObject = value; }
 
 	void	PlayLightGrabMontage(bool oneMeter = false);
+	void	PlayLightGrabReleaseMontage();
 	void	PlayLightThrowMontage();
 	void	PlayHeavyGrabMontage();
 	void	PlayHeavyThrowMontage();
@@ -213,6 +216,8 @@ public:
 	UAnimMontage*	Climb2MetersMontage = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	LightGrabAnim = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage*	LightGrabReleaseAnim = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	LightGrabOneMeterAnim = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")

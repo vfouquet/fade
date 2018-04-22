@@ -258,7 +258,12 @@ void	AMainCharacter::BeginGrabPositionUpdate()
 	if (holdComponent)
 		holdComponent->BeginLightGrabPositionUpdate();
 }
-
+	
+void	AMainCharacter::EndReleaseLightGrab()
+{
+	if (holdComponent)
+		holdComponent->EndLightGrabRelease();
+}
 
 void	AMainCharacter::DealDamage(FHitResult hitResult, UPrimitiveComponent* damageDealer, bool HeavyDamage)
 {
@@ -369,6 +374,14 @@ void	AMainCharacter::PlayLightGrabMontage(bool oneMeter)
 	FOnMontageEnded	endDel;
 	endDel.BindUObject(this, &AMainCharacter::onEndMontage);
 	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(endDel, oneMeter ? LightGrabOneMeterAnim : LightGrabAnim);
+}
+	
+void	AMainCharacter::PlayLightGrabReleaseMontage()
+{
+	PlayAnimMontage(LightGrabReleaseAnim);
+	FOnMontageEnded	endDel;
+	endDel.BindUObject(this, &AMainCharacter::onEndMontage);
+	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(endDel, LightGrabReleaseAnim);
 }
 
 void	AMainCharacter::PlayLightThrowMontage()
@@ -521,8 +534,6 @@ void	AMainCharacter::onEndMontage(UAnimMontage* montage, bool bInterrupted)
 	{
 		if (bInterrupted && holdComponent && !bThrowingObject)
 			holdComponent->CancelLightGrab();
-		else if (holdComponent)
-				holdComponent->EndLightGrab();
 	}
 	else if (montage == LightThrowAnim)
 	{
@@ -544,6 +555,11 @@ void	AMainCharacter::onEndMontage(UAnimMontage* montage, bool bInterrupted)
 			holdComponent->CancelHeavyThrow();
 		else if (holdComponent)
 			holdComponent->EndThrow();
+	}
+	else if (montage == LightGrabReleaseAnim)
+	{
+		if (bInterrupted && holdComponent && holdComponent->GetCurrentState() == EHoldingState::ReleasingLightGrab)
+			holdComponent->EndLightGrabRelease();
 	}
 }
 
