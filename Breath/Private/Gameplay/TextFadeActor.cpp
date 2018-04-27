@@ -18,7 +18,6 @@ ATextFadeActor::ATextFadeActor()
 void ATextFadeActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -75,11 +74,14 @@ void	ATextFadeActor::NotifyActorBeginOverlap(AActor* OtherActor)
 		{
 			UPrimitiveComponent* prim = Cast<UPrimitiveComponent>(component);
 			if (prim)
-				prim->Deactivate();
+			{
+				prim->UnregisterComponent();
+				prim->DestroyComponent();
+			}
 		}
 	}
 
-	if (DoFadeIn)
+	if (DoFadeIn && !fadingIn)
 	{
 		FTimerDelegate	del;
 		del.BindUFunction(this, "endFadeIn");
@@ -87,7 +89,7 @@ void	ATextFadeActor::NotifyActorBeginOverlap(AActor* OtherActor)
 		fadingIn = true;
 		return;
 	}
-	if (DoFadeOut)
+	if (DoFadeOut && !fadingOut)
 	{
 		FTimerDelegate	del;
 		del.BindUFunction(this, "endFadeOut");
