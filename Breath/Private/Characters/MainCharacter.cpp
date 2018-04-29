@@ -325,6 +325,12 @@ void	AMainCharacter::HeadLookAt(FVector lookAtLocation)
 		SetHeadRotation(neededRot);
 	}
 }
+	
+void	AMainCharacter::SetWalkingInDeepWater(bool const value)
+{
+	bIsWalkingInDeepWater = value; 
+	UAkGameplayStatics::SetSwitch("Footstep", "Water_high", this);
+}
 
 void	AMainCharacter::SetWalkMode()
 {
