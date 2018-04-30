@@ -42,6 +42,8 @@ public:
 	UMaterialInterface*		SphereOpaqueMaterial = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Volume Effect")
 	UMaterialInterface*		SphereTransparentMaterial = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader")
+	float	FallOffValue = 0.0f;
 
 private:
 	UParticleSystemComponent*	particleSystem = nullptr;
