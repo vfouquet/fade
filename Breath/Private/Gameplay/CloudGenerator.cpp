@@ -75,7 +75,7 @@ void	ACloudGenerator::generateCloud(FVector location)
 	FTransform	spawnTransform;
 	spawnTransform.SetLocation(location);
 	if (bOverrideCloudRotation)
-		spawnTransform.SetRotation(CloudRotation.Quaternion());
+		spawnTransform.SetRotation(FRotator(0.0f, FMath::RandRange(CloudRotationRange.X, CloudRotationRange.Y), 0.0f).Quaternion());
 	else
 		spawnTransform.SetRotation(FRotator(0.0f, FMath::FRandRange(0.0f, 360.0f), 0.0f).Quaternion());
 	FActorSpawnParameters	parameters;

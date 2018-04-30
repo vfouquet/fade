@@ -41,7 +41,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cloud")
 	bool	bOverrideCloudRotation = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cloud")
-	FRotator	CloudRotation;
+	FVector2D	CloudRotationRange;
 
 private:
 	void	generateCloud(FVector location);
