@@ -181,7 +181,7 @@ void	UHoldComponent::EndHeavyGrab()
 
 	mainCharacter->EnableMovingHeavyObjectMode();
 	mainCharacter->UnblockCharacter();
-	createHandConstraint();
+	//createHandConstraint();
 	holdingObject->SetHoldComponent(this);
 }
 	

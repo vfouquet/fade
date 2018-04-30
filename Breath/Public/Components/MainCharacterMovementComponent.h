@@ -6,6 +6,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "MainCharacterMovementComponent.generated.h"
 
+class UInteractableComponent;
+
 /**
  * 
  */
@@ -20,8 +22,8 @@ public:
 	virtual bool	DoJump(bool bReplayingMoves) override;
 	virtual void	SetPostLandedPhysics(const FHitResult& Hit) override;
 
-	void	ProcessPushAndPull(float const& coeff, float holdingObjectMass);
-	void	ProcessRotateHeavyObject(bool direction, float holdingObjectMass, FVector holdingObjectLocation);
+	void	ProcessPushAndPull(float const& coeff, UInteractableComponent* holdingObject);
+	void	ProcessRotateHeavyObject(bool direction, UInteractableComponent* holdingObject, FVector holdingObjectLocation);
 	void	ProcessThrowRotation(float coeff);
 
 	void	EndJumping();
@@ -56,6 +58,9 @@ public:
 	float	MoveRotationSpeed = 360.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
 	float	FallingRotationSpeed = 100.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Push/Pull")
+	float	PushPullSpeed = 200.f;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Movement")
 	//float	CoyoteTime = 0.5f;

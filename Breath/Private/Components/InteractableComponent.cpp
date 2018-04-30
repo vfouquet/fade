@@ -83,6 +83,11 @@ bool	UInteractableComponent::GetDebugLeft()
 	return res;
 }
 
+bool UInteractableComponent::TryToRotate(float Angle)
+{
+	return false;
+}
+
 bool	UInteractableComponent::CanRotateLeft(FVector characterForward)
 {
 	if (!associatedComponent.IsValid())

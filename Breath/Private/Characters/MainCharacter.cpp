@@ -105,15 +105,15 @@ void AMainCharacter::Tick(float DeltaTime)
 		if (holdComponent)
 		{
 			if (rotatingLeft)// && holdComponent->CanRotateLeft(GetActorForwardVector()))
-				mainCharacterMovement->ProcessRotateHeavyObject(false, holdComponent->GetHoldingObjectMass(), holdComponent->GetHoldingObjectLocation());
+				mainCharacterMovement->ProcessRotateHeavyObject(false, holdComponent->GetCurrentHeldObject(), holdComponent->GetHoldingObjectLocation());
 			else if (rotatingRight)// && holdComponent->CanRotateRight(GetActorForwardVector()))
-				mainCharacterMovement->ProcessRotateHeavyObject(true, holdComponent->GetHoldingObjectMass(), holdComponent->GetHoldingObjectLocation());
+				mainCharacterMovement->ProcessRotateHeavyObject(true, holdComponent->GetCurrentHeldObject(), holdComponent->GetHoldingObjectLocation());
 			else if (!FMath::IsNearlyZero(pushingAxis))
 			{
 				if (pushingAxis == 1.0f)// && holdComponent->CanPushForward(GetActorForwardVector()))
-					mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetHoldingObjectMass());
+					mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetCurrentHeldObject());
 				else if (pushingAxis == -1.0f)
-					mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetHoldingObjectMass());
+					mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetCurrentHeldObject());
 			}
 		}
 	}
@@ -334,13 +334,17 @@ void	AMainCharacter::SetWalkingInDeepWater(bool const value)
 
 void	AMainCharacter::SetWalkMode()
 {
-	if (!bCustomSpeedEnabled)
+	bool bAscending = false;
+
+	if (!bCustomSpeedEnabled && this->mainCharacterMovement->IsFalling(bAscending) == false)
 	mainCharacterMovement->SetWalkMode();
 }
 
 void	AMainCharacter::SetJogMode()
 {
-	if (!bCustomSpeedEnabled)
+	bool bAscending = false;
+
+	if (!bCustomSpeedEnabled && this->mainCharacterMovement->IsFalling(bAscending) == false)
 		mainCharacterMovement->SetJogMode();
 }
 

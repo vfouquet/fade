@@ -2,8 +2,14 @@
 
 #include "MainCharacterMovementComponent.h"
 
+#include "Engine/World.h"
 #include "GameFramework/Character.h"
-	
+#include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
+#include "PhysicsEngine/BodySetup.h"
+
+#include "InteractableComponent.h"
+
 void UMainCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	FVector last = LastUpdateLocation;
@@ -40,6 +46,7 @@ bool UMainCharacterMovementComponent::CheckFall(const FFindFloorResult& OldFloor
 
 bool UMainCharacterMovementComponent::DoJump(bool bReplayingMoves)
 {
+	//return Super::DoJump(bReplayingMoves);
 	//ALL OF THIS IS SUPER::DOJUMP
 	if (CharacterOwner && CharacterOwner->CanJump())
 	{
@@ -78,30 +85,56 @@ void UMainCharacterMovementComponent::SetPostLandedPhysics(const FHitResult& Hit
 		bOrientRotationToMovement = true;
 }
 	
-void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, float holdingObjectMass)
+void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, UInteractableComponent* holdingObject)
 {
-	float	massMult = 0.0f;
-	if (holdingObjectMass <= MassGrabValues[0])
-		massMult = MassGrabMultipliers[0];
-	else if (holdingObjectMass <= MassGrabValues[1])
-		massMult = MassGrabMultipliers[1];
-	else if (holdingObjectMass <= MassGrabValues[2])
-		massMult = MassGrabMultipliers[2];
+	FVector MoveDir = GetCharacterOwner()->GetActorRotation().Vector() * coeff;
 
-	FVector MoveDir = GetCharacterOwner()->GetActorRotation().Vector();
-	AddInputVector(MoveDir * massMult * coeff);
+	FHitResult SweepResult;
+
+// 	holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * 10.f, true);
+// 	holdingObject->GetAssociatedComponent()->AddForce(MoveDir * 1000.f);//this->PushPullSpeed);
+// 	this->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+
+	if (coeff < 0.f)
+	{
+		this->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+
+		if (SweepResult.bBlockingHit == false)
+		{
+			holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * 10.f, true);
+			holdingObject->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+
+			if (SweepResult.bBlockingHit == true)
+			{
+				this->GetOwner()->AddActorWorldOffset(-MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+			}
+
+			holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * -10.f, true);
+
+		}
+	}
+	else
+	{
+		holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * 10.f, true);
+		holdingObject->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+
+		if (SweepResult.bBlockingHit == false)
+		{
+			this->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+
+			if (SweepResult.bBlockingHit == true)
+			{
+				holdingObject->GetOwner()->AddActorWorldOffset(-MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+			}
+		}
+
+		holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * -10.f, true);
+	}
 }
 
-void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(bool direction, float holdingObjectMass, FVector holdingObjectLocation)
+void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(bool direction, UInteractableComponent* holdingObject, FVector holdingObjectLocation)
 {
-	float	massMult = 0.0f;
-	if (holdingObjectMass <= MassGrabValues[0])
-		massMult = MassGrabMultipliers[0];
-	else if (holdingObjectMass <= MassGrabValues[1])
-		massMult = MassGrabMultipliers[1];
-	else if (holdingObjectMass <= MassGrabValues[2])
-		massMult = MassGrabMultipliers[2];
-	float angle = RotationSpeed * GetWorld()->GetDeltaSeconds() * massMult;
+	float angle = RotationSpeed * GetWorld()->GetDeltaSeconds();
 	angle *= direction ? -1.0f : 1.0f;
 	//MAYBE USE OBJECT WEIGHT
 	//TO DO REPLACE THIS OLD WAY OF ROTATING OBJECT
@@ -110,7 +143,55 @@ void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(bool direction, f
 	FVector		holdingToNewLoc = rotation.RotateVector(holdingToCharac);
 	FVector		finalLocation = holdingToNewLoc + holdingObjectLocation;
 	FRotator	finalRotation = rotation + GetCharacterOwner()->GetActorRotation();
-	GetCharacterOwner()->SetActorLocationAndRotation(finalLocation, finalRotation.Quaternion(), true, nullptr, ETeleportType::None);
+	FRotator	finalObjectRotation = rotation + holdingObject->GetOwner()->GetActorRotation();
+
+	FHitResult SweepResult;
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(GetCharacterOwner());
+	//CollisionQueryParams.bTraceComplex = true;
+	//CollisionQueryParams.bIgnoreTouches = true;
+
+	GetWorld()->SweepSingleByChannel(
+		SweepResult,
+		GetCharacterOwner()->GetActorLocation(),
+		finalLocation,
+		FQuat::Identity,
+		ECC_WorldDynamic,
+		GetCharacterOwner()->GetCapsuleComponent()->GetCollisionShape(),
+		CollisionQueryParams
+	);
+
+	GetCharacterOwner()->SetActorLocation(finalLocation, true, &SweepResult);
+
+	if (SweepResult.bBlockingHit == false)
+	{
+		CollisionQueryParams = FCollisionQueryParams::DefaultQueryParam;
+		CollisionQueryParams.AddIgnoredActor(holdingObject->GetOwner());
+
+		FVector	objectFinalLocationWithZOffset = holdingObject->GetOwner()->GetActorLocation();
+		objectFinalLocationWithZOffset.Z += 10.f;
+
+		holdingObject->GetOwner()->SetActorLocationAndRotation(holdingObject->GetOwner()->GetActorLocation(), finalObjectRotation.Quaternion(), true, &SweepResult);
+
+		if (SweepResult.bBlockingHit == true)
+		{	
+			holdingToCharac = GetActorLocation() - holdingObjectLocation;
+			holdingToNewLoc = rotation.RotateVector(holdingToCharac);
+			finalLocation = holdingToNewLoc + holdingObjectLocation;
+			holdingObject->GetOwner()->SetActorLocationAndRotation(holdingObject->GetOwner()->GetActorLocation(), finalObjectRotation.Quaternion(), true);
+		}
+
+		GetCharacterOwner()->SetActorLocation(finalLocation, true);
+	}
+
+	FVector LookAtDir = holdingObject->GetOwner()->GetActorLocation() - GetCharacterOwner()->GetActorLocation();
+	LookAtDir.Normalize();
+
+	FRotator LookAtOnZ = FRotationMatrix::MakeFromX(LookAtDir).Rotator();
+	LookAtOnZ.Pitch = 0.f;
+	LookAtOnZ.Roll = 0.f;
+
+	GetCharacterOwner()->SetActorRotation(LookAtOnZ);
 }
 
 void	UMainCharacterMovementComponent::ProcessThrowRotation(float coeff)

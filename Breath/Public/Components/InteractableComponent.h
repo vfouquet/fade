@@ -66,6 +66,8 @@ public:
 
 	bool	IsGrabable() const { return CanBeGrabbed && !identityErased && associatedComponent.IsValid(); }
 
+	bool	TryToRotate(float Angle);
+
 	//ALL THIS SHIT ARE SECURITY TEST FOR TEMPORARY PUSH/PULL
 	UFUNCTION(BlueprintCallable)
 	bool	CanRotateLeft(FVector characterForward);
@@ -98,6 +100,9 @@ public:
 	bool	IsHeavy = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	MemoryInteractable = false;
+
+	UPROPERTY(EditAnywhere, Category = "Interactions Settings")
+	USceneComponent*	CollisionComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Interactions Settings")
 	FComponentReference	Grab;
