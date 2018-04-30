@@ -39,6 +39,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FComponentFractureSignature OnDestructibleFracture;
 
+	UFUNCTION(BlueprintPure)
+	AActor*	GetSwappedActor() const { return swappedActor; }
+
 private:
 	virtual EChemicalTransformation		getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const override;
 	virtual	EChemicalState				getNextState(EChemicalTransformation const& transformation) const override;
@@ -49,4 +52,7 @@ public:
 	void	OnStateChanged(EChemicalTransformation tranform, EChemicalState previous, EChemicalState next);
 	UFUNCTION(BlueprintCallable)
 	void	swapTrick();
+
+private:
+	AActor*	swappedActor = nullptr;
 };

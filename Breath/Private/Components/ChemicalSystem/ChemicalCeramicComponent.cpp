@@ -107,6 +107,7 @@ void	UChemicalCeramicComponent::swapTrick()
 		UE_LOG(LogTemp, Warning, TEXT("%s - UChemicalCeramicComponent : Couldn't do swap trick because the spawned actor is nullptr"), owner ? *owner->GetName() : *FString("Error"));
 		return;
 	}
+	swappedActor = newActor;
 
 	UDestructibleComponent*	destructible = newActor->FindComponentByClass<UDestructibleComponent>();
 	if (!destructible)
