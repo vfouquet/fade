@@ -16,6 +16,7 @@ class BREATH_API UChemicalComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+public:
 	struct FChemicalPropagation
 	{
 		UChemicalComponent*		component = nullptr;
@@ -32,7 +33,6 @@ class BREATH_API UChemicalComponent : public UActorComponent
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChemicalEndCollision, UChemicalComponent*, OtherChemical);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChemicalPercussion, UChemicalComponent*, OtherChemical);
 
-public:
 	// Sets default values for this component's properties
 	UChemicalComponent();
 

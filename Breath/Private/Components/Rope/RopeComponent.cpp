@@ -107,23 +107,6 @@ void URopeComponent::BeginPlay()
 			direction * (Thickness + padding);
 	}
 
-	if (CanBurn)
-	{
-		for (int idx = 0; idx < nodes.Num(); idx++)
-		{
-			UChemicalWoodComponent* tempWood = nullptr;
-			if (idx == 0)
-				tempWood = nodes[idx]->CreateWoodProperty(beginAttachPrimitive, nodes[idx + 1]->GetSphere());
-			else if (idx == nodes.Num() - 1)
-				tempWood = nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), endAttachPrimitive);
-			else
-				tempWood = nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), nodes[idx + 1]->GetSphere());
-			tempWood->normalToLit = normalToLit;
-			tempWood->litToBurning = litToBurning;
-			tempWood->burningToScorched = burningToScorched;
-		}
-	}
-
 	UPhysicsConstraintComponent* beginConstraint = NewObject<UPhysicsConstraintComponent>(this);
 	beginConstraint->SetupAttachment(this);
 	beginConstraint->RegisterComponent();
@@ -156,7 +139,8 @@ void URopeComponent::BeginPlay()
 	createConstraints();
 	createSplineMeshes();
 
-	isInit = true;
+	if (!CanBurn)
+		isInit = true;
 
 	if (BeginComponentStickOverride.ComponentProperty != NAME_None)
 		attachBeginPrimitive();
@@ -171,7 +155,11 @@ void URopeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if (!isInit)
+	{
+		if (CanBurn && !woodPropertiesCreated)
+			createWoodProperties();
 		return;
+	}
 	updateSplineMeshes();
 }
 
@@ -225,6 +213,26 @@ void	URopeComponent::createSplineMeshes()
 		node->SetSplineMesh(splineMesh);
 		idx++;
 	}
+}
+
+void	URopeComponent::createWoodProperties()
+{
+	for (int idx = 0; idx < nodes.Num(); idx++)
+	{
+		UChemicalWoodComponent* tempWood = nullptr;
+		if (idx == 0)
+			tempWood = nodes[idx]->CreateWoodProperty(beginAttachPrimitive, nodes[idx + 1]->GetSphere(), RopeNodeStateChangedDelegate);
+		else if (idx == nodes.Num() - 1)
+			tempWood = nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), endAttachPrimitive, RopeNodeStateChangedDelegate);
+		else
+			tempWood = nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), nodes[idx + 1]->GetSphere(), RopeNodeStateChangedDelegate);
+		tempWood->normalToLit = normalToLit;
+		tempWood->litToBurning = litToBurning;
+		tempWood->burningToScorched = burningToScorched;
+	}
+
+	isInit = true;
+	woodPropertiesCreated = true;
 }
 
 void	URopeComponent::createConstraints()

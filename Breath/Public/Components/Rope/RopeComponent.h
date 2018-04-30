@@ -67,12 +67,15 @@ public:
 	FComponentReference	BeginComponentStickOverride;
 	UPROPERTY(EditAnywhere, Category = "Stick options")
 	FComponentReference	EndComponentStickOverride;
+	UPROPERTY(BlueprintAssignable)
+	UChemicalComponent::FChemicalStateChanged RopeNodeStateChangedDelegate;
 
 	UFUNCTION(BlueprintCallable)
 	void	DestroyNode(int idx) { if (idx < nodes.Num()) nodes[idx]->onSphereChemicalStateChanged(EChemicalTransformation::Burning, EChemicalState::None, EChemicalState::Scorched); }
 
 private:
 	void	createSplineMeshes();
+	void	createWoodProperties();
 	void	createConstraints();
 	void	updateSplineMeshes();
 
@@ -86,4 +89,5 @@ private:
 	UPrimitiveComponent*						beginAttachPrimitive = nullptr;
 	UPrimitiveComponent*						endAttachPrimitive = nullptr;
 	bool										isInit = false;
+	bool										woodPropertiesCreated = false;
 };

@@ -60,7 +60,7 @@ void	URopeNodeComponent::CreateSphere(float size, FVector location)
 	sphere->SetMassOverrideInKg(NAME_None, size * 0.2f);
 }
 	
-UChemicalWoodComponent*	URopeNodeComponent::CreateWoodProperty(UPrimitiveComponent* prevPrim, UPrimitiveComponent* nextPrim)
+UChemicalWoodComponent*	URopeNodeComponent::CreateWoodProperty(UPrimitiveComponent* prevPrim, UPrimitiveComponent* nextPrim, UChemicalComponent::FChemicalStateChanged& delegates)
 {
 	woodComponent = NewObject<UChemicalWoodComponent>(GetOwner());
 	woodComponent->RegisterComponent();
@@ -77,6 +77,7 @@ UChemicalWoodComponent*	URopeNodeComponent::CreateWoodProperty(UPrimitiveCompone
 		woodComponent->StaticPropagationComponentReferences.Add(reference);
 	}
 	woodComponent->OverrideAssociatedComponent(sphere);
+	woodComponent->stateChangedDelegate = delegates;
 	FScriptDelegate	woodDel;
 	woodDel.BindUFunction(this, "onSphereChemicalStateChanged");
 	woodComponent->stateChangedDelegate.Add(woodDel);

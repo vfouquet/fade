@@ -31,7 +31,7 @@ public:
 	virtual void OnComponentDestroyed(bool destroyedHierarchy) override;
 
 	void					CreateSphere(float size, FVector location);
-	UChemicalWoodComponent*	CreateWoodProperty(UPrimitiveComponent* prevPrim, UPrimitiveComponent* nextPrim);
+	UChemicalWoodComponent*	CreateWoodProperty(UPrimitiveComponent* prevPrim, UPrimitiveComponent* nextPrim, UChemicalComponent::FChemicalStateChanged& delegates);
 	void					UpdateSplineMesh(FVector beginPoint, FVector beginTangent, FVector endPoint, FVector endTangent);
 
 	void	SetSplineMesh(USplineMeshComponent* value) { splineMesh = value; }
