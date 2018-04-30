@@ -103,7 +103,7 @@ public:
 	void	HeadLookAt(FVector lookAtLocation);
 
 	UFUNCTION(BlueprintCallable)
-	void	SetWalkingInDeepWater(bool const value) { bIsWalkingInDeepWater = value; }
+	void	SetWalkingInDeepWater(bool const value);
 	UFUNCTION(BlueprintCallable)
 	void	SetCautionWalkMode(bool const value) { bIsCautionWalking = value; }
 	void	SetWalkMode();
