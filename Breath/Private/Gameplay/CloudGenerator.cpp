@@ -66,7 +66,7 @@ void ACloudGenerator::Tick(float DeltaTime)
 			clouds.Remove(cloud.Key);
 			continue;
 		}
-		cloud.Key->AddActorWorldOffset(cloud.Key->GetActorForwardVector() * cloud.Value);
+		cloud.Key->AddActorWorldOffset(CloudDirection.Vector() * cloud.Value);
 	}
 }
 
@@ -74,7 +74,10 @@ void	ACloudGenerator::generateCloud(FVector location)
 {
 	FTransform	spawnTransform;
 	spawnTransform.SetLocation(location);
-	spawnTransform.SetRotation(FRotator(0.0f, FMath::FRandRange(0.0f, 360.0f), 0.0f).Quaternion());
+	if (bOverrideCloudRotation)
+		spawnTransform.SetRotation(CloudRotation.Quaternion());
+	else
+		spawnTransform.SetRotation(FRotator(0.0f, FMath::FRandRange(0.0f, 360.0f), 0.0f).Quaternion());
 	FActorSpawnParameters	parameters;
 
 	AActor* cloud = GetWorld()->SpawnActor(CloudSamples[FMath::RandRange(0, CloudSamples.Num() - 1)], &spawnTransform, parameters);

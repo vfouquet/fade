@@ -36,6 +36,12 @@ public:
 	FVector	CloudZoneSize;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cloud")
 	int	SlotCloudsNumber = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cloud")
+	FRotator	CloudDirection;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cloud")
+	bool	bOverrideCloudRotation = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cloud")
+	FRotator	CloudRotation;
 
 private:
 	void	generateCloud(FVector location);
