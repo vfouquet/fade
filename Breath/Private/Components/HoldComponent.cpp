@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "HoldComponent.h"
+#include "AkAudio/Classes/AkGameplayStatics.h"
 
 #include "Engine/World.h"
 #include "InteractableComponent.h"
@@ -170,6 +171,8 @@ void	UHoldComponent::BeginLightGrabPositionUpdate()
 	mainCharacter->SetHoldingObject(true);
 	mainCharacter->UnblockCharacter();
 
+	UAkGameplayStatics::PostEvent(holdingObject->TakeEvent, GetOwner());
+
 	currentHoldingState = EHoldingState::LightGrabbing;
 	holdingStateChangedDelegate.Broadcast(EHoldingState::PreLightGrabbing, EHoldingState::LightGrabbing);
 }
@@ -190,6 +193,8 @@ void	UHoldComponent::EndLightGrabRelease()
 	releaseLightGrabbedObject();
 	mainCharacter->SetHoldingObject(false);
 	mainCharacter->UnblockCharacter();
+	
+	//UAkGameplayStatics::PostEvent(holdingObject->HitEvent, GetOwner());
 	currentHoldingState = EHoldingState::None;
 	holdingStateChangedDelegate.Broadcast(EHoldingState::ReleasingLightGrab, EHoldingState::None);
 }

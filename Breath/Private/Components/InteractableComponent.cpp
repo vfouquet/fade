@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "InteractableComponent.h"
-
+#include "AkGameplayStatics.h"
 #include "GameFramework/Actor.h"
 #include "HoldComponent.h"
 
@@ -238,6 +238,7 @@ void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* Ot
 	{
 		if (!Cast<ACharacter>(OtherActor))
 		{
+			UAkGameplayStatics::PostEvent(HitEvent, GetOwner());
 			UChemicalCeramicComponent* ceramicComp = Cast<UChemicalCeramicComponent>(UChemicalComponent::FindAssociatedChemicalComponent(associatedComponent.Get()));
 			if (ceramicComp)
 				ceramicComp->Break();

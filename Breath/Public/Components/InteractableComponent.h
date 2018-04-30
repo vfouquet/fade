@@ -4,6 +4,7 @@
 
 #include "Components/SphereComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
+#include "AkAudio/Classes/AkAudioEvent.h"
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -108,6 +109,11 @@ public:
 	FComponentReference	Grab;
 	UPROPERTY(EditAnywhere, Category = "Interactions Settings")
 	FComponentReference StickAtLaunch;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound properties")
+	UAkAudioEvent*	TakeEvent = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound properties")
+	UAkAudioEvent*	HitEvent = nullptr;
 
 	UPROPERTY(BlueprintAssignable)
 	FConditionDelegate	onBeginGrab;
