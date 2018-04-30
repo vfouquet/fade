@@ -732,7 +732,7 @@ void	AMainCharacter::OnCapsuleOverlap(UPrimitiveComponent* OverlappedComponent, 
 	if ((comp->GetType() == EChemicalType::Fire && comp->GetState() == EChemicalState::None) ||
 		((comp->GetType() == EChemicalType::Rock || comp->GetType() == EChemicalType::Wood) && comp->GetState() == EChemicalState::Burning))
 	{
-		if (currentCondition != ECharacterCondition::Burning)
+		if (currentCondition == ECharacterCondition::None)
 			takeFireDamage();
 		fireCount++;
 	}
