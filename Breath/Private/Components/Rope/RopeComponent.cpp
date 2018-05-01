@@ -138,14 +138,6 @@ void URopeComponent::BeginPlay()
 
 	createConstraints();
 	createSplineMeshes();
-
-	if (!CanBurn)
-		isInit = true;
-
-	if (BeginComponentStickOverride.ComponentProperty != NAME_None)
-		attachBeginPrimitive();
-	if (EndComponentStickOverride.ComponentProperty != NAME_None)
-		attachEndPrimitive();
 }
 
 
@@ -156,8 +148,7 @@ void URopeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (!isInit)
 	{
-		if (CanBurn && !woodPropertiesCreated)
-			createWoodProperties();
+		postInit();
 		return;
 	}
 	updateSplineMeshes();
@@ -215,24 +206,31 @@ void	URopeComponent::createSplineMeshes()
 	}
 }
 
-void	URopeComponent::createWoodProperties()
+void	URopeComponent::postInit()
 {
-	for (int idx = 0; idx < nodes.Num(); idx++)
+	if (CanBurn)
 	{
-		UChemicalWoodComponent* tempWood = nullptr;
-		if (idx == 0)
-			tempWood = nodes[idx]->CreateWoodProperty(beginAttachPrimitive, nodes[idx + 1]->GetSphere(), RopeNodeStateChangedDelegate);
-		else if (idx == nodes.Num() - 1)
-			tempWood = nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), endAttachPrimitive, RopeNodeStateChangedDelegate);
-		else
-			tempWood = nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), nodes[idx + 1]->GetSphere(), RopeNodeStateChangedDelegate);
-		tempWood->normalToLit = normalToLit;
-		tempWood->litToBurning = litToBurning;
-		tempWood->burningToScorched = burningToScorched;
+		for (int idx = 0; idx < nodes.Num(); idx++)
+		{
+			UChemicalWoodComponent* tempWood = nullptr;
+			if (idx == 0)
+				tempWood = nodes[idx]->CreateWoodProperty(beginAttachPrimitive, nodes[idx + 1]->GetSphere(), RopeNodeStateChangedDelegate);
+			else if (idx == nodes.Num() - 1)
+				tempWood = nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), endAttachPrimitive, RopeNodeStateChangedDelegate);
+			else
+				tempWood = nodes[idx]->CreateWoodProperty(nodes[idx - 1]->GetSphere(), nodes[idx + 1]->GetSphere(), RopeNodeStateChangedDelegate);
+			tempWood->normalToLit = normalToLit;
+			tempWood->litToBurning = litToBurning;
+			tempWood->burningToScorched = burningToScorched;
+		}
 	}
 
+	if (BeginComponentStickOverride.ComponentProperty != NAME_None)
+		attachBeginPrimitive();
+	if (EndComponentStickOverride.ComponentProperty != NAME_None)
+		attachEndPrimitive();
+
 	isInit = true;
-	woodPropertiesCreated = true;
 }
 
 void	URopeComponent::createConstraints()

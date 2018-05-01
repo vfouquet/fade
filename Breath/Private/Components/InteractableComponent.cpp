@@ -297,7 +297,7 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInterac
 		UE_LOG(LogTemp, Warning, TEXT("%s - Interactable : Trying to add a stick constraint but the component cannot accept a stick"), owner? *owner->GetName() : *FString("Error"));
 		return nullptr;
 	}
-	if (!associatedComponent.IsValid() && !stickedObject)
+	if (!associatedComponent.IsValid() || !stickedObject)
 	{
 		AActor* owner = GetOwner();
 		UE_LOG(LogTemp, Warning, TEXT("%s - Interactable : Trying to add a stick constraint but the associated component is null or the other one is null"), owner ? *owner->GetName() : *FString("Error"));
@@ -372,8 +372,7 @@ UInteractableComponent* UInteractableComponent::FindAssociatedInteractableCompon
 	{
 		UInteractableComponent*	interactableComp = Cast<UInteractableComponent>(actorComp);
 		if (!interactableComp) continue;
-		UPrimitiveComponent* tempPrimitive = Cast<UPrimitiveComponent>(interactableComp->Grab.GetComponent(refCompOwner));
-		if (tempPrimitive == referenceComponent)
+		if (interactableComp->GetAssociatedComponent() == referenceComponent)
 			return interactableComp;
 	}
 	return nullptr;

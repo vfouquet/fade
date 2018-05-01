@@ -75,7 +75,7 @@ public:
 
 private:
 	void	createSplineMeshes();
-	void	createWoodProperties();
+	void	postInit();
 	void	createConstraints();
 	void	updateSplineMeshes();
 
@@ -89,5 +89,4 @@ private:
 	UPrimitiveComponent*						beginAttachPrimitive = nullptr;
 	UPrimitiveComponent*						endAttachPrimitive = nullptr;
 	bool										isInit = false;
-	bool										woodPropertiesCreated = false;
 };
