@@ -11,7 +11,6 @@
 #include "Camera/CameraActor.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"
-#include "TimerManager.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "AkAudio/Classes/AkGameplayStatics.h"
 #include "IdentityEraserComponent.h"
@@ -206,45 +205,40 @@ bool	AMainCharacter::Climb()
 	if (angle > ClimbAngleTolerence)
 		return false;
 
-	float	interpTime = 0.0f;
 	FVector	newLoc;
 	newLoc = hitLocation + normal * (climbType == EClimbType::TwoMetersClimb? 50.0f : 65.0f);
 	if (climbType == EClimbType::OneMeterClimb)
-	{
 		newLoc.Z = GetActorLocation().Z;
-		interpTime = (newLoc - GetActorLocation()).Size() / 100.0f;
-	}
 	else if (climbType == EClimbType::TwoMetersClimb)
-	{
 		newLoc.Z = GetActorLocation().Z;
-		interpTime = (newLoc - GetActorLocation()).Size() / 100.0f;
-	}
 	else if (climbType == EClimbType::AirOneMeterClimb)
 	{
 		float rootLocZ = GetMesh()->GetBoneLocation("Maori_Root_JNT").Z;
 		newLoc.Z = topPoint.Z - 100.0f + 92.0f;
-		interpTime = 0.1f;
 	}
 	else if (climbType == EClimbType::AirTwoMetersClimb)
 	{
 		float rootLocZ = GetMesh()->GetBoneLocation("Maori_Root_JNT").Z;
 		newLoc.Z = topPoint.Z - 200.0f + 92.0f;
-		interpTime = 0.1f;
 	}
-	interpTime = ClimbSnapTime;
 	zClimbTarget = topPoint.Z;
 
-	FLatentActionInfo	latentInfo;
-	latentInfo.CallbackTarget = this;
 	FRotator newRotation = FRotator::ZeroRotator;
 	newRotation.Yaw = (-1.0f * normal).Rotation().Yaw;
-	UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), newLoc, newRotation, true, true, interpTime, true, EMoveComponentAction::Type::Move, latentInfo);
 	FTimerDelegate	del;
 	del.BindUFunction(this, "endCharacterClimbSnap");
-	GetWorldTimerManager().SetTimer(climbSnapTimerHandle, del, interpTime, false);
-	BlockCharacter();
-	
+	SnapCharacterTo(newLoc, newRotation, ClimbSnapTime, del);
+
 	return true;
+}
+	
+void	AMainCharacter::SnapCharacterTo(FVector location, FRotator rotation, float time, FTimerDelegate& del)
+{
+	FLatentActionInfo	latentInfo;
+	latentInfo.CallbackTarget = this;
+	UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), location, rotation, true, true, time, true, EMoveComponentAction::Type::Move, latentInfo);
+	GetWorldTimerManager().SetTimer(climbSnapTimerHandle, del, time, false);
+	BlockCharacter();
 }
 
 void	AMainCharacter::EndThrow()

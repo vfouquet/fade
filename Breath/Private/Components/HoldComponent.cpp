@@ -131,21 +131,21 @@ void	UHoldComponent::Grab()
 		holdingObject = closestInteractableObject.Get();
 		holdingPrimitiveComponent = closestInteractableObject->GetAssociatedComponent();
 
-		FHitResult	hitRes;
-		FCollisionQueryParams	queryParams;
-		queryParams.AddIgnoredActor(mainCharacter);
-		GetWorld()->LineTraceSingleByChannel(hitRes, mainCharacter->GetActorLocation(), holdingPrimitiveComponent->GetComponentLocation(), ECollisionChannel::ECC_PhysicsBody, queryParams);
-		FRotator newRot = (hitRes.Normal * -1.0f).Rotation();
-		newRot.Pitch = 0.0f;
-		newRot.Roll = 0.0f;
-		FVector	holdPrimExtent = holdingPrimitiveComponent->Bounds.BoxExtent;
-		holdPrimExtent.Z = 0.0f;
-		FVector	holdingPoint = holdingPrimitiveComponent->GetComponentLocation() + (holdPrimExtent + HoldSnapOffset) * hitRes.Normal;
-		
-		holdingPrimitiveComponent->SetWorldLocation(holdingPrimitiveComponent->GetComponentLocation() + FVector::UpVector * 10.0f); //ADD SOME Z POSITION TO AVOID GROUND CONTACT (TEMP)
+		FHitResult			hitResult;
+		FCollisionQueryParams		queryParams;
+		queryParams.AddIgnoredActor(GetOwner());
 
-		mainCharacter->SetActorLocationAndRotation(holdingPoint, newRot, true);	//SNAP CHARACTER WITH A FACING ROTATION
-		mainCharacter->PlayHeavyGrabMontage();
+		FVector traceLocation = characterCapsule->GetComponentLocation() + GetOwner()->GetActorForwardVector() * 2.0f * characterCapsule->GetScaledCapsuleRadius();
+		GetWorld()->SweepSingleByChannel(hitResult, traceLocation, traceLocation, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2,
+			FCollisionShape::MakeCapsule(characterCapsule->GetScaledCapsuleRadius(), characterCapsule->GetScaledCapsuleHalfHeight()), queryParams);
+
+		FRotator newRot = (hitResult.Normal * -1.0f).Rotation();
+		newRot.Roll = 0.0f;
+		newRot.Pitch = 0.0f;
+
+		FTimerDelegate	del;
+		del.BindUFunction(mainCharacter, "PlayHeavyGrabMontage");
+		mainCharacter->SnapCharacterTo(hitResult.Location + hitResult.Normal * 100.0f, newRot, 0.5f, del);
 	}
 }
 void	UHoldComponent::BeginLightGrabPositionUpdate()
