@@ -12,11 +12,7 @@ ChemicalStateChanger::ChemicalStateChanger(float value)
 bool	ChemicalStateChanger::Update(float deltaTime)
 {
 	//CHECK IF ACTOR EXIST
-	for (auto& comp : impactingComponents)
-	{
-		if (!comp.IsValid())
-			impactingComponents.Remove(comp);
-	}
+	impactingComponents.RemoveAll([&](TWeakObjectPtr<UPrimitiveComponent> item) { return !item.IsValid(); });
 
 	if (impactingComponents.Num() == 0)
 		return false;
@@ -35,4 +31,14 @@ void	ChemicalStateChanger::AddImpactingComponent(UPrimitiveComponent* component)
 	if (impactingComponents.Contains(component))
 		return;
 	impactingComponents.Add(component);
+}
+
+bool	ChemicalStateChanger::Contains(UPrimitiveComponent* prim) const
+{
+	return impactingComponents.ContainsByPredicate([&](TWeakObjectPtr<UPrimitiveComponent> PrimValue)
+	{
+		if (PrimValue.IsValid())
+			return PrimValue.Get() == prim;
+		return false;
+	});
 }

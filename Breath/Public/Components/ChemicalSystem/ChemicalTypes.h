@@ -26,7 +26,8 @@ enum class EChemicalState : uint8
 	Stained UMETA(DisplayName = "Stained"),
 	NoIdentity UMETA(DisplayName = "NoIdentity"),
 	Extinguished UMETA(DisplayName = "Extinguished"), //ECHEMICALWATER CASE -> EXTINGUISHED = NO WATER/NON FILLED //ECHEMICALCERAMIC CASE -> BREAKED
-	Contained UMETA(DisplayName = "Contained")
+	Contained UMETA(DisplayName = "Contained"),
+	Splashing UMETA(DisplayName = "Splashing")
 };
 
 UENUM(BlueprintType)

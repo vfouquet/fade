@@ -24,7 +24,7 @@ ChemicalStateChanger&	UChemicalFireComponent::addStateChanger(EChemicalTransform
 
 EChemicalTransformation		UChemicalFireComponent::getEffectiveEffect(EChemicalType const& otherType, EChemicalState const& otherState) const
 {
-	if (otherType == EChemicalType::Water && otherState == EChemicalState::None)
+	if (otherType == EChemicalType::Water && (otherState == EChemicalState::None || otherState == EChemicalState::Splashing))
 	{
 		if (canBeDrenched())
 			return EChemicalTransformation::Drenching;

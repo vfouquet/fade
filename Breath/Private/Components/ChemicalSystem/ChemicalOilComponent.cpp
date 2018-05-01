@@ -45,7 +45,7 @@ EChemicalTransformation		UChemicalOilComponent::getEffectiveEffect(EChemicalType
 		if (canBurn())
 			return EChemicalTransformation::Burning;
 	}
-	else if (otherType == EChemicalType::Water && otherState == EChemicalState::None)
+	else if (otherType == EChemicalType::Water && (otherState == EChemicalState::None || otherState == EChemicalState::Splashing))
 	{
 		if (canBeDrenched())
 			return EChemicalTransformation::Drenching;

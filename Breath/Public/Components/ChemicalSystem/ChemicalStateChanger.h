@@ -22,7 +22,7 @@ public:
 	bool	RemoveIfNeeded(UPrimitiveComponent* mainComp);
 	void	AddImpactingComponent(UPrimitiveComponent* actor);
 
-	bool	Contains(UPrimitiveComponent* prim) const { return impactingComponents.Contains(prim); }
+	bool	Contains(UPrimitiveComponent* prim) const;
 	int32	GetImpactingComponentsNumber() const { return impactingComponents.Num(); }
 	float	GetStatus() const { return currentTime / targetTime; }
 
