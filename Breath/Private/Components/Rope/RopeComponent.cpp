@@ -194,8 +194,8 @@ void	URopeComponent::createSplineMeshes()
 		spline->GetLocationAndTangentAtSplinePoint(idx + 1, endPoint, endTangent, ESplineCoordinateSpace::World);
 		splineMesh->SetStartAndEnd(startPoint, startTangent, endPoint, endTangent, true);
 
-		//splineMesh->SetStartScale(FVector2D(yScale, ZScale));
-		//splineMesh->SetEndScale(FVector2D(yScale, ZScale));
+		splineMesh->SetStartScale(FVector2D(yScale, ZScale));
+		splineMesh->SetEndScale(FVector2D(yScale, ZScale));
 
 		if (node == nodes[0] && UseExtremityMesh)
 		{
