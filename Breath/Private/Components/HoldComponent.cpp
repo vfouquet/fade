@@ -69,8 +69,8 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 				releaseLightGrabbedObject();
 				mainCharacter->SetHoldingObject(false);
 				mainCharacter->UnblockCharacter();
-				currentHoldingState = EHoldingState::ReleasingLightGrab;
-				holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::ReleasingLightGrab);
+				currentHoldingState = EHoldingState::None;
+				holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::None);
 			}
 		}
 
@@ -303,6 +303,29 @@ void	UHoldComponent::Stick()
 
 		currentHoldingState = EHoldingState::Sticking;
 		mainCharacter->BlockCharacter();
+
+		// SNAP HOOK
+		FRotator newRot = (closestInteractableNormal * -1.0f).Rotation();
+		newRot.Roll = 0.0f;
+		newRot.Pitch = 0.0f;
+
+		FRotator tempRotator = (holdingObject->GetOwner()->GetActorRotation() - newRot);
+		tempRotator.Normalize();
+		float deltaRot = FMath::Abs(tempRotator.Yaw);
+
+		holdingObject->GetAssociatedComponent()->SetWorldRotation(newRot);
+
+		FVector	ClosestPoint;
+		closestInteractableObject->GetAssociatedComponent()->GetClosestPointOnCollision(holdingObject->GetAssociatedComponent()->GetComponentLocation(), ClosestPoint);
+		holdingObject->GetAssociatedComponent()->SetWorldLocation(ClosestPoint - holdingObject->GetAssociatedComponent()->GetForwardVector() * 50.0f);
+
+		// SNAP CHARACTER
+		tempRotator = (characterCapsule->GetComponentRotation() - newRot);
+		tempRotator.Normalize();
+		deltaRot = FMath::Abs(tempRotator.Yaw);
+
+		mainCharacter->SetActorLocation(ClosestPoint - holdingObject->GetAssociatedComponent()->GetForwardVector() * 50.0f - characterCapsule->GetForwardVector() * 50.0f);
+		mainCharacter->SetActorRotation(newRot);
 
 		closestInteractableObject->AddStickConstraint(holdingObject.Get(), holdingPrimitiveComponent, TEXT("None"));
 		releaseLightGrabbedObject();

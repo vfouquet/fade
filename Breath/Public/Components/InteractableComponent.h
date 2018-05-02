@@ -17,7 +17,7 @@ class BREATH_API UInteractableComponent : public USceneComponent
 {
 	GENERATED_BODY()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FConditionDelegate);
-
+public:
 	struct FStickConstraint
 	{
 		FStickConstraint() = default;
@@ -51,6 +51,9 @@ public:
 	
 	void							Unstick();
 	void							RemoveHookingConstraint(UInteractableComponent* hookToRemove);
+
+	const TArray<FStickConstraint>&	GetStickConstraints() { return this->stickingConstraints; }
+
 
 	static UInteractableComponent* UInteractableComponent::FindAssociatedInteractableComponent(UPrimitiveComponent* referenceComponent);
 

@@ -329,6 +329,12 @@ UPhysicsConstraintComponent*	UInteractableComponent::AddStickConstraint(UInterac
 	hook->stickingConstraints.Add(constraint);
 	hook->isSticked = true;
 
+	// FIX FOR ROPE <-> PUSH/PULL
+	stickedObject->IgnoreActorWhenMoving(hook->GetOwner(), true);
+	stickedObject->IgnoreActorWhenMoving(hook->GetOwner()->GetRootComponent()->GetAttachParent()->GetOwner(), true);
+	hook->GetAssociatedComponent()->IgnoreActorWhenMoving(stickedObject->GetOwner(), true);
+	hook->GetAssociatedComponent()->SetCollisionProfileName("OverlapAll");
+
 	return stickConstraint;
 }
 
@@ -340,10 +346,25 @@ void	UInteractableComponent::Unstick()
 	{
 		if (this == stickingConstraints[pos].hook)
 		{
-			stickingConstraints[pos].physicConstraint->BreakConstraint();
-			stickingConstraints[pos].physicConstraint->DestroyComponent();
+			if (stickingConstraints[pos].physicConstraint != nullptr)
+			{ 
+				stickingConstraints[pos].physicConstraint->BreakConstraint();
+				stickingConstraints[pos].physicConstraint->DestroyComponent();
+			}
+
 			stickingConstraints[pos].carrier->RemoveHookingConstraint(this);
+
+			// FIX FOR ROPE <-> PUSH/PULL
+			stickingConstraints[pos].carrier->GetOwner()->GetRootPrimitiveComponent()->IgnoreActorWhenMoving(stickingConstraints[pos].hook->GetOwner(), false);
+			stickingConstraints[pos].carrier->GetOwner()->GetRootPrimitiveComponent()->IgnoreActorWhenMoving(stickingConstraints[pos].hook->GetOwner()->GetRootComponent()->GetAttachParent()->GetOwner(), false);
+			stickingConstraints[pos].hook->GetAssociatedComponent()->IgnoreActorWhenMoving(stickingConstraints[pos].carrier->GetOwner(), false);
+			stickingConstraints[pos].hook->GetAssociatedComponent()->SetCollisionProfileName("SmallInteractable");
+
+
 			stickingConstraints.RemoveAt(pos);
+
+				//IgnoreActorWhenMoving(hook->GetOwner(), true);
+
 			isSticked = false;
 			return;
 		}

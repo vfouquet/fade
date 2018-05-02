@@ -8,6 +8,8 @@
 #include "Components/BoxComponent.h"
 #include "PhysicsEngine/BodySetup.h"
 
+#include "Runtime/Engine/Classes/GameFramework/Actor.h"
+
 #include "InteractableComponent.h"
 
 void UMainCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -101,8 +103,45 @@ void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, UIn
 
 		if (SweepResult.bBlockingHit == false)
 		{
+// 			TArray<FHitResult> OutHits;
+// 			FCollisionQueryParams CollisionQueryParams;
+// 			CollisionQueryParams.AddIgnoredActor(this->GetOwner());
+// 			CollisionQueryParams.AddIgnoredActor(holdingObject->GetOwner());
+// 
+// 			const TArray<UInteractableComponent::FStickConstraint>& StickConstraints = holdingObject->GetStickConstraints();
+// 
+// 			for (auto StickConstraint : StickConstraints)
+// 			{
+// 				CollisionQueryParams.AddIgnoredActor(StickConstraint.hook->GetOwner());
+// 				CollisionQueryParams.AddIgnoredActor(StickConstraint.hook->GetOwner()->GetRootComponent()->GetAttachParent()->GetOwner());
+// 			}
+// 
+// 			FVector EndLocation = MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds();
+// 
+// 			GetWorld()->SweepMultiByChannel(
+// 				OutHits,
+// 				holdingObject->GetOwner()->GetActorLocation() + FVector(0.f, 0.f, 50.f),
+// 				holdingObject->GetOwner()->GetActorLocation() + EndLocation + FVector(0.f, 0.f, 50.f),
+// 				holdingObject->GetOwner()->GetActorQuat(),
+// 				ECC_WorldDynamic,
+// 				FCollisionShape::MakeBox(holdingObject->GetOwner()->GetComponentsBoundingBox(false).GetExtent() * 0.9f),
+// 				CollisionQueryParams
+// 			);
+
 			holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * 10.f, true);
 			holdingObject->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+
+
+// 			for (auto Hit : OutHits)
+// 			{
+// 				if (Hit.bBlockingHit == true)
+// 				{
+// 					this->GetOwner()->AddActorWorldOffset(-MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+// 					return;
+// 				}
+// 			}
+// 
+// 			holdingObject->GetOwner()->AddActorWorldOffset(EndLocation);
 
 			if (SweepResult.bBlockingHit == true)
 			{
@@ -115,6 +154,46 @@ void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, UIn
 	}
 	else
 	{
+// 		TArray<FHitResult> OutHits;
+// 		FCollisionQueryParams CollisionQueryParams;
+// 		CollisionQueryParams.AddIgnoredActor(this->GetOwner());
+// 		CollisionQueryParams.AddIgnoredActor(holdingObject->GetOwner());
+// 
+// 		const TArray<UInteractableComponent::FStickConstraint>& StickConstraints = holdingObject->GetStickConstraints();
+// 
+// 		for (auto StickConstraint : StickConstraints)
+// 		{
+// 			CollisionQueryParams.AddIgnoredActor(StickConstraint.hook->GetOwner());
+// 			CollisionQueryParams.AddIgnoredActor(StickConstraint.hook->GetOwner()->GetRootComponent()->GetAttachParent()->GetOwner());
+// 		}
+// 
+// 		FVector EndLocation = MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds();
+// 
+// 		GetWorld()->SweepMultiByChannel(
+// 			OutHits,
+// 			holdingObject->GetOwner()->GetActorLocation() + FVector(0.f, 0.f, 50.f),
+// 			holdingObject->GetOwner()->GetActorLocation() + EndLocation + FVector(0.f, 0.f, 50.f),
+// 			holdingObject->GetOwner()->GetActorQuat(),
+// 			ECC_WorldDynamic,
+// 			FCollisionShape::MakeBox(holdingObject->GetOwner()->GetComponentsBoundingBox(false).GetExtent() * 0.9f),
+// 			CollisionQueryParams
+// 		);
+// 
+// 		for (auto Hit : OutHits)
+// 		{
+// 			if (Hit.bBlockingHit == true)
+// 			{
+// 				return;
+// 			}
+// 		}
+// 
+// 		this->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+// 	
+// 		if (SweepResult.bBlockingHit == false)
+// 		{
+// 			holdingObject->GetOwner()->AddActorWorldOffset(EndLocation);
+// 		}
+
 		holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * 10.f, true);
 		holdingObject->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
 
