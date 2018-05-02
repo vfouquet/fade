@@ -6,6 +6,7 @@
 #include "MainCharacterMovementComponent.h"
 #include "AkAudio/Classes/AkAudioEvent.h"
 #include "Map.h"
+#include "TimerManager.h"
 
 UENUM(BlueprintType)
 enum class EClimbType : uint8
@@ -83,6 +84,8 @@ public:
 	void	Stick();
 	void	Jump() override;
 	bool	Climb();
+	
+	void	SnapCharacterTo(FVector location, FRotator rotation, float time, FTimerDelegate& del);
 	UFUNCTION(BlueprintCallable)
 	void	EndThrow();
 	UFUNCTION(BlueprintCallable)
@@ -91,7 +94,6 @@ public:
 	void	EndReleaseLightGrab();
 	UFUNCTION(BlueprintCallable)
 	void	DealDamage(FHitResult hitResult, UPrimitiveComponent* damageDealer, bool HeavyDamage = true);
-
 	void	OnDamage(FVector impactDir = FVector::ZeroVector);
 	void	Die(FVector impact = FVector::ZeroVector, FVector impactLoc = FVector::ZeroVector, FName boneName = NAME_None);
 	UFUNCTION()
@@ -136,6 +138,7 @@ public:
 	void	PlayLightGrabMontage(bool oneMeter = false);
 	void	PlayLightGrabReleaseMontage();
 	void	PlayLightThrowMontage();
+	UFUNCTION()
 	void	PlayHeavyGrabMontage();
 	void	PlayHeavyThrowMontage();
 	void	StopLightGrabMontage() { StopAnimMontage(LightGrabAnim); }
