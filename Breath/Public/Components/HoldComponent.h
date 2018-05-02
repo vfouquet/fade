@@ -121,7 +121,9 @@ private:
 protected:
 	AMainCharacter*								mainCharacter = nullptr;
 	TWeakObjectPtr<UInteractableComponent>		closestInteractableObject;
-	
+	FVector										closestInteractableNormal;
+	FVector										closestInteractableLocation;
+
 	UPhysicsHandleComponent*		handleComponent;
 	UCapsuleComponent*				characterCapsule = nullptr;
 

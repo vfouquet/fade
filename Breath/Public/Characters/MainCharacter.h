@@ -86,6 +86,7 @@ public:
 	bool	Climb();
 	
 	void	SnapCharacterTo(FVector location, FRotator rotation, float time, FTimerDelegate& del);
+	void	StopSnapping();
 	UFUNCTION(BlueprintCallable)
 	void	EndThrow();
 	UFUNCTION(BlueprintCallable)
@@ -174,6 +175,8 @@ public:
 	FVector			GetTwoHandsLocation() const;
 	UFUNCTION(BlueprintPure)
 	AActor*			GetHeldActor();
+	UFUNCTION(BlueprintPure)
+	float			GetPushAndPullCoef() const { return pushingAxis; }
 
 	UFUNCTION(BlueprintPure)
 	ECharacterCondition	const& GetCurrentCondition() const { return currentCondition; }

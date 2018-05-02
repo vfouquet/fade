@@ -231,7 +231,7 @@ bool	AMainCharacter::Climb()
 
 	return true;
 }
-	
+
 void	AMainCharacter::SnapCharacterTo(FVector location, FRotator rotation, float time, FTimerDelegate& del)
 {
 	FLatentActionInfo	latentInfo;
@@ -239,6 +239,14 @@ void	AMainCharacter::SnapCharacterTo(FVector location, FRotator rotation, float 
 	UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), location, rotation, true, true, time, true, EMoveComponentAction::Type::Move, latentInfo);
 	GetWorldTimerManager().SetTimer(climbSnapTimerHandle, del, time, false);
 	BlockCharacter();
+}
+	
+void	AMainCharacter::StopSnapping()
+{
+	FLatentActionInfo	latentInfo;
+	latentInfo.CallbackTarget = this;
+	UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), FVector::ZeroVector, FRotator::ZeroRotator, true, true, 0.0f, true, EMoveComponentAction::Type::Stop, latentInfo);
+	GetWorldTimerManager().ClearTimer(climbSnapTimerHandle);
 }
 
 void	AMainCharacter::EndThrow()
