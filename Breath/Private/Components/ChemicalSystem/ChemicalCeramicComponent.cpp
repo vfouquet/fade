@@ -76,6 +76,10 @@ void	UChemicalCeramicComponent::OnStateChanged(EChemicalTransformation tranform,
 
 void	UChemicalCeramicComponent::swapTrick()
 {
+	if (state == EChemicalState::Extinguished)
+		return;
+	state = EChemicalState::Extinguished;
+
 	if (!associatedComponent.IsValid())
 	{
 		AActor* owner = GetOwner();
@@ -121,6 +125,5 @@ void	UChemicalCeramicComponent::swapTrick()
 	destructible->OnComponentFracture = OnDestructibleFracture;
 
 	destructible->ApplyDamage(1.0f, destructible->GetComponentLocation(), FVector::UpVector * -1.0f, 1.0f);
-
-	associatedComponent->DestroyComponent();
+	associatedComponent->Deactivate();
 }

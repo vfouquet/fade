@@ -19,13 +19,21 @@ class BREATH_API UChemicalComponent : public UActorComponent
 public:
 	struct FChemicalPropagation
 	{
-		UChemicalComponent*		component = nullptr;
-		UPrimitiveComponent*	primitive = nullptr;
-		bool					bUseDistance = false;
-		float					initialDistance = 0.0f;
+		TWeakObjectPtr<UChemicalComponent>	component = nullptr;
+		TWeakObjectPtr<UPrimitiveComponent>	primitive = nullptr;
+		bool								bUseDistance = false;
+		float								initialDistance = 0.0f;
 
+		inline bool IsInvalid() { return !component.IsValid() || !primitive.IsValid(); }
 		inline bool operator==(FChemicalPropagation const& other) { return component == other.component; }
+	};
 
+	struct FChemicalHitData
+	{
+		TWeakObjectPtr<UChemicalComponent>	chemical = nullptr;
+		float								distance = 0.0f;
+
+		inline bool operator==(FChemicalHitData const& other) { return other.chemical == chemical; }
 	};
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FChemicalStateChanged, EChemicalTransformation, transformation, EChemicalState, previous, EChemicalState, next);
@@ -113,8 +121,8 @@ protected:
 	virtual	bool						computePercussionBreakability(UPrimitiveComponent* other) { return false; }
 
 protected:
-	TMap<UChemicalComponent*, float>	hitChemicalComponents;
-	TArray<FChemicalPropagation>		propagationComponents;
+	TArray<FChemicalHitData>			hitChemicalComponents;
+	TArray<FChemicalPropagation>	propagationComponents;
 
 	TMap<EChemicalTransformation, ChemicalStateChanger>	currentChangers;
 	TWeakObjectPtr<UPrimitiveComponent>					associatedComponent = nullptr;
