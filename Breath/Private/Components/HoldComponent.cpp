@@ -65,7 +65,13 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		else
 		{
 			if (dist.Size() >= ReleaseDistanceThreshold)
-				StopGrab();
+			{
+				releaseLightGrabbedObject();
+				mainCharacter->SetHoldingObject(false);
+				mainCharacter->UnblockCharacter();
+				currentHoldingState = EHoldingState::ReleasingLightGrab;
+				holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::ReleasingLightGrab);
+			}
 		}
 
 		//
