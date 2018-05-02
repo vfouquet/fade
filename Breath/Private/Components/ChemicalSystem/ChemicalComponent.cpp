@@ -116,6 +116,7 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	
 void	UChemicalComponent::OnComponentDestroyed(bool destroyedHierarchy)
 {
+	/*
 	for (auto& hitComp : hitChemicalComponents)
 	{
 		if (!IsValid() || !hitComp.chemical.IsValid())
@@ -131,6 +132,7 @@ void	UChemicalComponent::OnComponentDestroyed(bool destroyedHierarchy)
 			}
 		}
 	}
+	*/
 
 	for (auto& propagationComp : propagationComponents)
 	{
@@ -163,6 +165,7 @@ void	UChemicalComponent::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, 
 	
 void	UChemicalComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	/*
 	if (computePercussionBreakability(OtherComp))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Break"));
@@ -189,6 +192,7 @@ void	UChemicalComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherA
 		if (transformation != EChemicalTransformation::None)
 			addComponentToChangers(transformation, OtherComp);
 	}
+	*/
 }
 
 void	UChemicalComponent::EraseIdentity()
@@ -213,6 +217,7 @@ void	UChemicalComponent::GiveIdentity(EChemicalState previousState)
 
 void	UChemicalComponent::AddHitComponent(UChemicalComponent* chemicalComp)
 {
+	/*
 	if (!chemicalComp || !chemicalComp->GetAssociatedComponent() || !associatedComponent.IsValid())
 		return;
 	bool contains = hitChemicalComponents.ContainsByPredicate([&](FChemicalHitData hit) {
@@ -227,6 +232,7 @@ void	UChemicalComponent::AddHitComponent(UChemicalComponent* chemicalComp)
 		tempHit.distance = FVector::Distance(associatedComponent->GetComponentLocation(), chemicalComp->GetAssociatedComponent()->GetComponentLocation());
 		hitChemicalComponents.Add(tempHit);
 	}
+	*/
 }
 
 void	UChemicalComponent::OverrideAssociatedComponent(UPrimitiveComponent* newValue)
