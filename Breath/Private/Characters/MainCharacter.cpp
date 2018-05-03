@@ -719,10 +719,13 @@ void	AMainCharacter::OnCapsuleOverlap(UPrimitiveComponent* OverlappedComponent, 
 	UIdentityEraserComponent* identityEraser = Cast<UIdentityEraserComponent>(OtherComp);
 	if (identityEraser)
 	{
-		onCharacterErased.Broadcast(identityEraser);
 		eraseZoneCount++;
 		if (memoryZoneCount == 0)
+		{
 			currentFireTime = 0.0f;
+			if (eraseZoneCount == 1)
+				onCharacterErased.Broadcast(identityEraser);
+		}
 	}
 
 	UMemoryZoneComponent* memoryZoneEraser = Cast<UMemoryZoneComponent>(OtherComp);
