@@ -98,7 +98,14 @@ void URopeComponent::BeginPlay()
 	for (int idx = 0; idx < intParts; idx++)
 	{
 		URopeNodeComponent*	node = NewObject<URopeNodeComponent>(this);
-		node->SetupAttachment(this);
+// 		if (idx > 0)
+// 		{
+// 			node->setup
+// 		}
+// 		else
+		{
+			node->SetupAttachment(this);
+		}
 		node->RegisterComponent();
 		nodes.Add(node);
 		node->CreateSphere(Thickness * 0.5f, spawnPoint);
@@ -237,6 +244,8 @@ void	URopeComponent::createConstraints()
 {
 	for (int pos = 0; pos < nodes.Num() - 1; pos++)
 	{
+		nodes[pos + 1]->GetSphere()->IgnoreActorWhenMoving(nodes[pos]->GetSphere()->GetOwner(), true);
+		nodes[pos]->GetSphere()->IgnoreActorWhenMoving(nodes[pos + 1]->GetSphere()->GetOwner(), true);
 		FVector	distanceNext = nodes[pos + 1]->GetSphereLocation() - nodes[pos]->GetSphereLocation();
 		UPhysicsConstraintComponent* constraint = NewObject<UPhysicsConstraintComponent>(this);
 		constraint->SetupAttachment(this);
@@ -245,8 +254,10 @@ void	URopeComponent::createConstraints()
 		constraint->SetConstrainedComponents(nodes[pos]->GetSphere(), NAME_None, nodes[pos + 1]->GetSphere(), NAME_None);
 		if (UsePrecisionPercentage)
 			constraint->SetDisableCollision(true);
-		constraint->SetAngularVelocityDriveSLERP(true);
-		constraint->SetAngularDriveParams(0.0f, AngularMotorStrength, 0.0f);
+		//constraint->SetAngularVelocityDriveSLERP(true);
+		//constraint->SetAngularDriveParams(0.0f, AngularMotorStrength, 0.0f);
+		//constraint->SetLinearVelocityDrive(true, true, true);
+		//constraint->SetLinearDriveParams(1.f, 100.f, 1.f);
 
 		nodes[pos + 1]->SetPreviousConstraint(constraint);
 		nodes[pos + 1]->SetPreviousPrimitive(nodes[pos]->GetSphere());

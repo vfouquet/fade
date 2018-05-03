@@ -271,10 +271,15 @@ void	UInteractableComponent::OnComponentDestroyed(bool bDestroyHierarchy)
 	}
 	for (auto& constraint : stickingConstraints)
 	{
-		constraint.physicConstraint->BreakConstraint();
-		constraint.physicConstraint->DestroyComponent();
+		if (constraint.physicConstraint != nullptr)
+		{
+			constraint.physicConstraint->BreakConstraint();
+			constraint.physicConstraint->DestroyComponent();
+		}
+
 		constraint.carrier->RemoveHookingConstraint(this);
 	}
+
 	stickingConstraints.Empty();
 }
 

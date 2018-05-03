@@ -89,6 +89,8 @@ void UMainCharacterMovementComponent::SetPostLandedPhysics(const FHitResult& Hit
 	
 void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, UInteractableComponent* holdingObject)
 {
+	if (holdingObject == nullptr || holdingObject->GetOwner() == nullptr) return;
+
 	FVector MoveDir = GetCharacterOwner()->GetActorRotation().Vector() * coeff;
 
 	FHitResult SweepResult;

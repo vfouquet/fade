@@ -48,6 +48,10 @@ void URopeNodeComponent::OnComponentDestroyed(bool destroyedHierarchy)
 
 void	URopeNodeComponent::CreateSphere(float size, FVector location)
 {
+
+	FAttachmentTransformRules rules = FAttachmentTransformRules::KeepWorldTransform;
+	rules.bWeldSimulatedBodies = true;
+
 	sphere = NewObject<USphereComponent>(this);
 	sphere->SetupAttachment(this);
 	sphere->RegisterComponent();
@@ -57,7 +61,10 @@ void	URopeNodeComponent::CreateSphere(float size, FVector location)
 	sphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	sphere->SetCollisionProfileName("Rope");
 	sphere->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	sphere->SetMassOverrideInKg(NAME_None, size * 0.2f);
+	sphere->SetMassOverrideInKg(NAME_None, size * 0.5f);
+	sphere->SetLinearDamping(1.f);
+	sphere->SetAngularDamping(2.f);
+
 }
 	
 UChemicalWoodComponent*	URopeNodeComponent::CreateWoodProperty(UPrimitiveComponent* prevPrim, UPrimitiveComponent* nextPrim, UChemicalComponent::FChemicalStateChanged& delegates)
