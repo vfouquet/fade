@@ -407,6 +407,7 @@ void	AMainCharacter::PlayLightThrowMontage()
 void	AMainCharacter::PlayHeavyGrabMontage()
 { 
 	PlayAnimMontage(HeavyGrabAnim); 
+	bMovingHeavyObject = true;
 	FOnMontageEnded	endDel;
 	endDel.BindUObject(this, &AMainCharacter::onEndMontage);
 	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(endDel, HeavyGrabAnim);

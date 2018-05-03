@@ -188,7 +188,7 @@ void	UHoldComponent::EndHeavyGrab()
 	currentHoldingState = EHoldingState::HeavyGrabbing;
 	holdingStateChangedDelegate.Broadcast(EHoldingState::PreHeavyGrabbing, EHoldingState::HeavyGrabbing);
 
-	mainCharacter->EnableMovingHeavyObjectMode();
+	//mainCharacter->EnableMovingHeavyObjectMode();
 	mainCharacter->UnblockCharacter();
 	//createHandConstraint();
 	if (holdingObject.IsValid())
