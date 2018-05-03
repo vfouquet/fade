@@ -85,6 +85,10 @@ void	ATextFadeActor::NotifyActorBeginOverlap(AActor* OtherActor)
 	{
 		FTimerDelegate	del;
 		del.BindUFunction(this, "endFadeIn");
+		if (FadeInTime == 0.0f)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s : Cannot go into wait because fade in time is 0.0f"), *GetName());
+		}
 		GetWorldTimerManager().SetTimer(timerHandle, del, FadeInTime, false);
 		fadingIn = true;
 		return;
@@ -93,6 +97,10 @@ void	ATextFadeActor::NotifyActorBeginOverlap(AActor* OtherActor)
 	{
 		FTimerDelegate	del;
 		del.BindUFunction(this, "endFadeOut");
+		if (FadeOutTime == 0.0f)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s : Cannot go into end fade out because fade out time is 0.0f"), *GetName());
+		}
 		GetWorldTimerManager().SetTimer(timerHandle, del, FadeOutTime, false);
 		fadingOut = true;
 		return;
@@ -111,6 +119,10 @@ void	ATextFadeActor::endFadeIn()
 
 	FTimerDelegate	del;
 	del.BindUFunction(this, "beginFadeOut");
+	if (WaitTime == 0.0f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s : Cannot go into fade out because wait time is 0.0f"), *GetName());
+	}
 	GetWorldTimerManager().SetTimer(timerHandle, del, WaitTime, false);
 }
 
@@ -124,6 +136,10 @@ void	ATextFadeActor::beginFadeOut()
 {
 	FTimerDelegate	del;
 	del.BindUFunction(this, "endFadeOut");
+	if (FadeOutTime == 0.0f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s : Cannot self destroy after fade out because fade out time is 0.0f"), *GetName());
+	}
 	GetWorldTimerManager().SetTimer(timerHandle, del, FadeOutTime, false);
 	fadingOut = true;
 }
