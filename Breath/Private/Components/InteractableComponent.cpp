@@ -360,10 +360,10 @@ void	UInteractableComponent::Unstick()
 			stickingConstraints[pos].carrier->RemoveHookingConstraint(this);
 
 			// FIX FOR ROPE <-> PUSH/PULL
-			stickingConstraints[pos].carrier->GetOwner()->GetRootPrimitiveComponent()->IgnoreActorWhenMoving(stickingConstraints[pos].hook->GetOwner(), false);
-			stickingConstraints[pos].carrier->GetOwner()->GetRootPrimitiveComponent()->IgnoreActorWhenMoving(stickingConstraints[pos].hook->GetOwner()->GetRootComponent()->GetAttachParent()->GetOwner(), false);
-			stickingConstraints[pos].hook->GetAssociatedComponent()->IgnoreActorWhenMoving(stickingConstraints[pos].carrier->GetOwner(), false);
-			stickingConstraints[pos].hook->GetAssociatedComponent()->SetCollisionProfileName("SmallInteractable");
+// 			stickingConstraints[pos].carrier->GetOwner()->GetRootPrimitiveComponent()->IgnoreActorWhenMoving(stickingConstraints[pos].hook->GetOwner(), false);
+// 			stickingConstraints[pos].carrier->GetOwner()->GetRootPrimitiveComponent()->IgnoreActorWhenMoving(stickingConstraints[pos].hook->GetOwner()->GetRootComponent()->GetAttachParent()->GetOwner(), false);
+// 			stickingConstraints[pos].hook->GetAssociatedComponent()->IgnoreActorWhenMoving(stickingConstraints[pos].carrier->GetOwner(), false);
+// 			stickingConstraints[pos].hook->GetAssociatedComponent()->SetCollisionProfileName("SmallInteractable");
 
 
 			stickingConstraints.RemoveAt(pos);
