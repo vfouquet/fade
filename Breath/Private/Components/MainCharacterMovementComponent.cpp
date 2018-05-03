@@ -215,6 +215,7 @@ void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, UIn
 
 void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(bool direction, UInteractableComponent* holdingObject, FVector holdingObjectLocation)
 {
+	if (holdingObject == nullptr || holdingObject->GetOwner() == nullptr) return;
 	float angle = RotationSpeed * GetWorld()->GetDeltaSeconds();
 	angle *= direction ? -1.0f : 1.0f;
 	//MAYBE USE OBJECT WEIGHT
