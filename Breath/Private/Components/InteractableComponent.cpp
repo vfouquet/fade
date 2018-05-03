@@ -398,3 +398,11 @@ UInteractableComponent* UInteractableComponent::FindAssociatedInteractableCompon
 	}
 	return nullptr;
 }
+	
+TArray<UInteractableComponent*>	UInteractableComponent::GetCarrier() const
+{
+	TArray<UInteractableComponent*>	ret;
+	for (int pos = 0; pos < stickingConstraints.Num(); pos++)
+		ret.Add(stickingConstraints[pos].carrier);
+	return ret;
+}

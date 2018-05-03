@@ -185,7 +185,7 @@ void	AMainCharacter::Stick()
 
 void	AMainCharacter::Jump()
 {
-	if (bBlocked || bJumpLocked)
+	if (bBlocked || bJumpLocked || bMovingHeavyObject)
 		return;
 	if (Climb())
 		return;
@@ -432,7 +432,7 @@ void	AMainCharacter::StopMeteorEvent()
 
 bool	AMainCharacter::CanThrow() const
 {
-	return bHoldingObject || bMovingHeavyObject;
+	return bHoldingObject;// || bMovingHeavyObject;
 }
 
 bool	AMainCharacter::IsInAir() const

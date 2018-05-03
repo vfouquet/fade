@@ -60,7 +60,10 @@ public:
 	void	SetHoldComponent(UHoldComponent* value = nullptr) { holder = value; }
 	void	SetStickingActivated() { isSticked = true; }
 	void	SetThrown() { thrown = true; }
+	UFUNCTION(BlueprintPure)
 	bool	IsSticked() const { return isSticked; }
+	UFUNCTION(BlueprintCallable)
+	TArray<UInteractableComponent*>	GetCarrier() const;
 	UFUNCTION(BlueprintPure)
 	bool	HasIdentity() const { return !identityErased; }
 	UFUNCTION(BlueprintPure)
