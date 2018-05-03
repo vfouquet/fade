@@ -79,6 +79,7 @@ public:
 
 	void	Action();
 	void	BeginGrab();
+	UFUNCTION(BlueprintCallable)
 	void	StopGrab();
 	void	Throw();
 	void	Stick();
