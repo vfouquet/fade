@@ -36,7 +36,7 @@ void ACameraSettingsSwitch::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
-	if (CameraRailManager.IsValid())
+if (CameraRailManager.IsValid())
 	{
 		if (OtherActor == CameraRailManager->PlayerActor && CameraRailManager->RailCamera != nullptr)
 		{

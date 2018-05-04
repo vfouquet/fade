@@ -184,6 +184,7 @@ void	URopeComponent::createSplineMeshes()
 	{
 		USplineMeshComponent*	splineMesh = NewObject<USplineMeshComponent>(this);
 		splineMesh->RegisterComponent();
+		splineMesh->SetMobility(EComponentMobility::Movable);
 		FVector	startPoint;
 		FVector	endPoint;
 		FVector	startTangent;
