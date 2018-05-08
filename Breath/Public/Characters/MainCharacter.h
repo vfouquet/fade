@@ -233,6 +233,8 @@ public:
 	UAnimMontage*	HeavyGrabAnim = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	HeavyPushAnim = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage*	JumpReceptionAnim = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	UAkAudioEvent*	MeteorEvent = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
@@ -246,6 +248,8 @@ public:
 	float	WoundedResetTime = 3.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float	FatalJumpHeight = 500.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float	ReceptionJumpHeight = 250.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float	ImpactMeshForce = 1000.0f;
 	UPROPERTY(BlueprintAssignable)

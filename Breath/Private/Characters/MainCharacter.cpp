@@ -574,6 +574,8 @@ void	AMainCharacter::onEndMontage(UAnimMontage* montage, bool bInterrupted)
 		if (bInterrupted && holdComponent && holdComponent->GetCurrentState() == EHoldingState::ReleasingLightGrab)
 			holdComponent->EndLightGrabRelease();
 	}
+	else if (montage == JumpReceptionAnim)
+		bBlocked = false;
 }
 
 void	AMainCharacter::endCharacterClimbSnap()
@@ -642,7 +644,17 @@ void	AMainCharacter::updateHealthValues(float DeltaTime)
 			Die();
 	}
 	else
+	{
+		if (jumpZOffset > ReceptionJumpHeight)
+		{
+			PlayAnimMontage(JumpReceptionAnim);
+			FOnMontageEnded	endDel;
+			endDel.BindUObject(this, &AMainCharacter::onEndMontage);
+			GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(endDel, JumpReceptionAnim);
+			bBlocked = true;
+		}
 		jumpZOffset = 0.0f;
+	}
 
 	if (currentCondition != ECharacterCondition::None && isAffectedByFire())
 	{
