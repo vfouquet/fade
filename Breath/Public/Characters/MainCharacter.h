@@ -272,7 +272,6 @@ private:
 	UFUNCTION()
 	void	endClimb();
 	void	stopCurrentPlayingMontage() { StopAnimMontage(); }
-	void	takeFireDamage();
 	void	decreaseFireCount();
 	void	applyWaterEffect();
 	void	updateHealthValues(float DelatTime);

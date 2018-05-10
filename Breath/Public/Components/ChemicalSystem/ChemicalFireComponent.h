@@ -20,6 +20,8 @@ public:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire properties")
 	bool	bExtinguishedAtLaunch = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire properties")
+	bool	bInstantBurningPlayer = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water Values")
 	float	toExtinguished = 0.5f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire Values")

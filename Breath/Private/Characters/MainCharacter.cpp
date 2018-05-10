@@ -15,6 +15,7 @@
 #include "AkAudio/Classes/AkGameplayStatics.h"
 #include "IdentityEraserComponent.h"
 #include "MemoryZoneComponent.h"
+#include "ChemicalFireComponent.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer)
@@ -661,7 +662,14 @@ void	AMainCharacter::updateHealthValues(float DeltaTime)
 		currentFireTime += DeltaTime;
 		if (currentFireTime >= (currentCondition == ECharacterCondition::Scalding ? ScaldingToBurning : BurningToDeath))
 		{
-			takeFireDamage();
+			if (currentCondition == ECharacterCondition::Scalding)
+			{
+				currentCondition = ECharacterCondition::Burning;
+				onConditionChanged.Broadcast(ECharacterCondition::Scalding, ECharacterCondition::Burning);
+				OnDamage();
+			}
+			else if (currentCondition == ECharacterCondition::Burning)
+				Die();
 			currentFireTime = 0.0f;
 		}
 	}
@@ -674,26 +682,6 @@ void	AMainCharacter::updateHealthValues(float DeltaTime)
 			currentDamageState = ECharacterDamageState::None;
 			onDamageStateChanged.Broadcast(ECharacterDamageState::Wounded, ECharacterDamageState::None);
 		}
-	}
-}
-
-void	AMainCharacter::takeFireDamage()
-{
-	if (currentCondition == ECharacterCondition::None)
-	{
-		if (!bIsGod)
-			OnDamage();
-		currentCondition = ECharacterCondition::Scalding;
-		onConditionChanged.Broadcast(ECharacterCondition::None, ECharacterCondition::Scalding);
-	}
-	else if (currentCondition == ECharacterCondition::Scalding)
-	{
-		currentCondition = ECharacterCondition::Burning;
-		onConditionChanged.Broadcast(ECharacterCondition::Scalding, ECharacterCondition::Burning);
-	}
-	else if (currentCondition == ECharacterCondition::Burning && !bIsGod)
-	{
-		Die();
 	}
 }
 
@@ -754,9 +742,22 @@ void	AMainCharacter::OnCapsuleOverlap(UPrimitiveComponent* OverlappedComponent, 
 	if ((comp->GetType() == EChemicalType::Fire && comp->GetState() == EChemicalState::None) ||
 		((comp->GetType() == EChemicalType::Rock || comp->GetType() == EChemicalType::Wood) && comp->GetState() == EChemicalState::Burning))
 	{
-		if (currentCondition == ECharacterCondition::None)
-			takeFireDamage();
 		fireCount++;
+		if (bIsGod)
+			return;
+		UChemicalFireComponent* fireComp = Cast<UChemicalFireComponent>(comp);
+		if (currentCondition != ECharacterCondition::Burning && fireComp && fireComp->bInstantBurningPlayer)
+		{
+			onConditionChanged.Broadcast(currentCondition, ECharacterCondition::Burning);
+			currentCondition = ECharacterCondition::Burning;
+			OnDamage();
+		}
+		else if (currentCondition == ECharacterCondition::None)
+		{
+			onConditionChanged.Broadcast(ECharacterCondition::None, ECharacterCondition::Scalding);
+			currentCondition = ECharacterCondition::Scalding;
+			OnDamage();
+		}
 	}
 	else if (comp->GetType() == EChemicalType::Water)
 		applyWaterEffect();
