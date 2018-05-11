@@ -22,6 +22,9 @@ void	UIdentityEraserComponent::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("%s - IdentityEraserComponent : Identity Zone Manager doesn't exist"), owner ? *owner->GetName() : *FString("Error"));
 	}
 
+	if (!UseVisualEffects)
+		return;
+
 	if (WaveParticleTemplate)
 	{
 		particleSystem = NewObject<UParticleSystemComponent>(this);
@@ -88,7 +91,7 @@ void	UIdentityEraserComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (particleSystem)
+	if (UseVisualEffects && particleSystem)
 	{
 		FHitResult hitRes;
 		FVector location = GetComponentLocation();

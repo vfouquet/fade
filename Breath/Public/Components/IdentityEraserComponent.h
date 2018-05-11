@@ -34,6 +34,8 @@ public:
 	float	DecelerationTime = 0.1f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound properties")
 	UAkAudioEvent*	AudioCinematic = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	bool	UseVisualEffects = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Particle properties")
 	UParticleSystem*	WaveParticleTemplate = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Volume Effect")
