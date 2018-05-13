@@ -20,6 +20,7 @@ ARailCamera::ARailCamera(const FObjectInitializer& ObjectInitializer)
 	CameraArm->SetupAttachment(this->GetRootComponent());
 
 	this->GetCameraComponent()->SetupAttachment(CameraArm);
+	this->GetCameraComponent()->PostProcessBlendWeight = 0.0f;
 }
 
 USceneComponent* ARailCamera::GetCameraArm()
