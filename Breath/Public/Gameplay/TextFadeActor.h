@@ -36,6 +36,8 @@ public:
 	float	FadeOutTime = 1.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time")
 	float	WaitTime = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time")
+	float	DelayBeforeFadeIn = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameters")
 	bool	DoFadeIn = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameters")
@@ -44,6 +46,8 @@ public:
 	bool	SelfDestroyAfterTrigger = true;
 
 private:
+	UFUNCTION()
+	void	beginFadeIn();
 	UFUNCTION()
 	void	endFadeIn();
 	UFUNCTION()
