@@ -172,7 +172,7 @@ void	UHoldComponent::BeginLightGrabPositionUpdate()
 	
 	holdingPrimitiveComponent->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());	//RESET ROTATION
 	handleComponent->GrabComponentAtLocationWithRotation
-	(holdingPrimitiveComponent, "", holdingPrimitiveComponent->GetComponentLocation(), FRotator::ZeroRotator);
+		(holdingPrimitiveComponent, "", holdingPrimitiveComponent->GetComponentLocation(), FRotator::ZeroRotator);
 	holdingPrimitiveComponent->SetCollisionProfileName("OverlapAllDynamic");	//DISABLE OBJECT COLLISION
 	mainCharacter->SetHoldingObject(true);
 	mainCharacter->UnblockCharacter();
@@ -181,6 +181,8 @@ void	UHoldComponent::BeginLightGrabPositionUpdate()
 
 	currentHoldingState = EHoldingState::LightGrabbing;
 	holdingStateChangedDelegate.Broadcast(EHoldingState::PreLightGrabbing, EHoldingState::LightGrabbing);
+
+	mainCharacter->MoveIgnoreActorAdd(holdingObject->GetOwner());
 }
 
 void	UHoldComponent::EndHeavyGrab()
@@ -409,6 +411,7 @@ void	UHoldComponent::releaseLightGrabbedObject()
 	holdingPrimitiveComponent->SetCollisionProfileName("SmallInteractable");
 	if (holdingObject.IsValid())
 	{
+		mainCharacter->MoveIgnoreActorRemove(holdingObject->GetOwner());
 		holdingObject->SetHoldComponent(nullptr);
 		holdingObject->onEndGrab.Broadcast();
 	}
