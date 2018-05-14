@@ -207,7 +207,13 @@ bool	AMainCharacter::Climb()
 		return false;
 
 	FVector	newLoc;
-	newLoc = hitLocation + normal * (climbType == EClimbType::TwoMetersClimb? 50.0f : 65.0f);
+	if (climbType == EClimbType::OneMeterClimb)
+		newLoc = hitLocation + normal * 65.0f;
+	else if (climbType == EClimbType::AirOneMeterClimb)
+		newLoc = hitLocation + normal * 45.0f;
+	else
+		newLoc = hitLocation + normal * 50.0f;
+
 	if (climbType == EClimbType::OneMeterClimb)
 		newLoc.Z = GetActorLocation().Z;
 	else if (climbType == EClimbType::TwoMetersClimb)
@@ -222,7 +228,6 @@ bool	AMainCharacter::Climb()
 		float rootLocZ = GetMesh()->GetBoneLocation("Maori_Root_JNT").Z;
 		newLoc.Z = topPoint.Z - 200.0f + 92.0f;
 	}
-	zClimbTarget = topPoint.Z;
 
 	FRotator newRotation = FRotator::ZeroRotator;
 	newRotation.Yaw = (-1.0f * normal).Rotation().Yaw;

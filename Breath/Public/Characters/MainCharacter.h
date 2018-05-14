@@ -312,7 +312,6 @@ private:
 	bool	isClimbing = false;
 	FVector	beginClimbActorLocation;
 	FVector	hipBeginLocation;
-	float	zClimbTarget = 0.0f;
 
 	//HEALTH SETTINGS
 	TMap<TWeakObjectPtr<UPrimitiveComponent>, float>	damageDealers;
