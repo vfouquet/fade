@@ -3,11 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "GameFramework/CharacterMovementComponent.h"
 #include "MainCharacterMovementComponent.generated.h"
 
 class UInteractableComponent;
 
+UENUM(BlueprintType)
+enum class ELocomotionState : uint8
+{
+	Walking = 0 UMETA(DisplayName = "Walking"),
+	Running = 1 UMETA(DisplayName = "Running"),
+	Custom = 2 UMETA(DisplayName = "Custom")
+};
 /**
  * 
  */
@@ -16,6 +24,8 @@ class BREATH_API UMainCharacterMovementComponent : public UCharacterMovementComp
 {
 	GENERATED_BODY()
 	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FLocomotionStateDelegate, ELocomotionState, previousState, ELocomotionState, nextState);
+
 public:
 	virtual void	TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	//virtual bool	CheckFall(const FFindFloorResult& OldFloor, const FHitResult& Hit, const FVector& Delta, const FVector& OldLocation, float remainingTime, float timeTick, int32 Iterations, bool bMustJump) override;	
@@ -33,6 +43,8 @@ public:
 	void	SetCustomSpeed(float customSpeed);
 	void	SetJumpDirection(FVector value) { jumpDirection = value; }
 
+	UFUNCTION(BlueprintPure)
+	ELocomotionState	GetCurrentLocomotionState() const { return currentLocomotionState; }
 	UFUNCTION(BlueprintPure)
 	bool	IsJumping() const { return bIsJumping; }
 	bool	IsFalling(bool& ascending);
@@ -67,7 +79,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Forward Jump")
 	float	LateralJumpForce = 300.0f;
 
+	UPROPERTY(BlueprintAssignable)
+	FLocomotionStateDelegate onLocomotionStateChanged;
+
 private:
+	ELocomotionState		currentLocomotionState = ELocomotionState::Walking;
 	FVector	jumpDirection;
 	//float	currentCoyoteTime = 0.0f;
 	FVector	lastOffsetLocation = FVector::ZeroVector;

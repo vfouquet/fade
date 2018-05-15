@@ -291,22 +291,32 @@ void	UMainCharacterMovementComponent::EndJumping()
 
 void	UMainCharacterMovementComponent::SetWalkMode()
 {
+	if (currentLocomotionState == ELocomotionState::Walking)
+		return;
 	MaxWalkSpeed = WalkSpeed;
 	MinAnalogWalkSpeed = WalkSpeed;
 	bCanWalkOffLedges = false;
+	onLocomotionStateChanged.Broadcast(currentLocomotionState, ELocomotionState::Walking);
+	currentLocomotionState = ELocomotionState::Walking;
 }
 
 void	UMainCharacterMovementComponent::SetJogMode() 
 {
+	if (currentLocomotionState == ELocomotionState::Running)
+		return;
 	MaxWalkSpeed = JogSpeed;
 	MinAnalogWalkSpeed = JogSpeed;
 	bCanWalkOffLedges = true;
+	onLocomotionStateChanged.Broadcast(currentLocomotionState, ELocomotionState::Running);
+	currentLocomotionState = ELocomotionState::Running;
 }
 	
 void	UMainCharacterMovementComponent::SetCustomSpeed(float customSpeed)
 {
 	MaxWalkSpeed = customSpeed;
 	MinAnalogWalkSpeed = customSpeed;
+	onLocomotionStateChanged.Broadcast(currentLocomotionState, ELocomotionState::Custom);
+	currentLocomotionState = ELocomotionState::Custom;
 }
 
 bool	UMainCharacterMovementComponent::IsFalling(bool& ascending)
