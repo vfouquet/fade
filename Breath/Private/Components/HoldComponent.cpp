@@ -30,8 +30,6 @@ void UHoldComponent::BeginPlay()
 	
 	mainCharacter = Cast<AMainCharacter>(GetOwner());
 	characterCapsule = GetOwner()->FindComponentByClass<UCapsuleComponent>();
-	leftHandConstraint = Cast<UPhysicsConstraintComponent>(LeftHandPhysicalConstraintReference.GetComponent(GetOwner()));
-	rightHandConstraint = Cast<UPhysicsConstraintComponent>(RightHandPhysicalConstraintReference.GetComponent(GetOwner()));
 }
 
 
@@ -120,7 +118,6 @@ void	UHoldComponent::Grab()
 		mainCharacter->BlockCharacter();
 
 		holdingObject = closestInteractableObject.Get();
-		holdingPrimitiveComponent = closestInteractableObject->GetAssociatedComponent();
 
 		FRotator newRot = (closestInteractableNormal * -1.0f).Rotation();
 		newRot.Roll = 0.0f;
@@ -148,18 +145,23 @@ void	UHoldComponent::BeginLightGrabPositionUpdate()
 		return;
 	}
 
+	if (!holdingObject->IsAssociatedValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Begin light grab position update : holding associated is nullptr"));
+		mainCharacter->UnblockCharacter();
+		return;
+	}
+
 	holdingObject->SetHoldComponent(this);
 	holdingObject->onBeginGrab.Broadcast();
 	if (holdingObject->IsSticked())
 		holdingObject->Unstick();
 
-	holdingPrimitiveComponent = holdingObject->GetAssociatedComponent();	
-	holdingPrimitiveComponent->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());	//RESET ROTATION
-	//previousCollisionEnableValue = holdingPrimitiveComponent->GetCollisionEnabled();
-	//holdingPrimitiveComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	holdingPrimitiveComponent->SetCollisionProfileName("OverlapAllDynamic");
-	previousGravityValue = holdingPrimitiveComponent->IsGravityEnabled();
-	holdingPrimitiveComponent->SetEnableGravity(false);
+	UPrimitiveComponent* tempPrim = holdingObject->GetAssociatedComponent();	
+	tempPrim->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());	//RESET ROTATION
+	tempPrim->SetCollisionProfileName("OverlapAllDynamic");
+	previousGravityValue = tempPrim->IsGravityEnabled();
+	tempPrim->SetEnableGravity(false);
 	mainCharacter->SetHoldingObject(true);
 	mainCharacter->UnblockCharacter();
 
@@ -208,7 +210,6 @@ void	UHoldComponent::StopGrab()
 		mainCharacter->StopHeavyGrabMontage();
 		mainCharacter->UnblockCharacter();
 		holdingObject = nullptr;
-		holdingPrimitiveComponent = nullptr;
 		currentHoldingState = EHoldingState::None;
 		holdingStateChangedDelegate.Broadcast(EHoldingState::PreHeavyGrabbing, EHoldingState::None);
 	}
@@ -223,9 +224,7 @@ void	UHoldComponent::StopGrab()
 	{
 		holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyGrabbing, EHoldingState::None);
 		mainCharacter->DisableMovingHeavyObjectMode();
-
 		releaseHeavyGrabbedObject();
-
 		currentHoldingState = EHoldingState::None;
 	}
 }
@@ -267,11 +266,10 @@ void	UHoldComponent::EndThrow()
 	}
 	else if (currentHoldingState == EHoldingState::HeavyThrowing)
 	{
-		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
-
 		releaseHeavyGrabbedObject();
-
-		tempPrimitive->AddImpulse(characterCapsule->GetForwardVector() * HeavyThrowPower);
+		
+		if (holdingObject.IsValid() && holdingObject->IsAssociatedValid())
+			holdingObject->GetAssociatedComponent()->AddImpulse(characterCapsule->GetForwardVector() * HeavyThrowPower);
 		mainCharacter->DisableMovingHeavyObjectMode();
 
 		holdingStateChangedDelegate.Broadcast(EHoldingState::HeavyThrowing, EHoldingState::None);
@@ -316,7 +314,7 @@ void	UHoldComponent::Stick()
 		mainCharacter->SetActorLocation(ClosestPoint - holdingObject->GetAssociatedComponent()->GetForwardVector() * 50.0f - characterCapsule->GetForwardVector() * 50.0f);
 		mainCharacter->SetActorRotation(newRot);
 
-		closestInteractableObject->AddStickConstraint(holdingObject.Get(), holdingPrimitiveComponent, TEXT("None"));
+		closestInteractableObject->AddStickConstraint(holdingObject.Get(), holdingObject->GetAssociatedComponent(), TEXT("None"));
 		releaseLightGrabbedObject();
 		holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::Sticking);
 
@@ -373,12 +371,8 @@ void	UHoldComponent::CancelHeavyThrow()
 
 void	UHoldComponent::CancelLightGrab()
 {
-	if (currentHoldingState == EHoldingState::LightGrabbing)
-	{
-		releaseLightGrabbedObject();
-		mainCharacter->SetHoldingObject(false);
-	}
-	holdingObject = nullptr;
+	releaseLightGrabbedObject();
+	mainCharacter->SetHoldingObject(false);
 	mainCharacter->UnblockCharacter();
 	currentHoldingState = EHoldingState::None;
 }
@@ -388,53 +382,29 @@ void	UHoldComponent::CancelHeavyGrab()
 	mainCharacter->DisableMovingHeavyObjectMode();
 	mainCharacter->UnblockCharacter();
 	holdingObject = nullptr;
-	holdingPrimitiveComponent = nullptr;
 	currentHoldingState = EHoldingState::None;
 }
 
 void	UHoldComponent::releaseLightGrabbedObject()
 {
-	holdingPrimitiveComponent->SetCollisionProfileName("SmallInteractable");
-	holdingPrimitiveComponent->SetEnableGravity(previousGravityValue);
 	if (holdingObject.IsValid())
 	{
+		if (holdingObject->IsAssociatedValid())
+		{
+			holdingObject->GetAssociatedComponent()->SetCollisionProfileName("SmallInteractable");
+			holdingObject->GetAssociatedComponent()->SetEnableGravity(previousGravityValue);
+		}
 		holdingObject->SetHoldComponent(nullptr);
 		holdingObject->onEndGrab.Broadcast();
 	}
 	holdingObject = nullptr;
-	holdingPrimitiveComponent = nullptr;
-}
-
-void	UHoldComponent::createHandConstraint()
-{
-	FVector	center;
-	FVector leftSphereLocation;
-	FVector rightSphereLocation;
-	getPushingPoints(center, leftSphereLocation, rightSphereLocation);	//GET COLSEST POINT ON ACTOR CLOSE TO CHARACTER HANDS
-
-	FVector leftHand = leftHandConstraint->GetComponentLocation();
-	FVector rightHand = rightHandConstraint->GetComponentLocation();
-	leftHand.Z = leftSphereLocation.Z;
-	rightHand.Z = rightSphereLocation.Z;
-	leftHandConstraint->SetWorldLocation(leftHand);	//SET CONSTRAINTS TO SAME Z POSITION AS CHARACTER HANDS
-	rightHandConstraint->SetWorldLocation(rightHand);
-
-	//leftHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingObject->CreateLeftConstraintPoint(leftSphereLocation), "None");
-	//rightHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingObject->CreateRightConstraintPoint(rightSphereLocation), "None");
-	leftHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingPrimitiveComponent, "None");
-	rightHandConstraint->SetConstrainedComponents(characterCapsule, "None", holdingPrimitiveComponent, "None");
 }
 
 void	UHoldComponent::releaseHeavyGrabbedObject()
 {
-	if (leftHandConstraint)
-		leftHandConstraint->BreakConstraint();
-	if (rightHandConstraint)
-		rightHandConstraint->BreakConstraint();
 	if (holdingObject.IsValid())
 		holdingObject->SetHoldComponent(nullptr);
 	holdingObject = nullptr;
-	holdingPrimitiveComponent = nullptr;
 }
 
 void	UHoldComponent::detectInteractableAround()
@@ -478,18 +448,4 @@ void	UHoldComponent::detectInteractableAround()
 			}
 		}
 	}
-}
-
-bool	UHoldComponent::getPushingPoints(FVector& centerPoint, FVector& firstPoint, FVector& secondPoint) const
-{
-	float dis = holdingPrimitiveComponent->GetClosestPointOnCollision(characterCapsule->GetOwner()->GetActorLocation(), centerPoint);
-	if (dis == 0.0f)
-		return false;
-	FVector direction = centerPoint - characterCapsule->GetOwner()->GetActorLocation();
-	FVector normal = FVector::CrossProduct(direction, characterCapsule->GetOwner()->GetActorUpVector()).GetUnsafeNormal();
-	firstPoint = centerPoint + normal * characterCapsule->GetScaledCapsuleRadius();
-	secondPoint = centerPoint - normal * characterCapsule->GetScaledCapsuleRadius();
-	DrawDebugSphere(GetWorld(), firstPoint, 10.0f, 12, FColor::Emerald, true, 5.0f);
-	DrawDebugSphere(GetWorld(), secondPoint, 10.0f, 12, FColor::Turquoise, true, 5.0f);
-	return true;
 }

@@ -74,7 +74,7 @@ void URopeComponent::BeginPlay()
 		parts = (finalLength / Thickness) * (1.0f + PrecisionPercentage * 0.01f);
 	else
 		parts = finalLength / Thickness;
-	int intParts = FMath::Floor(parts);
+	int intParts = FMath::FloorToInt(parts);
 	if (parts == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s-Rope Component : Thickness is too high for the rope distance, should be inferior to %f"), owner ? *owner->GetName() : *FString("Error"), finalLength);

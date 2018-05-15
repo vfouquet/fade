@@ -69,26 +69,14 @@ public:
 	UInteractableComponent*			GetCurrentHeldObject() const { return holdingObject.Get(); }
 	UFUNCTION(BlueprintPure)
 	EHoldingState					GetCurrentState() const { return currentHoldingState; }
-	UFUNCTION(BlueprintPure)
-	UPhysicsConstraintComponent*	GetLeftHandConstraint() const { return leftHandConstraint; }
-	UFUNCTION(BlueprintPure)
-	UPhysicsConstraintComponent*	GetRightHandConstraint() const { return rightHandConstraint; }
-
-	bool	CanRotateLeft(FVector characterForward) { return holdingObject.IsValid() && holdingObject->CanRotateLeft(characterForward); }
-	bool	CanRotateRight(FVector characterForward) { return holdingObject.IsValid() && holdingObject->CanRotateRight(characterForward); }
-	bool	CanPushForward(FVector characterForward) { return holdingObject.IsValid() && holdingObject->CanPushForward(characterForward); }
 
 	bool	IsMovingHeavyObject() const { return currentHoldingState == EHoldingState::HeavyGrabbing; }
 	bool	IsHoldingObject() const { return currentHoldingState == EHoldingState::LightGrabbing; }
 
 	UFUNCTION(BlueprintPure)
-	FVector	GetHoldingObjectLocation() const { return holdingPrimitiveComponent != nullptr ? holdingPrimitiveComponent->GetComponentLocation() : FVector(); }
+	FVector	GetHoldingObjectLocation() const { return holdingObject.IsValid()? holdingObject->GetAssociatedLocation() : FVector(); }
 	UFUNCTION(BlueprintPure)
-	float	GetHoldingObjectMass() const { return holdingPrimitiveComponent != nullptr ? holdingPrimitiveComponent->GetMass() : 0.0f; }
-
-	//CURRENTLY PUBLIC FOR BLUEPRINT TESTS
-	UFUNCTION(BlueprintPure)
-	bool							getPushingPoints(FVector& centerPoint, FVector& leftPoint, FVector& rightPoint) const;
+	float	GetHoldingObjectMass() const { return holdingObject.IsValid()? holdingObject->GetAssociatedMass() : 0.0f; }
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Detection")
@@ -99,16 +87,11 @@ public:
 	float	ThrowPower = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float	HeavyThrowPower = 10.0f;
-	UPROPERTY(EditAnywhere, Category = "Hold")
-	FComponentReference	LeftHandPhysicalConstraintReference;
-	UPROPERTY(EditAnywhere, Category = "Hold")
-	FComponentReference	RightHandPhysicalConstraintReference;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
 	float	AdditionalThrowAngle = 45.0f;
 
 private:
 	void	releaseLightGrabbedObject();
-	void	createHandConstraint();
 	void	releaseHeavyGrabbedObject();
 
 	void	detectInteractableAround();
@@ -123,13 +106,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TWeakObjectPtr<UInteractableComponent>	holdingObject;
-	UPrimitiveComponent*					holdingPrimitiveComponent = nullptr;
 	EHoldingState							currentHoldingState = EHoldingState::None;
-
-	float	releaseCurrentTime = 0.0f;
-
-	UPhysicsConstraintComponent*	leftHandConstraint = nullptr;
-	UPhysicsConstraintComponent*	rightHandConstraint = nullptr;
 public:
 	UPROPERTY(BlueprintAssignable)
 	FHoldStateChanged	holdingStateChangedDelegate;

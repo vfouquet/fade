@@ -104,13 +104,13 @@ void AMainCharacter::Tick(float DeltaTime)
 		//ADDITIONAL SECURITY TEST FOR PUSH/PULL SHOULD BE REMOVED
 		if (holdComponent)
 		{
-			if (rotatingLeft)// && holdComponent->CanRotateLeft(GetActorForwardVector()))
+			if (rotatingLeft)
 				mainCharacterMovement->ProcessRotateHeavyObject(false, holdComponent->GetCurrentHeldObject(), holdComponent->GetHoldingObjectLocation());
-			else if (rotatingRight)// && holdComponent->CanRotateRight(GetActorForwardVector()))
+			else if (rotatingRight)
 				mainCharacterMovement->ProcessRotateHeavyObject(true, holdComponent->GetCurrentHeldObject(), holdComponent->GetHoldingObjectLocation());
 			else if (!FMath::IsNearlyZero(pushingAxis))
 			{
-				if (pushingAxis == 1.0f)// && holdComponent->CanPushForward(GetActorForwardVector()))
+				if (pushingAxis == 1.0f)
 					mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetCurrentHeldObject());
 				else if (pushingAxis == -1.0f)
 					mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetCurrentHeldObject());
