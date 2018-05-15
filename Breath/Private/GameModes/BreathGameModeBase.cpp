@@ -6,6 +6,7 @@
 #include "Engine/StreamableManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/StringAssetReference.h"
+#include "GameFramework/Character.h"
 
 #include "MainPlayerStart.h"
 #include "Controllers/MainPlayerController.h"

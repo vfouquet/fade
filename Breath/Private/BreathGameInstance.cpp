@@ -50,15 +50,6 @@ void UBreathGameInstance::Init()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("INIT NULL"));
 	}
-	/*TArray<FString> ChapterFiles;
-	IFileManager::Get().FindFilesRecursive(ChapterFiles, *(FPaths::GameContentDir() + "/Gameplay/Story/Chapters/"), TEXT("*.uasset"), true, false, true);
-
-	for (FString ChapterName : ChapterFiles)
-	{
-		FStreamableManager AssetLoader;
-		FStringAssetReference MyAssetPath(ChapterName);
-		UObject* MyAsset = MyAssetPath.TryLoad();
-	}*/
 
 	const ULoadingScreenSettings* Settings = GetDefault<ULoadingScreenSettings>();
 
