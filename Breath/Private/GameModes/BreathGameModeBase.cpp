@@ -73,12 +73,6 @@ void ABreathGameModeBase::LoadGameToChapter(UStoryChapter* Chapter)
 			if (PC != nullptr)
 			{
 				APawn* PlayerPawn = PC->GetPawnOrSpectator();
-				//PC->UnPossess();
-
-				/*if (PlayerPawn != nullptr)
-				{
-					PlayerPawn->Destroy();
-				}*/
 
 				if (Chapter->Spawn != nullptr)
 				{
@@ -98,21 +92,9 @@ void ABreathGameModeBase::LoadGameToChapter(UStoryChapter* Chapter)
 					
 					if (Camera != nullptr)
 					{
+						Camera->CameraSettings = Chapter->Spawn->CameraSettings;
 						Camera->ChangePlayer(PlayerPawn, true);
 					}
-
-
-					//Chapter->Spawn->InitPlayer();
-					/*TArray<AActor*>	OutActors;
-					UGameplayStatics::GetAllActorsOfClass(PC, AMainPlayerStart::StaticClass(), OutActors);
-
-					for (AActor* actor : OutActors)
-					{
-						if (actor != nullptr)
-						{
-							actor->UpdateOverlaps(true);
-						}
-					}*/
 
 					UE_LOG(LogTemp, Warning, TEXT("Chapter loaded."));
 				}

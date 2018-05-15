@@ -101,7 +101,33 @@ void	ACameraRailManager::ChangePlayer(AActor* PlayerActor, bool bTeleport)
 		if (bTeleport == true)
 		{
 			this->CurrentDistanceAlongSpline = GetDistanceAlongSplineAtWorldLocation(PlayerActor->GetActorLocation());
-			this->CurrentDistanceAlongSplineWithOffset = this->CurrentDistanceAlongSpline;
+			this->CurrentDistanceAlongSplineWithOffset = this->CurrentDistanceAlongSpline + this->RailCamera->CameraSettings.CameraRailOffset;
+			FVector NextCameraLocation = SplineComponent->GetWorldLocationAtDistanceAlongSpline(this->CurrentDistanceAlongSpline);
+			FVector NextCameraLocationWithOffset = SplineComponent->GetWorldLocationAtDistanceAlongSpline(this->CurrentDistanceAlongSplineWithOffset);
+
+			// Camera focus
+			FVector	CentroidRelativeLocFromPlayer = FVector::ZeroVector;
+			for (FCameraInterestPoint point : RailCamera->CameraSettings.InterestPoints)
+			{
+				if (point.Actor.IsValid())
+				{
+					FVector PointRelactiveLocFromPlayer = point.Actor->GetActorLocation() - PlayerActor->GetRootPrimitiveComponent()->GetComponentToWorld().GetLocation();
+					PointRelactiveLocFromPlayer *= point.Weight;
+					CentroidRelativeLocFromPlayer += PointRelactiveLocFromPlayer;
+				}
+			}
+
+			CentroidRelativeLocFromPlayer /= RailCamera->CameraSettings.InterestPoints.Num() + 1; // 1 represents the player weight.
+
+			FVector LookAtDir;
+			LookAtDir = (PlayerActor->GetActorLocation() + CentroidRelativeLocFromPlayer) - NextCameraLocationWithOffset;
+
+			// Sets new camera location
+			RailCamera->SetActorLocation(NextCameraLocation);
+			RailCamera->GetCameraArm()->SetWorldLocation(NextCameraLocationWithOffset);
+
+			// Computes and sets new camera rotation
+			RailCamera->GetCameraArm()->SetWorldRotation(FRotationMatrix::MakeFromX(LookAtDir).Rotator());
 		}
 
 		this->SetActorTickEnabled(true);

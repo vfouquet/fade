@@ -96,6 +96,7 @@ void	ARailCamera::ChangePlayer(AActor* PlayerActor, bool bTeleport)
 {
 	if (this->CurrentRailManager != nullptr && PlayerActor != nullptr)
 	{
+		GetCameraComponent()->SetRelativeLocation(FVector(-this->CameraSettings.CameraDistanceOffset, 0.0f, 0.0f));
 		this->CurrentRailManager->ChangePlayer(PlayerActor, bTeleport);
 	}
 }
