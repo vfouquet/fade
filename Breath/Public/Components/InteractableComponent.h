@@ -107,6 +107,8 @@ public:
 	bool	IsHeavy = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	MemoryInteractable = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
+	bool	IgnoreActorWhileMoving = false;
 
 	UPROPERTY(EditAnywhere, Category = "Interactions Settings")
 	USceneComponent*	CollisionComponent;

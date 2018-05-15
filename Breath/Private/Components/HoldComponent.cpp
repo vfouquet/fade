@@ -182,7 +182,8 @@ void	UHoldComponent::BeginLightGrabPositionUpdate()
 	currentHoldingState = EHoldingState::LightGrabbing;
 	holdingStateChangedDelegate.Broadcast(EHoldingState::PreLightGrabbing, EHoldingState::LightGrabbing);
 
-	mainCharacter->MoveIgnoreActorAdd(holdingObject->GetOwner());
+	if (holdingObject->IgnoreActorWhileMoving)
+		mainCharacter->MoveIgnoreActorAdd(holdingObject->GetOwner());
 }
 
 void	UHoldComponent::EndHeavyGrab()
