@@ -469,6 +469,16 @@ AActor*	AMainCharacter::GetHeldActor()
 	}
 	return nullptr;
 }
+	
+FVector		AMainCharacter::GetHoldSocketLocation()
+{
+	if (auto* mesh = GetMesh())
+	{
+		return mesh->GetSocketLocation("HoldSocket");
+	}
+	UE_LOG(LogTemp, Error, TEXT("Main Character : Can't get HoldSocket location because mesh is nullptr"));
+	return FVector::ZeroVector;
+}
 
 EClimbType	AMainCharacter::climbTrace(FVector& outHitLocation, FVector& outNormal, FVector& outTopPoint)
 {

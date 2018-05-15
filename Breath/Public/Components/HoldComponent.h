@@ -99,18 +99,12 @@ public:
 	float	ThrowPower = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float	HeavyThrowPower = 10.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hold")
-	float	HoldSnapOffset = 75.0f;
 	UPROPERTY(EditAnywhere, Category = "Hold")
 	FComponentReference	LeftHandPhysicalConstraintReference;
 	UPROPERTY(EditAnywhere, Category = "Hold")
 	FComponentReference	RightHandPhysicalConstraintReference;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
 	float	AdditionalThrowAngle = 45.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hold")
-	float	ReleaseDistanceThreshold = 75.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hold")
-	float	ReleaseTimeTolerence = 0.5f;
 
 private:
 	void	releaseLightGrabbedObject();
@@ -124,8 +118,8 @@ protected:
 	FVector										closestInteractableNormal;
 	FVector										closestInteractableLocation;
 
-	UPhysicsHandleComponent*		handleComponent;
 	UCapsuleComponent*				characterCapsule = nullptr;
+	bool							previousGravityValue = false;
 
 	UPROPERTY(VisibleAnywhere)
 	TWeakObjectPtr<UInteractableComponent>	holdingObject;

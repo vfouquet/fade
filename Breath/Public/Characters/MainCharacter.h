@@ -178,6 +178,7 @@ public:
 	AActor*			GetHeldActor();
 	UFUNCTION(BlueprintPure)
 	float			GetPushAndPullCoef() const { return pushingAxis; }
+	FVector			GetHoldSocketLocation();
 
 	UFUNCTION(BlueprintPure)
 	ECharacterCondition	const& GetCurrentCondition() const { return currentCondition; }

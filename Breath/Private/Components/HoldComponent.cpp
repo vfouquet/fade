@@ -16,7 +16,7 @@ UHoldComponent::UHoldComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	handleComponent = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicHandleComponent"));
+	//handleComponent = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicHandleComponent"));
 	// ...
 }
 
@@ -54,32 +54,17 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 			return;
 		}
 
-		FVector	middleTwoHands = mainCharacter->GetTwoHandsLocation();
-		handleComponent->SetTargetLocation(middleTwoHands);
-		
-		//CHECK HOLDING OBJECT DISTANCE - RELEASE IF TOO FAR
-		FVector dist = middleTwoHands - holdingPrimitiveComponent->GetComponentLocation();
-
-		if (releaseCurrentTime < ReleaseTimeTolerence)
-			releaseCurrentTime += DeltaTime;
-		else
-		{
-			if (dist.Size() >= ReleaseDistanceThreshold)
-			{
-				releaseLightGrabbedObject();
-				mainCharacter->SetHoldingObject(false);
-				mainCharacter->UnblockCharacter();
-				currentHoldingState = EHoldingState::None;
-				holdingStateChangedDelegate.Broadcast(EHoldingState::LightGrabbing, EHoldingState::None);
-			}
-		}
-
-		//
+		if (UPrimitiveComponent* prim = holdingObject->GetAssociatedComponent())
+			prim->SetWorldLocation(mainCharacter->GetHoldSocketLocation());
 	}
 	else if (currentHoldingState == EHoldingState::Throwing || currentHoldingState == EHoldingState::ReleasingLightGrab)
-		handleComponent->SetTargetLocation(mainCharacter->GetTwoHandsLocation());
-	else
-		releaseCurrentTime = 0.0f;
+	{
+		if (UPrimitiveComponent* prim = holdingObject->GetAssociatedComponent())
+		{
+			FVector	middleTwoHands = mainCharacter->GetTwoHandsLocation();
+			prim->SetWorldLocation(middleTwoHands);
+		}
+	}
 }
 
 void	UHoldComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
@@ -168,12 +153,13 @@ void	UHoldComponent::BeginLightGrabPositionUpdate()
 	if (holdingObject->IsSticked())
 		holdingObject->Unstick();
 
-	holdingPrimitiveComponent = holdingObject->GetAssociatedComponent();
-	
+	holdingPrimitiveComponent = holdingObject->GetAssociatedComponent();	
 	holdingPrimitiveComponent->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());	//RESET ROTATION
-	handleComponent->GrabComponentAtLocationWithRotation
-		(holdingPrimitiveComponent, "", holdingPrimitiveComponent->GetComponentLocation(), FRotator::ZeroRotator);
-	holdingPrimitiveComponent->SetCollisionProfileName("OverlapAllDynamic");	//DISABLE OBJECT COLLISION
+	//previousCollisionEnableValue = holdingPrimitiveComponent->GetCollisionEnabled();
+	//holdingPrimitiveComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	holdingPrimitiveComponent->SetCollisionProfileName("OverlapAllDynamic");
+	previousGravityValue = holdingPrimitiveComponent->IsGravityEnabled();
+	holdingPrimitiveComponent->SetEnableGravity(false);
 	mainCharacter->SetHoldingObject(true);
 	mainCharacter->UnblockCharacter();
 
@@ -181,9 +167,6 @@ void	UHoldComponent::BeginLightGrabPositionUpdate()
 
 	currentHoldingState = EHoldingState::LightGrabbing;
 	holdingStateChangedDelegate.Broadcast(EHoldingState::PreLightGrabbing, EHoldingState::LightGrabbing);
-
-	if (holdingObject->IgnoreActorWhileMoving)
-		mainCharacter->MoveIgnoreActorAdd(holdingObject->GetOwner());
 }
 
 void	UHoldComponent::EndHeavyGrab()
@@ -269,12 +252,15 @@ void	UHoldComponent::EndThrow()
 	if (currentHoldingState == EHoldingState::Throwing)
 	{
 		holdingObject->SetThrown();
-		UPrimitiveComponent* tempPrimitive = holdingPrimitiveComponent;
+		UInteractableComponent* tempInteractable = holdingObject.IsValid() ? holdingObject.Get() : nullptr;
 		releaseLightGrabbedObject();
-		FRotator	tempRotation = characterCapsule->GetComponentRotation();
-		tempRotation.Pitch += AdditionalThrowAngle;
-		tempPrimitive->AddImpulse(tempRotation.Vector() * ThrowPower);
-		
+		if (tempInteractable)
+		{
+			FRotator	tempRotation = characterCapsule->GetComponentRotation();
+			tempRotation.Pitch += AdditionalThrowAngle;
+			tempInteractable->GetAssociatedComponent()->AddImpulse(tempRotation.Vector() * ThrowPower);
+		}
+
 		mainCharacter->SetHoldingObject(false);
 		holdingStateChangedDelegate.Broadcast(EHoldingState::Throwing, EHoldingState::None);
 		currentHoldingState = EHoldingState::None;
@@ -408,11 +394,10 @@ void	UHoldComponent::CancelHeavyGrab()
 
 void	UHoldComponent::releaseLightGrabbedObject()
 {
-	handleComponent->ReleaseComponent();
 	holdingPrimitiveComponent->SetCollisionProfileName("SmallInteractable");
+	holdingPrimitiveComponent->SetEnableGravity(previousGravityValue);
 	if (holdingObject.IsValid())
 	{
-		mainCharacter->MoveIgnoreActorRemove(holdingObject->GetOwner());
 		holdingObject->SetHoldComponent(nullptr);
 		holdingObject->onEndGrab.Broadcast();
 	}

@@ -59,7 +59,7 @@ public:
 
 	void	SetHoldComponent(UHoldComponent* value = nullptr) { holder = value; }
 	void	SetStickingActivated() { isSticked = true; }
-	void	SetThrown() { thrown = true; }
+	void	SetThrown();
 	UFUNCTION(BlueprintPure)
 	bool	IsSticked() const { return isSticked; }
 	UFUNCTION(BlueprintCallable)
@@ -107,8 +107,6 @@ public:
 	bool	IsHeavy = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
 	bool	MemoryInteractable = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactions Settings")
-	bool	IgnoreActorWhileMoving = false;
 
 	UPROPERTY(EditAnywhere, Category = "Interactions Settings")
 	USceneComponent*	CollisionComponent;
@@ -136,6 +134,7 @@ private:
 	TArray<FStickConstraint>			stickingConstraints;
 	TWeakObjectPtr<UPrimitiveComponent>	associatedComponent = nullptr;
 	UHoldComponent*						holder = nullptr;
+	ECollisionResponse					previousReponse;
 
 	bool								thrown = false;
 	bool								isSticked = false;

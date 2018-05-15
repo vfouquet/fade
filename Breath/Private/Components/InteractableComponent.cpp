@@ -211,7 +211,7 @@ void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* Ot
 {
 	if (!associatedComponent.IsValid())
 		return;
-	if (!thrown && associatedComponent.IsValid())
+	if (!thrown)
 	{
 		UChemicalCeramicComponent* ceramicComp = Cast<UChemicalCeramicComponent>(UChemicalComponent::FindAssociatedChemicalComponent(associatedComponent.Get()));
 		if (ceramicComp)
@@ -243,6 +243,7 @@ void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* Ot
 			if (ceramicComp)
 				ceramicComp->Break();
 			thrown = false;
+			associatedComponent->SetCollisionResponseToChannel(ECC_Pawn, previousReponse);
 		}
 	}
 
@@ -402,6 +403,16 @@ UInteractableComponent* UInteractableComponent::FindAssociatedInteractableCompon
 			return interactableComp;
 	}
 	return nullptr;
+}
+
+void	UInteractableComponent::SetThrown()
+{
+	thrown = true;
+	if (associatedComponent.IsValid())
+	{
+		previousReponse = associatedComponent->GetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn);
+		associatedComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	}
 }
 	
 TArray<UInteractableComponent*>	UInteractableComponent::GetCarrier() const
