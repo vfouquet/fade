@@ -5,6 +5,7 @@
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "./Components/CapsuleComponent.h"
 #include "InteractableComponent.h"
+#include "./Containers/Array.h"
 
 UENUM(BlueprintType)
 enum class EHoldingState : uint8
@@ -105,8 +106,16 @@ protected:
 	bool							previousGravityValue = false;
 
 	UPROPERTY(VisibleAnywhere)
-	TWeakObjectPtr<UInteractableComponent>	holdingObject;
-	EHoldingState							currentHoldingState = EHoldingState::None;
+	TWeakObjectPtr<UInteractableComponent>							holdingObject;
+	EHoldingState													currentHoldingState = EHoldingState::None;
+
+	struct FPendingPrimitive
+	{
+		TWeakObjectPtr<UPrimitiveComponent>	primitive;
+		ECollisionResponse					response;
+	};
+
+	TArray<FPendingPrimitive>	pendingReleasedPrimitives;
 public:
 	UPROPERTY(BlueprintAssignable)
 	FHoldStateChanged	holdingStateChangedDelegate;

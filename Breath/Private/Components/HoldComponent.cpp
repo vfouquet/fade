@@ -42,6 +42,20 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	if (!characterCapsule && !GetOwner())
 		return;
 
+	pendingReleasedPrimitives.RemoveAll([&](FPendingPrimitive value) {
+		if (!value.primitive.IsValid())
+			return true;
+		TArray<UPrimitiveComponent*>	overlappings;
+		characterCapsule->GetOverlappingComponents(overlappings);
+		for (auto& overlapPrim : overlappings)
+		{
+			if (overlapPrim == value.primitive.Get())
+				return false;
+		}
+		value.primitive->SetCollisionResponseToChannel(ECC_Pawn, value.response);
+		return true;
+	});
+
 	detectInteractableAround();
 
 	if (currentHoldingState == EHoldingState::LightGrabbing)
@@ -53,7 +67,11 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		}
 
 		if (UPrimitiveComponent* prim = holdingObject->GetAssociatedComponent())
+		{
 			prim->SetWorldLocation(mainCharacter->GetHoldSocketLocation());
+			prim->SetAllPhysicsLinearVelocity(FVector::ZeroVector);
+			prim->SetAllPhysicsAngularVelocity(FVector::ZeroVector);
+		}
 	}
 	else if (currentHoldingState == EHoldingState::Throwing || currentHoldingState == EHoldingState::ReleasingLightGrab)
 	{
@@ -185,10 +203,20 @@ void	UHoldComponent::EndHeavyGrab()
 	
 void	UHoldComponent::EndLightGrabRelease()
 {
+	UPrimitiveComponent* tempPrim = holdingObject.IsValid() ? holdingObject->GetAssociatedComponent() : nullptr;
 	releaseLightGrabbedObject();
 	mainCharacter->SetHoldingObject(false);
 	mainCharacter->UnblockCharacter();
-	
+
+	if (tempPrim)
+	{
+		FPendingPrimitive	pendingPrim;
+		pendingPrim.primitive = tempPrim;
+		pendingPrim.response = tempPrim->GetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn);
+		pendingReleasedPrimitives.Add(pendingPrim);
+		tempPrim->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	}
+
 	//UAkGameplayStatics::PostEvent(holdingObject->HitEvent, GetOwner());
 	currentHoldingState = EHoldingState::None;
 	holdingStateChangedDelegate.Broadcast(EHoldingState::ReleasingLightGrab, EHoldingState::None);
