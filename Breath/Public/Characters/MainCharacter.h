@@ -125,6 +125,8 @@ public:
 	void	SetCanAutoClimb(bool const value) { bCanAutoClimbInAir = value; }
 
 	UFUNCTION(BlueprintCallable)
+	void	SetStopGrabLock(bool value) { bStopGrabDisable = value; }
+	UFUNCTION(BlueprintCallable)
 	void	BlockCharacterJump() { bJumpLocked = true; }
 	UFUNCTION(BlueprintCallable)
 	void	UnblockCharacterJump() { bJumpLocked = false; }
@@ -296,7 +298,8 @@ private:
 	bool	bThrowingObject = false;
 	bool	bHoldingObject = false;
 	bool	bIsDead = false;
-	
+	bool	bStopGrabDisable = false;
+
 	//PUSH/PULL INPUT FROM CONTROLLER
 	bool	rotatingLeft = false;
 	bool	rotatingRight = false;

@@ -165,7 +165,7 @@ void	AMainCharacter::BeginGrab()
 
 void	AMainCharacter::StopGrab()
 {
-	if (!holdComponent)
+	if (!holdComponent || bStopGrabDisable)
 		return;
 	holdComponent->StopGrab();
 }
