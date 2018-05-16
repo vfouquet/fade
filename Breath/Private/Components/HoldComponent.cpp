@@ -278,14 +278,16 @@ void	UHoldComponent::EndThrow()
 {
 	if (currentHoldingState == EHoldingState::Throwing)
 	{
-		holdingObject->SetThrown();
-		UInteractableComponent* tempInteractable = holdingObject.IsValid() ? holdingObject.Get() : nullptr;
+		UInteractableComponent* tempInter = holdingObject.IsValid() ? holdingObject.Get() : nullptr;
+		UInteractableComponent* tempInteractablePrim = holdingObject.IsValid() ? holdingObject.Get() : nullptr;
 		releaseLightGrabbedObject();
-		if (tempInteractable)
+		if (tempInter)
+			tempInter->SetThrown();
+		if (tempInteractablePrim)
 		{
 			FRotator	tempRotation = characterCapsule->GetComponentRotation();
 			tempRotation.Pitch += AdditionalThrowAngle;
-			tempInteractable->GetAssociatedComponent()->AddImpulse(tempRotation.Vector() * ThrowPower);
+			tempInteractablePrim->GetAssociatedComponent()->AddImpulse(tempRotation.Vector() * ThrowPower);
 		}
 
 		mainCharacter->SetHoldingObject(false);
