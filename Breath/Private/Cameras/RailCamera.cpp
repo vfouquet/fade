@@ -101,16 +101,19 @@ void	ARailCamera::ChangePlayer(AActor* PlayerActor, bool bTeleport)
 	}
 }
 
-void ARailCamera::Tick(float DeltaSeconds)
+void ARailCamera::UpdateCamera(float DeltaSeconds)
 {
-	Super::Tick(DeltaSeconds);
-
 	FVector DistanceOffset(-this->CameraSettings.CameraDistanceOffset, 0.0f, 0.0f);
 	FVector CameraRelativeLocation = GetCameraComponent()->RelativeLocation;
 
-	FVector InterpVec = FMath::VInterpConstantTo(CameraRelativeLocation, DistanceOffset, DeltaSeconds, this->CameraSettings.CameraDistanceOffsetSpeed);
+	float x, z;
+	x = CameraRelativeLocation.X;
+	z = CameraRelativeLocation.Z;
 
-	GetCameraComponent()->SetRelativeLocation(InterpVec);
+	x = FMath::FInterpConstantTo(x, -this->CameraSettings.CameraDistanceOffset, DeltaSeconds, this->CameraSettings.CameraDistanceOffsetSpeed);
+	z = FMath::FInterpConstantTo(z, this->CameraSettings.CameraHeightOffset, DeltaSeconds, this->CameraSettings.CameraHeightOffsetSpeed);
+
+	GetCameraComponent()->SetRelativeLocation(FVector(x, 0.0f, z));
 
 #if WITH_EDITOR
 	DrawDebugCamera(GetWorld(), this->GetActorLocation(), this->GetActorRotation(), this->GetCameraComponent()->FieldOfView, 1.f, FColor::Red);

@@ -40,6 +40,10 @@ struct FCameraSettings
 	UPROPERTY(EditAnywhere)
 	float	CameraDistanceOffsetSpeed;
 	UPROPERTY(EditAnywhere)
+	float	CameraHeightOffset;
+	UPROPERTY(EditAnywhere)
+	float	CameraHeightOffsetSpeed;
+	UPROPERTY(EditAnywhere)
 	TArray<FCameraInterestPoint>	InterestPoints;
 
 
@@ -75,7 +79,7 @@ public:
 
 	USceneComponent*	GetCameraArm();
 
-	virtual void Tick(float DeltaSeconds) override;
+	void UpdateCamera(float DeltaSeconds);
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 	UFUNCTION(BlueprintCallable)
