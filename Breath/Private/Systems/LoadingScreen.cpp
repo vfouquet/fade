@@ -72,7 +72,7 @@ void SSimpleLoadingScreen::Construct(const FArguments& InArgs, const FLoadingScr
 			SNew(SBorder)
 			.HAlign(HAlign_Fill)
 		.VAlign(VAlign_Fill)
-		.BorderBackgroundColor(FLinearColor(0, 0, 0, 0.75))
+		.BorderBackgroundColor(FLinearColor(0, 0, 0, 0.0))
 		.BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
 		[
 			SNew(SSafeZone)
