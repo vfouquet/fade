@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "UIWidgetControllerSupported.h"
+
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "MainPlayerController.generated.h"
@@ -38,8 +40,21 @@ public:
 	void	MoveForward(float Value);
 	void	MoveRight(float Value);
 
+	void	MovePhotoForward(float Value);
+	void	MovePhotoRight(float Value);
+
 	void	RotateHorizontal(float Value);
 	void	RotateVertical(float Value);
+
+	void	Pause();
+	void	MenuUp();
+	void	MenuDown();
+	void	MenuLeft();
+	void	MenuRight();
+	void	MenuValidatePressed();
+	void	MenuValidateReleased();
+	void	MenuBackPressed();
+	void	MenuBackReleased();
 
 	void	Jump();
 
@@ -51,9 +66,14 @@ public:
 	void	EnableGodMode();
 	UFUNCTION(Exec)
 	void	DisableGodMode();
+	UFUNCTION(Exec, BlueprintCallable)
+	void	PhotoMode(bool value);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void	OnPawnDeath();
+
+	UFUNCTION(BlueprintCallable)
+	void	SetCurrentWidget(UUIWidgetControllerSupported* umg) { currentUIWidget = umg; }
 
 	float		GetInputAngle() const { return FMath::RadiansToDegrees(FMath::Atan2(GetInputAxisValue("MoveForward"), GetInputAxisValue("MoveRight"))); }
 	FRotator	GetCameraRotation() const { return PlayerCameraManager->GetCameraRotation(); }
@@ -77,6 +97,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb")
 	float	ClimbStickAngleTolerence = 45.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, CAtegory = "UI")
+	TSubclassOf<class UUserWidget>	PauseWidgetSample;
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	ACameraActor*		CameraActor;
@@ -87,4 +110,6 @@ private:
 	AMainCharacter*			MainCharacter;
 	USpringArmComponent*	SpringArmComponent;
 	FVector2D				lastStickInput;
+
+	TWeakObjectPtr<UUIWidgetControllerSupported>	currentUIWidget;
 };

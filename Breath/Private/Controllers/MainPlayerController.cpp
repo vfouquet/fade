@@ -60,6 +60,26 @@ void AMainPlayerController::DebugMode(bool bValue)
 	}
 }
 
+void	AMainPlayerController::PhotoMode(bool bValue)
+{
+	if (bValue)
+	{
+		this->ChangeState(NAME_Spectating);
+		this->PlayerState->bIsSpectator = true;
+		//UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.0f);
+		
+		UGameplayStatics::SetGamePaused(GetWorld(), true);
+	}
+	else
+	{
+		this->PlayerState->bIsSpectator = false;
+		this->ChangeState(NAME_Playing);
+		//UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
+		UGameplayStatics::SetGamePaused(GetWorld(), false);
+		Possess(MainCharacter);
+	}
+}
+
 ACameraActor* AMainPlayerController::GetCameraActor()
 {
 	return CameraActor;
@@ -73,6 +93,8 @@ void AMainPlayerController::SetupInputComponent()
 	{
 		InputComponent->BindAxis("MoveForward", this, &AMainPlayerController::MoveForward);
 		InputComponent->BindAxis("MoveRight", this, &AMainPlayerController::MoveRight);
+		InputComponent->BindAxis("MoveForward", this, &AMainPlayerController::MovePhotoForward).bExecuteWhenPaused = true;
+		InputComponent->BindAxis("MoveRight", this, &AMainPlayerController::MovePhotoRight).bExecuteWhenPaused = true;
 		//InputComponent->BindAxis("LookHorizontal", this, &AMainPlayerController::RotateHorizontal);
 		//InputComponent->BindAxis("LookVertical", this, &AMainPlayerController::RotateVertical);
 
@@ -80,6 +102,16 @@ void AMainPlayerController::SetupInputComponent()
 		InputComponent->BindAction("Action", IE_Pressed, this, &AMainPlayerController::Action);
 		InputComponent->BindAction("Grab", IE_Pressed, this, &AMainPlayerController::BeginGrab);
 		InputComponent->BindAction("Grab", IE_Released, this, &AMainPlayerController::StopGrab);
+		InputComponent->BindAction("Pause", IE_Pressed, this, &AMainPlayerController::Pause).bExecuteWhenPaused = true;
+
+		InputComponent->BindAction("MenuUp", IE_Pressed, this, &AMainPlayerController::MenuUp).bExecuteWhenPaused = true;
+		InputComponent->BindAction("MenuDown", IE_Pressed, this, &AMainPlayerController::MenuDown).bExecuteWhenPaused = true;
+		InputComponent->BindAction("MenuRight", IE_Pressed, this, &AMainPlayerController::MenuRight).bExecuteWhenPaused = true;
+		InputComponent->BindAction("MenuLeft", IE_Pressed, this, &AMainPlayerController::MenuLeft).bExecuteWhenPaused = true;
+		InputComponent->BindAction("MenuValidate", IE_Pressed, this, &AMainPlayerController::MenuValidatePressed).bExecuteWhenPaused = true;
+		InputComponent->BindAction("MenuValidate", IE_Released, this, &AMainPlayerController::MenuValidateReleased).bExecuteWhenPaused = true;
+		InputComponent->BindAction("MenuCancel", IE_Pressed, this, &AMainPlayerController::MenuBackPressed).bExecuteWhenPaused = true;
+		InputComponent->BindAction("MenuCancel", IE_Released, this, &AMainPlayerController::MenuBackReleased).bExecuteWhenPaused = true;
 #if WITH_EDITOR
 		InputComponent->BindAction("DebugPauseEditor", IE_Pressed, this, &AMainPlayerController::DebugPauseEditor);
 #endif
@@ -164,6 +196,18 @@ void	AMainPlayerController::MoveRight(float Value)
 	}
 }
 
+void	AMainPlayerController::MovePhotoForward(float value)
+{
+	if (GetSpectatorPawn())
+		GetSpectatorPawn()->MoveForward(value);
+}
+
+void	AMainPlayerController::MovePhotoRight(float value)
+{
+	if (GetSpectatorPawn())
+		GetSpectatorPawn()->MoveRight(value);
+}
+
 void	AMainPlayerController::RotateHorizontal(float Value)
 {
 	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
@@ -174,6 +218,83 @@ void	AMainPlayerController::RotateVertical(float Value)
 {
 	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 		MainCharacter->RotateVertical(Value);
+}
+
+void	AMainPlayerController::Pause()
+{
+	if (UGameplayStatics::IsGamePaused(GetWorld()))
+	{
+		if (currentUIWidget.IsValid())
+			currentUIWidget->RemoveFromParent();
+		SetInputMode(FInputModeGameOnly());
+		UGameplayStatics::SetGamePaused(GetWorld(), false);
+	}
+	else
+	{
+		
+		if (!PauseWidgetSample)
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMainPlayerController : Couldn't create PauseUI beacuse the sample is not defined"));
+			return;
+		}
+
+		currentUIWidget = CreateWidget<UUIWidgetControllerSupported>(this, PauseWidgetSample);
+		if (!currentUIWidget.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("AMainPlayerController : PauseUI is nullptr after creation"));
+			return;
+		}
+		currentUIWidget->AddToViewport();
+		UGameplayStatics::SetGamePaused(GetWorld(), true);
+	}
+}
+
+void	AMainPlayerController::MenuUp()
+{
+	if (currentUIWidget.IsValid())
+		IUMGController::Execute_MoveUp(currentUIWidget.Get());
+}
+
+void	AMainPlayerController::MenuDown()
+{
+	if (currentUIWidget.IsValid())
+		IUMGController::Execute_MoveDown(currentUIWidget.Get());
+}
+
+void	AMainPlayerController::MenuLeft()
+{
+	if (currentUIWidget.IsValid())
+		IUMGController::Execute_MoveLeft(currentUIWidget.Get());
+}
+
+void	AMainPlayerController::MenuRight()
+{
+	if (currentUIWidget.IsValid())
+		IUMGController::Execute_MoveRight(currentUIWidget.Get());
+}
+
+void	AMainPlayerController::MenuValidatePressed()
+{
+	if (currentUIWidget.IsValid())
+		IUMGController::Execute_Validate(currentUIWidget.Get(), true);
+}
+
+void	AMainPlayerController::MenuValidateReleased()
+{
+	if (currentUIWidget.IsValid())
+		IUMGController::Execute_Validate(currentUIWidget.Get(), false);
+}
+
+void	AMainPlayerController::MenuBackPressed()
+{
+	if (currentUIWidget.IsValid())
+		IUMGController::Execute_Cancel(currentUIWidget.Get(), true);
+}
+
+void	AMainPlayerController::MenuBackReleased()
+{
+	if (currentUIWidget.IsValid())
+		IUMGController::Execute_Cancel(currentUIWidget.Get(), false);
 }
 
 void AMainPlayerController::Jump()
