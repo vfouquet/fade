@@ -51,7 +51,6 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 	if (!bAlreadyTick)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("NOT TICK"));
 		addPropagationComponents();
 		refreshChangersWithCurrentInteractions();
 		bAlreadyTick = true;
