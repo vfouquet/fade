@@ -65,42 +65,17 @@ void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void	UInteractableComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (!associatedComponent.IsValid())
+	if (!associatedComponent.IsValid() || !thrown)
 		return;
-	if (!thrown)
+		
+	if (!Cast<ACharacter>(OtherActor))
 	{
+		UAkGameplayStatics::PostEvent(HitEvent, GetOwner());
 		UChemicalCeramicComponent* ceramicComp = Cast<UChemicalCeramicComponent>(UChemicalComponent::FindAssociatedChemicalComponent(associatedComponent.Get()));
 		if (ceramicComp)
-		{
-			float	zVel = FMath::Abs(associatedComponent->GetComponentVelocity().Z);
-			if (zVel > ceramicComp->HeightBreakThreshold)
-				ceramicComp->Break();
-			/*
-			else if (OtherComp != nullptr && OtherComp->IsSimulatingPhysics())
-			{
-				if (OtherComp->GetComponentVelocity().Size() * OtherComp->GetMass() > ceramicComp->OtherActorThreshold)
-					ceramicComp->Break();
-			}
-			else if (ACharacter* character = Cast<ACharacter>(OtherActor))
-			{
-				if (character->GetVelocity().Size() > 300.0f)
-					ceramicComp->Break();
-			}
-			*/
-		}
-		return;
-	}
-	else
-	{
-		if (!Cast<ACharacter>(OtherActor))
-		{
-			UAkGameplayStatics::PostEvent(HitEvent, GetOwner());
-			UChemicalCeramicComponent* ceramicComp = Cast<UChemicalCeramicComponent>(UChemicalComponent::FindAssociatedChemicalComponent(associatedComponent.Get()));
-			if (ceramicComp)
-				ceramicComp->Break();
-			thrown = false;
-			associatedComponent->SetCollisionResponseToChannel(ECC_Pawn, previousReponse);
-		}
+			ceramicComp->Break();
+		thrown = false;
+		associatedComponent->SetCollisionResponseToChannel(ECC_Pawn, previousReponse);
 	}
 
 	if (!CanBeSticked || !OtherActor || isSticked)

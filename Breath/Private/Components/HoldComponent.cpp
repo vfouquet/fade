@@ -203,19 +203,9 @@ void	UHoldComponent::EndHeavyGrab()
 	
 void	UHoldComponent::EndLightGrabRelease()
 {
-	UPrimitiveComponent* tempPrim = holdingObject.IsValid() ? holdingObject->GetAssociatedComponent() : nullptr;
 	releaseLightGrabbedObject();
 	mainCharacter->SetHoldingObject(false);
 	mainCharacter->UnblockCharacter();
-
-	if (tempPrim)
-	{
-		FPendingPrimitive	pendingPrim;
-		pendingPrim.primitive = tempPrim;
-		pendingPrim.response = tempPrim->GetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn);
-		pendingReleasedPrimitives.Add(pendingPrim);
-		tempPrim->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	}
 
 	//UAkGameplayStatics::PostEvent(holdingObject->HitEvent, GetOwner());
 	currentHoldingState = EHoldingState::None;
@@ -423,6 +413,11 @@ void	UHoldComponent::releaseLightGrabbedObject()
 		{
 			holdingObject->GetAssociatedComponent()->SetCollisionProfileName("SmallInteractable");
 			holdingObject->GetAssociatedComponent()->SetEnableGravity(previousGravityValue);
+			FPendingPrimitive	pendingPrim;
+			pendingPrim.primitive = holdingObject->GetAssociatedComponent();
+			pendingPrim.response = pendingPrim.primitive->GetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn);
+			pendingReleasedPrimitives.Add(pendingPrim);
+			pendingPrim.primitive->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 		}
 		holdingObject->SetHoldComponent(nullptr);
 		holdingObject->onEndGrab.Broadcast();
