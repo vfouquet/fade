@@ -64,19 +64,19 @@ void	AMainPlayerController::PhotoMode(bool bValue)
 {
 	if (bValue)
 	{
-		this->ChangeState(NAME_Spectating);
-		this->PlayerState->bIsSpectator = true;
+		//this->ChangeState(NAME_Spectating);
+		//this->PlayerState->bIsSpectator = true;
 		//UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.0f);
 		
 		UGameplayStatics::SetGamePaused(GetWorld(), true);
 	}
 	else
 	{
-		this->PlayerState->bIsSpectator = false;
-		this->ChangeState(NAME_Playing);
+		//this->PlayerState->bIsSpectator = false;
+		//this->ChangeState(NAME_Playing);
 		//UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
 		UGameplayStatics::SetGamePaused(GetWorld(), false);
-		Possess(MainCharacter);
+		//Possess(MainCharacter);
 	}
 }
 

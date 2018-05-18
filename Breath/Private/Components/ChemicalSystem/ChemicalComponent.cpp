@@ -51,6 +51,7 @@ void UChemicalComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 	if (!bAlreadyTick)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("NOT TICK"));
 		addPropagationComponents();
 		refreshChangersWithCurrentInteractions();
 		bAlreadyTick = true;
@@ -213,6 +214,24 @@ void	UChemicalComponent::GiveIdentity(EChemicalState previousState)
 	state = previousState;
 	stateChangedDelegate.Broadcast(EChemicalTransformation::GivingIdentity, EChemicalState::NoIdentity, previousState);
 	refreshChangersWithCurrentInteractions();
+}
+
+void	UChemicalComponent::AddPropagationComponent(UChemicalComponent* otherChemicalComp)
+{
+	if (!otherChemicalComp)
+	{
+		AActor* owner = GetOwner();
+		UE_LOG(LogTemp, Warning, TEXT("%s - %s : Cannot add static propagation component, the chemical component is nullptr"), owner ? *owner->GetName() : *FString("Error"), *GetName());
+		return;
+	}
+	FChemicalPropagation	propagationParams;
+	propagationParams.component = otherChemicalComp;
+	propagationParams.primitive = otherChemicalComp->GetAssociatedComponent();
+	propagationComponents.Add(propagationParams);
+
+	propagationParams.component = this;
+	propagationParams.primitive = GetAssociatedComponent();
+	otherChemicalComp->propagationComponents.Add(propagationParams);
 }
 
 void	UChemicalComponent::AddHitComponent(UChemicalComponent* chemicalComp)
