@@ -110,6 +110,7 @@ private:
 	AMainCharacter*			MainCharacter;
 	USpringArmComponent*	SpringArmComponent;
 	FVector2D				lastStickInput;
+	bool					bIsTPS = false;
 
 	TWeakObjectPtr<UUIWidgetControllerSupported>	currentUIWidget;
 };

@@ -16,11 +16,21 @@
 #include "Story/StoryChapter.h"
 #include "Gameplay/MainPlayerStart.h"
 
+#include "BreathGameInstance.h"
 
 ABreathGameModeBase::ABreathGameModeBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	this->bStartPlayersAsSpectators = true;
+}
+	
+void ABreathGameModeBase::InitGameState()
+{
+	UBreathGameInstance* gameInst = Cast<UBreathGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (gameInst && TPSCharacter && ClassicCharacter)
+		this->DefaultPawnClass = gameInst->IsCameraTPS() ? TPSCharacter->StaticClass() : ClassicCharacter->StaticClass();
+
+	Super::InitGameState();
 }
 
 void ABreathGameModeBase::SaveGame()
@@ -105,5 +115,15 @@ void ABreathGameModeBase::LoadGameToChapter(UStoryChapter* Chapter)
 				}
 			}
 		}
+	}
+}
+
+void	ABreathGameModeBase::SetCameraTPS(bool value)
+{
+	UBreathGameInstance* gameInst = Cast<UBreathGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (gameInst)
+	{
+		gameInst->SetCameraTPSValue(value);
+		this->DefaultPawnClass = gameInst->IsCameraTPS() ? TPSCharacter : ClassicCharacter;
 	}
 }

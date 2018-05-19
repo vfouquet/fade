@@ -13,9 +13,17 @@
 
 #include "Camera/CameraActor.h"
 
+#include "BreathGameInstance.h"
+
 void AMainPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UBreathGameInstance* gameInst = Cast<UBreathGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (gameInst)
+		bIsTPS = gameInst->IsCameraTPS();
+	if (bIsTPS)
+		return;
 
 	this->bAutoManageActiveCameraTarget = true;
 
@@ -95,8 +103,8 @@ void AMainPlayerController::SetupInputComponent()
 		InputComponent->BindAxis("MoveRight", this, &AMainPlayerController::MoveRight);
 		InputComponent->BindAxis("MoveForward", this, &AMainPlayerController::MovePhotoForward).bExecuteWhenPaused = true;
 		InputComponent->BindAxis("MoveRight", this, &AMainPlayerController::MovePhotoRight).bExecuteWhenPaused = true;
-		//InputComponent->BindAxis("LookHorizontal", this, &AMainPlayerController::RotateHorizontal);
-		//InputComponent->BindAxis("LookVertical", this, &AMainPlayerController::RotateVertical);
+		InputComponent->BindAxis("LookHorizontal", this, &AMainPlayerController::RotateHorizontal);
+		InputComponent->BindAxis("LookVertical", this, &AMainPlayerController::RotateVertical);
 
 		InputComponent->BindAction("Jump", IE_Pressed, this, &AMainPlayerController::Jump);
 		InputComponent->BindAction("Action", IE_Pressed, this, &AMainPlayerController::Action);
@@ -126,7 +134,8 @@ void AMainPlayerController::Possess(APawn* aPawn)
 
 	if (MainCharacter != nullptr)
 	{
-		this->SetViewTarget(CameraActor);
+		if (!bIsTPS)
+			this->SetViewTarget(CameraActor);
 
 		SpringArmComponent = MainCharacter->FindComponentByClass<USpringArmComponent>();
 

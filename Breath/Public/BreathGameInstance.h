@@ -42,6 +42,11 @@ public:
 
 	UFUNCTION()
 	virtual void BeginLoadingScreen(const FLoadingScreenDescription& ScreenDescription);
+	
+	UFUNCTION(BlueprintPure)
+	bool	IsCameraTPS() const { return bIsTPSCamera; }
+	UFUNCTION(BlueprintCallable)
+	void	SetCameraTPSValue(bool value) { bIsTPSCamera = value; }
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -50,6 +55,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStoryChapter*	CurrentChapter;
 
+	bool	bIsTPSCamera = false;
 protected:
 	virtual void OnStart() override;
 

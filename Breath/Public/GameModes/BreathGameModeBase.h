@@ -19,6 +19,7 @@ class BREATH_API ABreathGameModeBase : public AGameModeBase
 
 public:
 	ABreathGameModeBase(const FObjectInitializer& ObjectInitializer);
+	virtual void InitGameState() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool	bGameStarted;
@@ -32,6 +33,14 @@ public:
 	void	LoadGame();
 	//UFUNCTION(exec)
 	void	LoadGameToChapter(UStoryChapter* Chapter);
+
+	UFUNCTION(exec, BlueprintCallable)
+	void	SetCameraTPS(bool value);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TPS")
+	TSubclassOf<ACharacter>	TPSCharacter;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TPS")
+	TSubclassOf<ACharacter>	ClassicCharacter;
 
 protected:
 	
