@@ -27,8 +27,8 @@ ABreathGameModeBase::ABreathGameModeBase(const FObjectInitializer& ObjectInitial
 void ABreathGameModeBase::InitGameState()
 {
 	UBreathGameInstance* gameInst = Cast<UBreathGameInstance>(UGameplayStatics::GetGameInstance(this));
-	if (gameInst && TPSCharacter && ClassicCharacter)
-		this->DefaultPawnClass = gameInst->IsCameraTPS() ? TPSCharacter->StaticClass() : ClassicCharacter->StaticClass();
+	//if (gameInst && TPSCharacter && ClassicCharacter)
+	//	this->DefaultPawnClass = gameInst->IsCameraTPS() ? TPSCharacter->StaticClass() : ClassicCharacter->StaticClass();
 
 	Super::InitGameState();
 }
@@ -123,7 +123,7 @@ void	ABreathGameModeBase::SetCameraTPS(bool value)
 	UBreathGameInstance* gameInst = Cast<UBreathGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (gameInst)
 	{
-		gameInst->SetCameraTPSValue(value);
-		this->DefaultPawnClass = gameInst->IsCameraTPS() ? TPSCharacter : ClassicCharacter;
+		//gameInst->SetCameraTPSValue(value);
+		//this->DefaultPawnClass = gameInst->IsCameraTPS() ? TPSCharacter : ClassicCharacter;
 	}
 }
