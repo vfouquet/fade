@@ -101,6 +101,7 @@ void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, UIn
 
 	if (coeff < 0.f)
 	{
+		if (holdingObject->bLockPull)	return;
 		this->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
 
 		if (SweepResult.bBlockingHit == false)
@@ -156,6 +157,7 @@ void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, UIn
 	}
 	else
 	{
+		if (holdingObject->bLockPush)	return;
 // 		TArray<FHitResult> OutHits;
 // 		FCollisionQueryParams CollisionQueryParams;
 // 		CollisionQueryParams.AddIgnoredActor(this->GetOwner());
@@ -216,6 +218,8 @@ void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, UIn
 void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(bool direction, UInteractableComponent* holdingObject, FVector holdingObjectLocation)
 {
 	if (holdingObject == nullptr || holdingObject->GetOwner() == nullptr) return;
+	if (!direction && holdingObject->bLockLeftRotate)	return;
+	if (direction && holdingObject->bLockRightRotate)	return;
 	float angle = RotationSpeed * GetWorld()->GetDeltaSeconds();
 	angle *= direction ? -1.0f : 1.0f;
 	//MAYBE USE OBJECT WEIGHT

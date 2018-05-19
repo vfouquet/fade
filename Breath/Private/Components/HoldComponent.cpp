@@ -442,8 +442,9 @@ void	UHoldComponent::detectInteractableAround()
 	if (holdingObject.IsValid())
 		queryParams.AddIgnoredActor(holdingObject->GetOwner());
 
+	FVector	beginTrace = characterCapsule->GetComponentLocation();
 	FVector traceLocation = characterCapsule->GetComponentLocation() + GetOwner()->GetActorForwardVector() * 2.0f * characterCapsule->GetScaledCapsuleRadius();
-	GetWorld()->SweepMultiByChannel(hitResults, traceLocation, traceLocation, characterCapsule->GetComponentQuat(), ECollisionChannel::ECC_GameTraceChannel2,
+	GetWorld()->SweepMultiByChannel(hitResults, beginTrace, traceLocation, characterCapsule->GetComponentQuat(), ECollisionChannel::ECC_GameTraceChannel2,
 		FCollisionShape::MakeBox(FVector(characterCapsule->GetScaledCapsuleRadius(), characterCapsule->GetScaledCapsuleRadius(), 
 			characterCapsule->GetScaledCapsuleHalfHeight())), queryParams);
 	
@@ -453,6 +454,11 @@ void	UHoldComponent::detectInteractableAround()
 		{
 			if (!hitRes.Component.IsValid())
 				continue;
+
+			float scalRes = FVector::DotProduct(characterCapsule->GetForwardVector(), hitRes.Location - characterCapsule->GetComponentLocation());
+			if (scalRes < 0.0f)
+				continue;
+
 			UInteractableComponent* interComp = UInteractableComponent::FindAssociatedInteractableComponent(hitRes.Component.Get());
 			if (interComp == holdingObject)
 			{

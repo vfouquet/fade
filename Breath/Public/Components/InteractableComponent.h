@@ -106,6 +106,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound properties")
 	UAkAudioEvent*	HitEvent = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HeavyPush Properties")
+	bool	bLockPush = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HeavyPush Properties")
+	bool	bLockPull = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HeavyPush Properties")
+	bool	bLockLeftRotate = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HeavyPush Properties")
+	bool	bLockRightRotate = false;
+
 	UPROPERTY(BlueprintAssignable)
 	FConditionDelegate	onBeginGrab;
 	UPROPERTY(BlueprintAssignable)
