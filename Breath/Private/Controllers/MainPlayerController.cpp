@@ -22,8 +22,8 @@ void AMainPlayerController::BeginPlay()
 	UBreathGameInstance* gameInst = Cast<UBreathGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (gameInst)
 		bIsTPS = gameInst->IsCameraTPS();
-	//if (bIsTPS)
-	//	return;
+	if (bIsTPS)
+		return;
 
 	this->bAutoManageActiveCameraTarget = true;
 
@@ -134,7 +134,7 @@ void AMainPlayerController::Possess(APawn* aPawn)
 
 	if (MainCharacter != nullptr)
 	{
-		//if (!bIsTPS)
+		if (!bIsTPS)
 			this->SetViewTarget(CameraActor);
 
 		SpringArmComponent = MainCharacter->FindComponentByClass<USpringArmComponent>();
