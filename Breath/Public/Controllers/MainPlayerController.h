@@ -3,6 +3,7 @@
 #pragma once
 
 #include "UIWidgetControllerSupported.h"
+#include "PhotoCharacter.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
@@ -62,6 +63,11 @@ public:
 	void	BeginGrab();
 	void	StopGrab();
 
+	UFUNCTION(BlueprintPure)
+	AMainCharacter*	GetMainCharacter() const { return MainCharacter; }
+	UFUNCTION(BlueprintPure)
+	APhotoCharacter*	GetPhotoCharacter() const { return PhotoCharacter.IsValid()? PhotoCharacter.Get() : nullptr; }
+
 	UFUNCTION(Exec)
 	void	EnableGodMode();
 	UFUNCTION(Exec)
@@ -97,6 +103,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb")
 	float	ClimbStickAngleTolerence = 45.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Photo")
+	TSubclassOf<class APhotoCharacter>	PhotoCharacterClass;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, CAtegory = "UI")
 	TSubclassOf<class UUserWidget>	PauseWidgetSample;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, CAtegory = "UI")
@@ -109,10 +118,11 @@ protected:
 	TSubclassOf<class ACameraActor>	CameraActorClass;
 
 private:
-	AMainCharacter*			MainCharacter;
-	USpringArmComponent*	SpringArmComponent;
-	FVector2D				lastStickInput;
-	bool					bIsTPS = false;
+	TWeakObjectPtr<APhotoCharacter>	PhotoCharacter = nullptr;
+	AMainCharacter*					MainCharacter;
+	USpringArmComponent*			SpringArmComponent;
+	FVector2D						lastStickInput;
+	bool							bIsTPS = false;
 
 	TWeakObjectPtr<UUIWidgetControllerSupported>	currentUIWidget;
 	TWeakObjectPtr<UUIWidgetControllerSupported>	photo;

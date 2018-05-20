@@ -2,6 +2,7 @@
 
 #include "MainPlayerController.h"
 
+#include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/SpectatorPawn.h"
@@ -87,6 +88,29 @@ void	AMainPlayerController::PhotoMode(bool bValue)
 		if (photo.IsValid())
 			photo->AddToViewport();
 
+		if (PhotoCharacterClass)
+		{
+			if (MainCharacter)
+			{
+				FActorSpawnParameters	spParams;
+				spParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				PhotoCharacter = GetWorld()->SpawnActor<APhotoCharacter>(PhotoCharacterClass.Get(), MainCharacter->GetTransform(), spParams);
+				if (PhotoCharacter.IsValid())
+					MainCharacter->GetMesh()->SnapshotPose(PhotoCharacter->GetSnapshotPose());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("AMainPlayerController : Couldn't create photo character because the main is nullptr"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AMainPlayerController : Couldn't create PhotoCharacter because the class is not set"));
+		}
+
+		if (MainCharacter)
+			MainCharacter->GetMesh()->bRenderInMainPass = false;
+
 		UGameplayStatics::SetGamePaused(GetWorld(), true);
 	}
 	else
@@ -96,6 +120,12 @@ void	AMainPlayerController::PhotoMode(bool bValue)
 
 		if (photo.IsValid())
 			photo->RemoveFromParent();
+
+		if (PhotoCharacter.IsValid())
+			PhotoCharacter->Destroy();
+
+		if (MainCharacter)
+			MainCharacter->GetMesh()->bRenderInMainPass = false;
 
 		UGameplayStatics::SetGamePaused(GetWorld(), false);
 		Possess(MainCharacter);
