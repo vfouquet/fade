@@ -12,7 +12,7 @@
 #include "MainCharacter.h"
 
 #include "Camera/CameraActor.h"
-
+#include "MainSpectatorPawn.h"
 #include "BreathGameInstance.h"
 
 void AMainPlayerController::BeginPlay()
@@ -59,6 +59,10 @@ void AMainPlayerController::DebugMode(bool bValue)
 	{
 		this->ChangeState(NAME_Spectating);
 		this->PlayerState->bIsSpectator = true;
+
+		AMainSpectatorPawn* specPawn = Cast<AMainSpectatorPawn>(GetSpectatorPawn());
+		if (specPawn)
+			specPawn->SetBasicMode();
 	}
 	else
 	{
@@ -72,19 +76,22 @@ void	AMainPlayerController::PhotoMode(bool bValue)
 {
 	if (bValue)
 	{
-		//this->ChangeState(NAME_Spectating);
-		//this->PlayerState->bIsSpectator = true;
-		//UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.0f);
+		this->ChangeState(NAME_Spectating);
+		this->PlayerState->bIsSpectator = true;
+	
+		AMainSpectatorPawn* specPawn = Cast<AMainSpectatorPawn>(GetSpectatorPawn());
+		if (specPawn)
+			specPawn->SetPhotoMode();
 		
 		UGameplayStatics::SetGamePaused(GetWorld(), true);
 	}
 	else
 	{
-		//this->PlayerState->bIsSpectator = false;
-		//this->ChangeState(NAME_Playing);
-		//UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
+		this->PlayerState->bIsSpectator = false;
+		this->ChangeState(NAME_Playing);
+		
 		UGameplayStatics::SetGamePaused(GetWorld(), false);
-		//Possess(MainCharacter);
+		Possess(MainCharacter);
 	}
 }
 
@@ -175,10 +182,8 @@ void	AMainPlayerController::MoveForward(float Value)
 		FVector MoveDir = CamRot.Vector();
 		MainCharacter->Move(MoveDir * Value);
 	}
-	else if (this->GetSpectatorPawn())
-	{
-		this->GetSpectatorPawn()->MoveForward(Value);
-	}
+	else if (auto* spec = Cast<AMainSpectatorPawn>(this->GetSpectatorPawn()))
+		spec->MoveForward(Value);
 }
 
 void	AMainPlayerController::MoveRight(float Value)
@@ -199,34 +204,36 @@ void	AMainPlayerController::MoveRight(float Value)
 		FVector MoveDir = CamRot.RotateVector(FVector::RightVector);
 		MainCharacter->Move(MoveDir * Value);
 	}
-	else if (this->GetSpectatorPawn())
-	{
-		this->GetSpectatorPawn()->MoveRight(Value);
-	}
+	else if (auto* spec = Cast<AMainSpectatorPawn>(this->GetSpectatorPawn()))
+		spec->MoveRight(Value);
 }
 
 void	AMainPlayerController::MovePhotoForward(float value)
 {
-	if (GetSpectatorPawn())
-		GetSpectatorPawn()->MoveForward(value);
+	if (auto* spec = Cast<AMainSpectatorPawn>(this->GetSpectatorPawn()))
+		spec->MoveForward(value);
 }
 
 void	AMainPlayerController::MovePhotoRight(float value)
 {
-	if (GetSpectatorPawn())
-		GetSpectatorPawn()->MoveRight(value);
+	if (auto* spec = Cast<AMainSpectatorPawn>(this->GetSpectatorPawn()))
+		spec->MoveRight(value);
 }
 
 void	AMainPlayerController::RotateHorizontal(float Value)
 {
 	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 		MainCharacter->RotateHorizontal(Value);
+	else if (auto* spec = Cast<AMainSpectatorPawn>(this->GetSpectatorPawn()))
+		spec->RotateHorizontal(Value);
 }
 
 void	AMainPlayerController::RotateVertical(float Value)
 {
 	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 		MainCharacter->RotateVertical(Value);
+	else if (auto* spec = Cast<AMainSpectatorPawn>(this->GetSpectatorPawn()))
+		spec->RotateVertical(Value);
 }
 
 void	AMainPlayerController::Pause()
@@ -240,7 +247,6 @@ void	AMainPlayerController::Pause()
 	}
 	else
 	{
-		
 		if (!PauseWidgetSample)
 		{
 			UE_LOG(LogTemp, Error, TEXT("AMainPlayerController : Couldn't create PauseUI beacuse the sample is not defined"));
