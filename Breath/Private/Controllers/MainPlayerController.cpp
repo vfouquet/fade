@@ -83,13 +83,20 @@ void	AMainPlayerController::PhotoMode(bool bValue)
 		if (specPawn)
 			specPawn->SetPhotoMode();
 		
+		photo = CreateWidget<UUIWidgetControllerSupported>(this, PhotoWidgetSample);
+		if (photo.IsValid())
+			photo->AddToViewport();
+
 		UGameplayStatics::SetGamePaused(GetWorld(), true);
 	}
 	else
 	{
 		this->PlayerState->bIsSpectator = false;
 		this->ChangeState(NAME_Playing);
-		
+
+		if (photo.IsValid())
+			photo->RemoveFromParent();
+
 		UGameplayStatics::SetGamePaused(GetWorld(), false);
 		Possess(MainCharacter);
 	}
@@ -292,12 +299,16 @@ void	AMainPlayerController::MenuValidatePressed()
 {
 	if (currentUIWidget.IsValid())
 		IUMGController::Execute_Validate(currentUIWidget.Get(), true);
+	if (photo.IsValid())
+		IUMGController::Execute_Validate(photo.Get(), true);
 }
 
 void	AMainPlayerController::MenuValidateReleased()
 {
 	if (currentUIWidget.IsValid())
 		IUMGController::Execute_Validate(currentUIWidget.Get(), false);
+	if (photo.IsValid())
+		IUMGController::Execute_Validate(photo.Get(), true);
 }
 
 void	AMainPlayerController::MenuBackPressed()

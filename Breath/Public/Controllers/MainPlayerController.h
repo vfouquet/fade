@@ -99,6 +99,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, CAtegory = "UI")
 	TSubclassOf<class UUserWidget>	PauseWidgetSample;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, CAtegory = "UI")
+	TSubclassOf<class UUserWidget>	PhotoWidgetSample;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -113,4 +115,5 @@ private:
 	bool					bIsTPS = false;
 
 	TWeakObjectPtr<UUIWidgetControllerSupported>	currentUIWidget;
+	TWeakObjectPtr<UUIWidgetControllerSupported>	photo;
 };
