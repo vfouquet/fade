@@ -3,10 +3,24 @@
 #pragma once
 
 #include "PoseSnapshot.h"
+#include "Camera/CameraComponent.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "PhotoCharacter.generated.h"
+
+USTRUCT(BlueprintType)
+struct FPhotoPose
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Values")
+	FString Name;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Values")
+	UAnimMontage*	AssociatedMontage = nullptr;
+};
 
 UCLASS()
 class BREATH_API APhotoCharacter : public ACharacter
@@ -28,20 +42,55 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION(BlueprintCallable)
-	void	OverrideBasePose(bool const value) { bOverrideBasePose = value; }
-	UFUNCTION(BlueprintCallable)
-	void	OverrideFacePose(bool const value) { bOverrideFacePose = value; }
+	void	MoveForward(float value);
+	void	MoveRight(float value);
+	void	RotateHorizontal(float value);
+	void	RotateVertical(float value);
 
+	UFUNCTION(BlueprintCallable)
+	void	PlayPreviousBodyPose();
+	UFUNCTION(BlueprintCallable)
+	void	PlayNextBodyPose();
+	UFUNCTION(BlueprintCallable)
+	void	PlayPreviousFacePose();
+	UFUNCTION(BlueprintCallable)
+	void	PlayNextFacePose();
+	UFUNCTION(BlueprintCallable)
+	void	IncreaseFOV();
+	UFUNCTION(BlueprintCallable)
+	void	DecreaseFOV();
+	UFUNCTION(BlueprintCallable)
+	void	IncreaseCameraRoll();
+	UFUNCTION(BlueprintCallable)
+	void	DecreaseCameraRoll();
+
+	UFUNCTION(BlueprintPure)
+	float	GetCurrentAddedRollValue() const { return currentAddedRollValue; }
+	UFUNCTION(BlueprintPure)
+	FString	GetCurrentBodyPoseName() const { return currentBodyIndex < BodyPoses.Num() ? BodyPoses[currentBodyIndex].Name : "Error"; }
+	UFUNCTION(BlueprintPure)
+	FString	GetCurrentFacePoseName() const { return currentFaceIndex < FacePoses.Num() ? FacePoses[currentFaceIndex].Name : "Error"; }
 	UFUNCTION(BlueprintPure)
 	FPoseSnapshot&	GetSnapshotPose() { return lastPose; }
 	UFUNCTION(BlueprintPure)
-	bool			IsOverridingBasePose() const { return bOverrideBasePose; }
-	UFUNCTION(BlueprintPure)
-	bool			IsOverridingFacePose() const { return bOverrideFacePose; }
+	UCameraComponent*	GetPhotoCamera() const { return photoCamera.IsValid() ? photoCamera.Get() : nullptr; }
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Poses")
+	TArray<FPhotoPose>	BodyPoses;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Poses")
+	TArray<FPhotoPose>	FacePoses;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
+	float	MoveSpeed = 100.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
+	float	RotateSpeed = 100.0f;
 
 private:
-	FPoseSnapshot	lastPose;
-	bool			bOverrideBasePose = false;
-	bool			bOverrideFacePose = false;
+	float								currentAddedRollValue = 0.0f;
+	FPoseSnapshot						lastPose;
+	int									currentBodyIndex = 0;
+	int									currentFaceIndex = 0;
+	UAnimMontage*						lastPlayingBodyMontage = nullptr;
+	UAnimMontage*						lastPlayingFaceMontage = nullptr;
+	TWeakObjectPtr<UCameraComponent>	photoCamera;
 };

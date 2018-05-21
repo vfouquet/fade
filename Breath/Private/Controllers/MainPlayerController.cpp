@@ -77,16 +77,15 @@ void	AMainPlayerController::PhotoMode(bool bValue)
 {
 	if (bValue)
 	{
-		this->ChangeState(NAME_Spectating);
-		this->PlayerState->bIsSpectator = true;
+		//this->ChangeState(NAME_Spectating);
+		//this->PlayerState->bIsSpectator = true;
 	
-		AMainSpectatorPawn* specPawn = Cast<AMainSpectatorPawn>(GetSpectatorPawn());
-		if (specPawn)
-			specPawn->SetPhotoMode();
+		//AMainSpectatorPawn* specPawn = Cast<AMainSpectatorPawn>(GetSpectatorPawn());
+		//if (specPawn)
+		//	specPawn->SetPhotoMode();
 		
-		photo = CreateWidget<UUIWidgetControllerSupported>(this, PhotoWidgetSample);
-		if (photo.IsValid())
-			photo->AddToViewport();
+		if (MainCharacter)
+			MainCharacter->GetMesh()->bHiddenInGame = true;
 
 		if (PhotoCharacterClass)
 		{
@@ -96,7 +95,10 @@ void	AMainPlayerController::PhotoMode(bool bValue)
 				spParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				PhotoCharacter = GetWorld()->SpawnActor<APhotoCharacter>(PhotoCharacterClass.Get(), MainCharacter->GetTransform(), spParams);
 				if (PhotoCharacter.IsValid())
+				{
 					MainCharacter->GetMesh()->SnapshotPose(PhotoCharacter->GetSnapshotPose());
+					Possess(PhotoCharacter.Get());
+				}
 			}
 			else
 			{
@@ -108,15 +110,17 @@ void	AMainPlayerController::PhotoMode(bool bValue)
 			UE_LOG(LogTemp, Warning, TEXT("AMainPlayerController : Couldn't create PhotoCharacter because the class is not set"));
 		}
 
-		if (MainCharacter)
-			MainCharacter->GetMesh()->bRenderInMainPass = false;
+		
+		photo = CreateWidget<UUIWidgetControllerSupported>(this, PhotoWidgetSample);
+		if (photo.IsValid())
+			photo->AddToViewport();
 
 		UGameplayStatics::SetGamePaused(GetWorld(), true);
 	}
 	else
 	{
-		this->PlayerState->bIsSpectator = false;
-		this->ChangeState(NAME_Playing);
+		//this->PlayerState->bIsSpectator = false;
+		//this->ChangeState(NAME_Playing);
 
 		if (photo.IsValid())
 			photo->RemoveFromParent();
@@ -125,7 +129,7 @@ void	AMainPlayerController::PhotoMode(bool bValue)
 			PhotoCharacter->Destroy();
 
 		if (MainCharacter)
-			MainCharacter->GetMesh()->bRenderInMainPass = false;
+			MainCharacter->GetMesh()->bHiddenInGame = false;
 
 		UGameplayStatics::SetGamePaused(GetWorld(), false);
 		Possess(MainCharacter);
@@ -174,9 +178,11 @@ void AMainPlayerController::Possess(APawn* aPawn)
 {
 	Super::Possess(aPawn);
 
-	MainCharacter = Cast<AMainCharacter>(aPawn);
+	AMainCharacter* tempChara = Cast<AMainCharacter>(aPawn);
+	if (tempChara)
+		MainCharacter = tempChara;
 
-	if (MainCharacter != nullptr)
+	if (tempChara != nullptr)
 	{
 		if (!bIsTPS)
 			this->SetViewTarget(CameraActor);
@@ -263,6 +269,8 @@ void	AMainPlayerController::RotateHorizontal(float Value)
 		MainCharacter->RotateHorizontal(Value);
 	else if (auto* spec = Cast<AMainSpectatorPawn>(this->GetSpectatorPawn()))
 		spec->RotateHorizontal(Value);
+	if (PhotoCharacter.IsValid())
+		PhotoCharacter->RotateHorizontal(Value);
 }
 
 void	AMainPlayerController::RotateVertical(float Value)
@@ -271,6 +279,8 @@ void	AMainPlayerController::RotateVertical(float Value)
 		MainCharacter->RotateVertical(Value);
 	else if (auto* spec = Cast<AMainSpectatorPawn>(this->GetSpectatorPawn()))
 		spec->RotateVertical(Value);
+	if (PhotoCharacter.IsValid())
+		PhotoCharacter->RotateVertical(Value);
 }
 
 void	AMainPlayerController::Pause()
@@ -305,24 +315,32 @@ void	AMainPlayerController::MenuUp()
 {
 	if (currentUIWidget.IsValid())
 		IUMGController::Execute_MoveUp(currentUIWidget.Get());
+	if (photo.IsValid())
+		IUMGController::Execute_MoveUp(photo.Get());
 }
 
 void	AMainPlayerController::MenuDown()
 {
 	if (currentUIWidget.IsValid())
 		IUMGController::Execute_MoveDown(currentUIWidget.Get());
+	if (photo.IsValid())
+		IUMGController::Execute_MoveDown(photo.Get());
 }
 
 void	AMainPlayerController::MenuLeft()
 {
 	if (currentUIWidget.IsValid())
 		IUMGController::Execute_MoveLeft(currentUIWidget.Get());
+	if (photo.IsValid())
+		IUMGController::Execute_MoveLeft(photo.Get());
 }
 
 void	AMainPlayerController::MenuRight()
 {
 	if (currentUIWidget.IsValid())
 		IUMGController::Execute_MoveRight(currentUIWidget.Get());
+	if (photo.IsValid())
+		IUMGController::Execute_MoveRight(photo.Get());
 }
 
 void	AMainPlayerController::MenuValidatePressed()
