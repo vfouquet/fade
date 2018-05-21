@@ -91,7 +91,9 @@ void ABreathGameModeBase::LoadGameToChapter(UStoryChapter* Chapter)
 				{
 					if (PlayerPawn == nullptr)
 					{
-						PlayerPawn = this->GetWorld()->SpawnActor<APawn>(this->DefaultPawnClass, Chapter->Spawn->GetTransform());
+						FTransform	tempTransform = Chapter->Spawn->GetTransform();
+						tempTransform.SetScale3D(FVector::OneVector);
+						PlayerPawn = this->GetWorld()->SpawnActor<APawn>(this->DefaultPawnClass, tempTransform);
 						PC->Possess(PlayerPawn);
 					}
 					else
