@@ -73,17 +73,10 @@ void AMainPlayerController::DebugMode(bool bValue)
 	}
 }
 
-void	AMainPlayerController::PhotoMode(bool bValue)
+void	AMainPlayerController::PhotoMode(bool bValue, bool pauseGame)
 {
 	if (bValue)
 	{
-		//this->ChangeState(NAME_Spectating);
-		//this->PlayerState->bIsSpectator = true;
-	
-		//AMainSpectatorPawn* specPawn = Cast<AMainSpectatorPawn>(GetSpectatorPawn());
-		//if (specPawn)
-		//	specPawn->SetPhotoMode();
-		
 		if (MainCharacter)
 			MainCharacter->GetMesh()->bHiddenInGame = true;
 
@@ -110,28 +103,19 @@ void	AMainPlayerController::PhotoMode(bool bValue)
 			UE_LOG(LogTemp, Warning, TEXT("AMainPlayerController : Couldn't create PhotoCharacter because the class is not set"));
 		}
 
-		
-		photo = CreateWidget<UUIWidgetControllerSupported>(this, PhotoWidgetSample);
-		if (photo.IsValid())
-			photo->AddToViewport();
-
-		UGameplayStatics::SetGamePaused(GetWorld(), true);
+		if (pauseGame)
+			UGameplayStatics::SetGamePaused(GetWorld(), true);
 	}
 	else
 	{
-		//this->PlayerState->bIsSpectator = false;
-		//this->ChangeState(NAME_Playing);
-
-		if (photo.IsValid())
-			photo->RemoveFromParent();
-
 		if (PhotoCharacter.IsValid())
 			PhotoCharacter->Destroy();
 
 		if (MainCharacter)
 			MainCharacter->GetMesh()->bHiddenInGame = false;
 
-		UGameplayStatics::SetGamePaused(GetWorld(), false);
+		if (pauseGame)
+			UGameplayStatics::SetGamePaused(GetWorld(), false);
 		Possess(MainCharacter);
 	}
 }
@@ -154,10 +138,10 @@ void AMainPlayerController::SetupInputComponent()
 		InputComponent->BindAxis("LookHorizontal", this, &AMainPlayerController::RotateHorizontal);
 		InputComponent->BindAxis("LookVertical", this, &AMainPlayerController::RotateVertical);
 
-		InputComponent->BindAction("Jump", IE_Pressed, this, &AMainPlayerController::Jump);
-		InputComponent->BindAction("Action", IE_Pressed, this, &AMainPlayerController::Action);
-		InputComponent->BindAction("Grab", IE_Pressed, this, &AMainPlayerController::BeginGrab);
-		InputComponent->BindAction("Grab", IE_Released, this, &AMainPlayerController::StopGrab);
+		InputComponent->BindAction("Jump", IE_Pressed, this, &AMainPlayerController::Jump).bExecuteWhenPaused = false;
+		InputComponent->BindAction("Action", IE_Pressed, this, &AMainPlayerController::Action).bExecuteWhenPaused = false;
+		InputComponent->BindAction("Grab", IE_Pressed, this, &AMainPlayerController::BeginGrab).bExecuteWhenPaused = false;
+		InputComponent->BindAction("Grab", IE_Released, this, &AMainPlayerController::StopGrab).bExecuteWhenPaused = false;
 		InputComponent->BindAction("Pause", IE_Pressed, this, &AMainPlayerController::Pause).bExecuteWhenPaused = true;
 
 		InputComponent->BindAction("MenuUp", IE_Pressed, this, &AMainPlayerController::MenuUp).bExecuteWhenPaused = true;
@@ -315,48 +299,36 @@ void	AMainPlayerController::MenuUp()
 {
 	if (currentUIWidget.IsValid())
 		IUMGController::Execute_MoveUp(currentUIWidget.Get());
-	if (photo.IsValid())
-		IUMGController::Execute_MoveUp(photo.Get());
 }
 
 void	AMainPlayerController::MenuDown()
 {
 	if (currentUIWidget.IsValid())
 		IUMGController::Execute_MoveDown(currentUIWidget.Get());
-	if (photo.IsValid())
-		IUMGController::Execute_MoveDown(photo.Get());
 }
 
 void	AMainPlayerController::MenuLeft()
 {
 	if (currentUIWidget.IsValid())
 		IUMGController::Execute_MoveLeft(currentUIWidget.Get());
-	if (photo.IsValid())
-		IUMGController::Execute_MoveLeft(photo.Get());
 }
 
 void	AMainPlayerController::MenuRight()
 {
 	if (currentUIWidget.IsValid())
 		IUMGController::Execute_MoveRight(currentUIWidget.Get());
-	if (photo.IsValid())
-		IUMGController::Execute_MoveRight(photo.Get());
 }
 
 void	AMainPlayerController::MenuValidatePressed()
 {
 	if (currentUIWidget.IsValid())
 		IUMGController::Execute_Validate(currentUIWidget.Get(), true);
-	if (photo.IsValid())
-		IUMGController::Execute_Validate(photo.Get(), true);
 }
 
 void	AMainPlayerController::MenuValidateReleased()
 {
 	if (currentUIWidget.IsValid())
 		IUMGController::Execute_Validate(currentUIWidget.Get(), false);
-	if (photo.IsValid())
-		IUMGController::Execute_Validate(photo.Get(), true);
 }
 
 void	AMainPlayerController::MenuBackPressed()

@@ -73,7 +73,7 @@ public:
 	UFUNCTION(Exec)
 	void	DisableGodMode();
 	UFUNCTION(Exec, BlueprintCallable)
-	void	PhotoMode(bool value);
+	void	PhotoMode(bool value, bool pauseGame = false);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void	OnPawnDeath();
@@ -108,8 +108,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, CAtegory = "UI")
 	TSubclassOf<class UUserWidget>	PauseWidgetSample;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, CAtegory = "UI")
-	TSubclassOf<class UUserWidget>	PhotoWidgetSample;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -125,5 +123,4 @@ private:
 	bool							bIsTPS = false;
 
 	TWeakObjectPtr<UUIWidgetControllerSupported>	currentUIWidget;
-	TWeakObjectPtr<UUIWidgetControllerSupported>	photo;
 };
