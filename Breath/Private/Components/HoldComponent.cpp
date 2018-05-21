@@ -149,9 +149,9 @@ void	UHoldComponent::Grab()
 		del.BindUFunction(mainCharacter, "PlayHeavyGrabMontage");
 
 		if (deltaRot > 45.0f)
-			mainCharacter->SnapCharacterTo(closestInteractableLocation - characterCapsule->GetForwardVector() * 100.0f, characterCapsule->GetComponentRotation(), 0.2f, del);
+			mainCharacter->SnapCharacterTo(closestInteractableLocation - characterCapsule->GetForwardVector() * HeavyGrabSnapDistance, characterCapsule->GetComponentRotation(), 0.2f, del);
 		else
-			mainCharacter->SnapCharacterTo(closestInteractableLocation + closestInteractableNormal * 100.0f, newRot, 0.5f, del);
+			mainCharacter->SnapCharacterTo(closestInteractableLocation + closestInteractableNormal * HeavyGrabSnapDistance, newRot, 0.5f, del);
 	}
 }
 void	UHoldComponent::BeginLightGrabPositionUpdate()

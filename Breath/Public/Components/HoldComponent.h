@@ -91,6 +91,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Throw")
 	float	AdditionalThrowAngle = 45.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Snap Values")
+	float	HeavyGrabSnapDistance = 100.0f;
+
 private:
 	void	releaseLightGrabbedObject();
 	void	releaseHeavyGrabbedObject();
