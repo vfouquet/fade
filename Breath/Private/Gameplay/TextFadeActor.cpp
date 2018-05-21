@@ -49,6 +49,9 @@ void	ATextFadeActor::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
+	if (!UseWorldSpaceText)
+		return;
+
 	if (textActor)
 		textComponent = textActor->GetTextRender();
 	else

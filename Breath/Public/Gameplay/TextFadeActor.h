@@ -44,6 +44,10 @@ public:
 	bool	DoFadeOut = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameters")
 	bool	SelfDestroyAfterTrigger = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameters")
+	bool	UseSubtitles = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Parameters")
+	bool	UseWorldSpaceText = false;
 
 private:
 	UFUNCTION()
