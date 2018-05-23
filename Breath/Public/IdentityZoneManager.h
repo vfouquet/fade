@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Components/DecalComponent.h"
 #include "Containers/Array.h"
 #include "ChemicalComponent.h"
 #include "InteractableComponent.h"
@@ -66,6 +67,7 @@ protected:
 private:
 	void	createNormalDecal(FVector decalExtent);
 	void	createRoughnessDecal(FVector decalExtent);
+	bool	computeDecalsExtent(FVector& newLocation, FVector& newExtent);
 
 private:
 	AActor*												character = nullptr;
@@ -75,4 +77,6 @@ private:
 	UMaterialInstanceDynamic*							whiteZoneMaterial = nullptr;
 	UMaterialInstanceDynamic*							decalRoughnessMaterial = nullptr;
 	UMaterialInstanceDynamic*							decalNormalMaterial = nullptr;
+	UDecalComponent*									roughnessDecal = nullptr;
+	UDecalComponent*									normalDecal = nullptr;
 };
