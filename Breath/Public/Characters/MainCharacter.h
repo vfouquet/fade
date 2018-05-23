@@ -147,6 +147,8 @@ public:
 	void	PlayHeavyThrowMontage();
 	void	StopLightGrabMontage() { StopAnimMontage(LightGrabAnim); }
 	void	StopHeavyGrabMontage() { StopAnimMontage(HeavyGrabAnim); }
+	UFUNCTION(BlueprintCallable)
+	void	PlayMouthMontage() { PlayAnimMontage(MouthMontage); }
 
 	void	PlayMeteorEvent();
 	void	StopMeteorEvent();
@@ -238,6 +240,8 @@ public:
 	UAnimMontage*	HeavyPushAnim = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	UAnimMontage*	JumpReceptionAnim = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimMontage*	MouthMontage = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	UAkAudioEvent*	MeteorEvent = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
