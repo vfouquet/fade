@@ -36,6 +36,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Input")
 	void			Cancel(bool pressed = false);
 	virtual void	Cancel_Implementation(bool pressed = false) override {}
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Input")
+	void			SpecialButton();
+	virtual void	SpecialButton_Implementation() override {}
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Behaviour")
+	void			OnUnpause();
+	virtual void	OnUnpause_Implementation() override {}
 
 	UFUNCTION(BlueprintCallable)
 	UWidget*	FindWidgetByName(FName name) { return WidgetTree ? WidgetTree->FindWidget(name) : nullptr; }

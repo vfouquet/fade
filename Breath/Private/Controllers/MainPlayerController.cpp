@@ -78,7 +78,7 @@ void	AMainPlayerController::PhotoMode(bool bValue, bool pauseGame)
 	if (bValue)
 	{
 		if (MainCharacter)
-			MainCharacter->GetMesh()->bHiddenInGame = true;
+			MainCharacter->SetActorHiddenInGame(true);
 
 		if (PhotoCharacterClass)
 		{
@@ -112,7 +112,7 @@ void	AMainPlayerController::PhotoMode(bool bValue, bool pauseGame)
 			PhotoCharacter->Destroy();
 
 		if (MainCharacter)
-			MainCharacter->GetMesh()->bHiddenInGame = false;
+			MainCharacter->SetActorHiddenInGame(false);
 
 		if (pauseGame)
 			UGameplayStatics::SetGamePaused(GetWorld(), false);
@@ -152,6 +152,7 @@ void AMainPlayerController::SetupInputComponent()
 		InputComponent->BindAction("MenuValidate", IE_Released, this, &AMainPlayerController::MenuValidateReleased).bExecuteWhenPaused = true;
 		InputComponent->BindAction("MenuCancel", IE_Pressed, this, &AMainPlayerController::MenuBackPressed).bExecuteWhenPaused = true;
 		InputComponent->BindAction("MenuCancel", IE_Released, this, &AMainPlayerController::MenuBackReleased).bExecuteWhenPaused = true;
+		InputComponent->BindAction("MenuSpecial", IE_Released, this, &AMainPlayerController::MenuSpecialButton).bExecuteWhenPaused = true;
 #if WITH_EDITOR
 		InputComponent->BindAction("DebugPauseEditor", IE_Pressed, this, &AMainPlayerController::DebugPauseEditor);
 #endif
@@ -272,9 +273,15 @@ void	AMainPlayerController::Pause()
 	if (UGameplayStatics::IsGamePaused(GetWorld()))
 	{
 		if (currentUIWidget.IsValid())
+		{
+			currentUIWidget->OnUnpause();
+			IUMGController::Execute_OnUnpause(currentUIWidget.Get());
 			currentUIWidget->RemoveFromParent();
+			currentUIWidget = nullptr;
+		}
 		SetInputMode(FInputModeGameOnly());
 		UGameplayStatics::SetGamePaused(GetWorld(), false);
+		bIsPaused = false;
 	}
 	else
 	{
@@ -292,59 +299,68 @@ void	AMainPlayerController::Pause()
 		}
 		currentUIWidget->AddToViewport();
 		UGameplayStatics::SetGamePaused(GetWorld(), true);
+		bIsPaused = true;
 	}
 }
 
 void	AMainPlayerController::MenuUp()
 {
-	if (currentUIWidget.IsValid())
+	if (currentUIWidget.IsValid() && bIsPaused)
 		IUMGController::Execute_MoveUp(currentUIWidget.Get());
 }
 
 void	AMainPlayerController::MenuDown()
 {
-	if (currentUIWidget.IsValid())
+	if (currentUIWidget.IsValid() && bIsPaused)
 		IUMGController::Execute_MoveDown(currentUIWidget.Get());
 }
 
 void	AMainPlayerController::MenuLeft()
 {
-	if (currentUIWidget.IsValid())
+	if (currentUIWidget.IsValid() && bIsPaused)
 		IUMGController::Execute_MoveLeft(currentUIWidget.Get());
 }
 
 void	AMainPlayerController::MenuRight()
 {
-	if (currentUIWidget.IsValid())
+	if (currentUIWidget.IsValid() && bIsPaused)
 		IUMGController::Execute_MoveRight(currentUIWidget.Get());
 }
 
 void	AMainPlayerController::MenuValidatePressed()
 {
-	if (currentUIWidget.IsValid())
+	if (currentUIWidget.IsValid() && bIsPaused)
 		IUMGController::Execute_Validate(currentUIWidget.Get(), true);
 }
 
 void	AMainPlayerController::MenuValidateReleased()
 {
-	if (currentUIWidget.IsValid())
+	if (currentUIWidget.IsValid() && bIsPaused)
 		IUMGController::Execute_Validate(currentUIWidget.Get(), false);
 }
 
 void	AMainPlayerController::MenuBackPressed()
 {
-	if (currentUIWidget.IsValid())
+	if (currentUIWidget.IsValid() && bIsPaused)
 		IUMGController::Execute_Cancel(currentUIWidget.Get(), true);
 }
 
 void	AMainPlayerController::MenuBackReleased()
 {
-	if (currentUIWidget.IsValid())
+	if (currentUIWidget.IsValid() && bIsPaused)
 		IUMGController::Execute_Cancel(currentUIWidget.Get(), false);
+}
+
+void	AMainPlayerController::MenuSpecialButton()
+{
+	if (currentUIWidget.IsValid() && bIsPaused)
+		IUMGController::Execute_SpecialButton(currentUIWidget.Get());
 }
 
 void AMainPlayerController::Jump()
 {
+	if (bIsPaused)	return;
+
 	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 	{	
 		if (MainCharacter->CanThrow())
@@ -356,18 +372,24 @@ void AMainPlayerController::Jump()
 
 void	AMainPlayerController::Action()
 {
+	if (bIsPaused)	return;
+	
 	if (this->GetSpectatorPawn() == nullptr && MainCharacter)
 		MainCharacter->Action();
 }
 
 void	AMainPlayerController::BeginGrab()
 {
+	if (bIsPaused)	return;
+	
 	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 		MainCharacter->BeginGrab();
 }
 
 void	AMainPlayerController::StopGrab()
 {
+	if (bIsPaused)	return;
+	
 	if (this->GetSpectatorPawn() == nullptr && MainCharacter != nullptr)
 		MainCharacter->StopGrab();
 }

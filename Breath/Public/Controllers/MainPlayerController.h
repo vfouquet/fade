@@ -56,6 +56,7 @@ public:
 	void	MenuValidateReleased();
 	void	MenuBackPressed();
 	void	MenuBackReleased();
+	void	MenuSpecialButton();
 
 	void	Jump();
 
@@ -121,6 +122,7 @@ private:
 	USpringArmComponent*			SpringArmComponent;
 	FVector2D						lastStickInput;
 	bool							bIsTPS = false;
+	bool							bIsPaused = false;
 
 	TWeakObjectPtr<UUIWidgetControllerSupported>	currentUIWidget;
 };

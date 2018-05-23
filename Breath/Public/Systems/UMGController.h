@@ -34,4 +34,8 @@ public:
 	void	Validate(bool pressed = false);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Input")
 	void	Cancel(bool pressed = false);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Input")
+	void	SpecialButton();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Behaviour")
+	void	OnUnpause();
 };

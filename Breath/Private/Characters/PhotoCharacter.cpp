@@ -2,6 +2,7 @@
 
 #include "PhotoCharacter.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
 APhotoCharacter::APhotoCharacter()
@@ -19,6 +20,9 @@ void APhotoCharacter::BeginPlay()
 	if (auto* mesh = GetMesh())
 		mesh->SetTickableWhenPaused(true);
 	photoCamera = FindComponentByClass<UCameraComponent>();
+	auto* springArm = FindComponentByClass<USpringArmComponent>();
+	if (springArm)
+		springArm->SetTickableWhenPaused(true);
 }
 
 // Called every frame
