@@ -18,6 +18,12 @@ ATextFadeActor::ATextFadeActor()
 void ATextFadeActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (textActor)
+	{
+		if (auto* text = textActor->GetTextRender())
+			text->Text = AssociatedText;
+	}
 }
 
 // Called every frame

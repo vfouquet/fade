@@ -30,6 +30,8 @@ public:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Text")
 	ATextRenderActor*	textActor = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Text")
+	FText	AssociatedText;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time")
 	float	FadeInTime = 1.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time")
