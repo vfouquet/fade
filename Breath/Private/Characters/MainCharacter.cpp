@@ -427,6 +427,17 @@ void	AMainCharacter::PlayHeavyThrowMontage()
 	GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(endDel, HeavyPushAnim);
 }
 
+void	AMainCharacter::ReleaseMontageJumpPostSection()
+{
+	if (auto* mesh = GetMesh())
+	{
+		UAnimInstance* animInst = mesh->GetAnimInstance();
+		if (animInst)
+			animInst->Montage_JumpToSection("PostRelease", LightGrabReleaseAnim);
+	}
+}
+
+
 void	AMainCharacter::PlayMeteorEvent()
 {
 	UAkGameplayStatics::PostEvent(MeteorEvent, this);

@@ -6,7 +6,6 @@
 #include "Engine/World.h"
 #include "InteractableComponent.h"
 #include "GameFramework/Character.h"
-#include "DrawDebugHelpers.h"
 #include "MainCharacter.h"
 
 // Sets default values for this component's properties
@@ -58,6 +57,9 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	detectInteractableAround();
 
+	if (pendingRelease)
+		StopGrab();
+
 	if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
 		if (!holdingObject.IsValid())
@@ -79,6 +81,29 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		{
 			FVector	middleTwoHands = mainCharacter->GetTwoHandsLocation();
 			prim->SetWorldLocation(middleTwoHands);
+		}
+	}
+
+	if (currentHoldingState == EHoldingState::ReleasingLightGrab)
+	{
+		if (holdingObject.IsValid())
+		{
+			if (UPrimitiveComponent* holdingPrim = holdingObject->GetAssociatedComponent())
+			{
+				FHitResult	result;
+				FCollisionQueryParams	params;
+				params.AddIgnoredComponent(holdingPrim);
+				params.AddIgnoredActor(GetOwner());
+				FVector primExtent = holdingPrim->Bounds.BoxExtent;
+				FVector start = holdingPrim->GetComponentLocation() - primExtent.Z;
+				FVector endPoint = start + FVector::UpVector * -ReleasingDetectionValue;
+				if (GetWorld()->SweepSingleByChannel(result, endPoint, endPoint, FQuat::Identity, 
+					ECollisionChannel::ECC_Visibility, FCollisionShape::MakeBox(FVector(primExtent.Z * 0.5f, primExtent.Y * 0.5f, 0.2f)), params))
+				{
+					EndLightGrabRelease();
+					mainCharacter->ReleaseMontageJumpPostSection();
+				}
+			}
 		}
 	}
 }
@@ -107,6 +132,8 @@ void	UHoldComponent::Action()
 
 void	UHoldComponent::Grab()
 {
+	if (currentHoldingState == EHoldingState::LightGrabbing || currentHoldingState == EHoldingState::PreLightGrabbing)
+		pendingRelease = false;
 	if (currentHoldingState != EHoldingState::None || mainCharacter->IsInAir())
 		return;
 	if (!closestInteractableObject.IsValid() || !closestInteractableObject->IsGrabable())
@@ -175,7 +202,9 @@ void	UHoldComponent::BeginLightGrabPositionUpdate()
 	if (holdingObject->IsSticked())
 		holdingObject->Unstick();
 
-	UPrimitiveComponent* tempPrim = holdingObject->GetAssociatedComponent();	
+	UPrimitiveComponent* tempPrim = holdingObject->GetAssociatedComponent();
+	pendingReleasedPrimitives.RemoveAll([&](FPendingPrimitive& pendingPrim)
+		{	return pendingPrim.primitive == tempPrim; });
 	tempPrim->SetWorldRotation(characterCapsule->GetComponentRotation().Quaternion());	//RESET ROTATION
 	tempPrim->SetCollisionProfileName("OverlapAllDynamic");
 	previousGravityValue = tempPrim->IsGravityEnabled();
@@ -233,6 +262,12 @@ void	UHoldComponent::StopGrab()
 	}
 	else if (currentHoldingState == EHoldingState::LightGrabbing)
 	{
+		if (!checkReleasing())
+		{
+			pendingRelease = true;
+			return;
+		}
+		pendingRelease = false;
 		mainCharacter->PlayLightGrabReleaseMontage();
 		mainCharacter->BlockCharacter();
 		currentHoldingState = EHoldingState::ReleasingLightGrab;
@@ -479,4 +514,23 @@ void	UHoldComponent::detectInteractableAround()
 			}
 		}
 	}
+}
+
+bool	UHoldComponent::checkReleasing()
+{
+	if (holdingObject.IsValid())
+	{
+		if (UPrimitiveComponent* holdingPrim = holdingObject->GetAssociatedComponent())
+		{
+			FHitResult	hitResult;
+			FCollisionQueryParams	params;
+			params.AddIgnoredComponent(holdingPrim);
+			params.AddIgnoredActor(GetOwner());
+			FVector primExtent = holdingPrim->Bounds.BoxExtent;
+			FVector start = holdingPrim->GetComponentLocation();
+
+			return !GetWorld()->SweepSingleByChannel(hitResult, start, start, FQuat::Identity, ECollisionChannel::ECC_Visibility, FCollisionShape::MakeBox(primExtent), params);
+		}
+	}
+	return false;
 }

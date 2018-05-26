@@ -147,6 +147,8 @@ public:
 	void	PlayHeavyThrowMontage();
 	void	StopLightGrabMontage() { StopAnimMontage(LightGrabAnim); }
 	void	StopHeavyGrabMontage() { StopAnimMontage(HeavyGrabAnim); }
+	void	StopLightReleaseAnim() { StopAnimMontage(LightGrabReleaseAnim); }
+	void	ReleaseMontageJumpPostSection();
 	UFUNCTION(BlueprintCallable)
 	void	PlayMouthMontage() { PlayAnimMontage(MouthMontage); }
 

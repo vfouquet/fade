@@ -84,6 +84,8 @@ public:
 	float	DetectionOffset = 60.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Detection")
 	float	HoldingDetectionOffset = 100.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Detection")
+	float	ReleasingDetectionValue = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float	ThrowPower = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
@@ -99,6 +101,7 @@ private:
 	void	releaseHeavyGrabbedObject();
 
 	void	detectInteractableAround();
+	bool	checkReleasing();
 protected:
 	AMainCharacter*								mainCharacter = nullptr;
 	TWeakObjectPtr<UInteractableComponent>		closestInteractableObject;
@@ -119,6 +122,7 @@ protected:
 	};
 
 	TArray<FPendingPrimitive>	pendingReleasedPrimitives;
+	bool						pendingRelease = false;
 public:
 	UPROPERTY(BlueprintAssignable)
 	FHoldStateChanged	holdingStateChangedDelegate;
