@@ -208,6 +208,8 @@ public:
 	bool const IsAffectedByFire() const { return eraseZoneCount == 0 || (eraseZoneCount > 0 && memoryZoneCount > 0); }
 	UFUNCTION(BlueprintCallable)
 	void	SetGodMode(bool value) { bIsGod = value; }
+	UFUNCTION(BlueprintPure)
+	float const GetCurrentJumpHeight() const { return jumpZOffset; }
 
 public:
 	/*Roll isn't used*/
