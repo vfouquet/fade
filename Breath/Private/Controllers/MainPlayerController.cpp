@@ -136,6 +136,8 @@ void AMainPlayerController::SetupInputComponent()
 		InputComponent->BindAxis("MoveRight", this, &AMainPlayerController::MoveRight);
 		InputComponent->BindAxis("MoveForward", this, &AMainPlayerController::MovePhotoForward).bExecuteWhenPaused = true;
 		InputComponent->BindAxis("MoveRight", this, &AMainPlayerController::MovePhotoRight).bExecuteWhenPaused = true;
+		InputComponent->BindAxis("MovePhotoUp", this, &AMainPlayerController::MovePhotoUp).bExecuteWhenPaused = true;
+		InputComponent->BindAxis("MovePhotoDown", this, &AMainPlayerController::MovePhotoDown).bExecuteWhenPaused = true;
 		InputComponent->BindAxis("LookHorizontal", this, &AMainPlayerController::RotateHorizontal);
 		InputComponent->BindAxis("LookVertical", this, &AMainPlayerController::RotateVertical);
 
@@ -239,14 +241,26 @@ void	AMainPlayerController::MoveRight(float Value)
 
 void	AMainPlayerController::MovePhotoForward(float value)
 {
-	if (auto* spec = Cast<AMainSpectatorPawn>(this->GetSpectatorPawn()))
-		spec->MoveForward(value);
+	if (PhotoCharacter.IsValid())
+		PhotoCharacter->MoveForward(value);
 }
 
 void	AMainPlayerController::MovePhotoRight(float value)
 {
-	if (auto* spec = Cast<AMainSpectatorPawn>(this->GetSpectatorPawn()))
-		spec->MoveRight(value);
+	if (PhotoCharacter.IsValid())
+		PhotoCharacter->MoveRight(value);
+}
+
+void	AMainPlayerController::MovePhotoUp(float value)
+{
+	if (PhotoCharacter.IsValid())
+		PhotoCharacter->MoveUp(value);
+}
+
+void	AMainPlayerController::MovePhotoDown(float value)
+{
+	if (PhotoCharacter.IsValid())
+		PhotoCharacter->MoveUp(-value);
 }
 
 void	AMainPlayerController::RotateHorizontal(float Value)

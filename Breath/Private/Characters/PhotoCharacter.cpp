@@ -2,7 +2,6 @@
 
 #include "PhotoCharacter.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
 APhotoCharacter::APhotoCharacter()
@@ -10,6 +9,8 @@ APhotoCharacter::APhotoCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bTickEvenWhenPaused = true;
+
+	MaxLateralOffset = FVector(300.0f);
 }
 
 // Called when the game starts or when spawned
@@ -20,8 +21,8 @@ void APhotoCharacter::BeginPlay()
 	if (auto* mesh = GetMesh())
 		mesh->SetTickableWhenPaused(true);
 	photoCamera = FindComponentByClass<UCameraComponent>();
-	auto* springArm = FindComponentByClass<USpringArmComponent>();
-	if (springArm)
+	springArm = FindComponentByClass<USpringArmComponent>();
+	if (springArm.IsValid())
 		springArm->SetTickableWhenPaused(true);
 }
 
@@ -41,10 +42,29 @@ void APhotoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void	APhotoCharacter::MoveForward(float value)
 {
+	if (!springArm.IsValid())
+		return;
+	FVector newValue = springArm->SocketOffset + FVector(value * GetWorld()->GetDeltaSeconds() * MoveSpeed, 0.0f, 0.0f);
+	newValue.X = FMath::Clamp(newValue.X, -MaxLateralOffset.X, MaxLateralOffset.X);
+	springArm->SocketOffset = newValue;
 }
 
 void	APhotoCharacter::MoveRight(float value)
 {
+	if (!springArm.IsValid())
+		return;
+	FVector newValue = springArm->SocketOffset + FVector(0.0f, value * GetWorld()->GetDeltaSeconds() * MoveSpeed, 0.0f);
+	newValue.Y = FMath::Clamp(newValue.Y, -MaxLateralOffset.Y, MaxLateralOffset.Y);
+	springArm->SocketOffset = newValue;
+}
+
+void	APhotoCharacter::MoveUp(float value)
+{
+	if (!springArm.IsValid())
+		return;
+	FVector newValue = springArm->SocketOffset + FVector(0.0f, 0.0f, value * GetWorld()->GetDeltaSeconds() * MoveSpeed);
+	newValue.Z = FMath::Clamp(newValue.Z, -MaxLateralOffset.Z, MaxLateralOffset.Z);
+	springArm->SocketOffset = newValue;
 }
 
 void	APhotoCharacter::RotateHorizontal(float value)
@@ -109,7 +129,8 @@ void	APhotoCharacter::IncreaseFOV()
 		return;
 	}
 
-	photoCamera->FieldOfView += 1.0f;
+	if (photoCamera->FieldOfView < 170.0f)
+		photoCamera->FieldOfView += 1.0f;
 }
 
 void	APhotoCharacter::DecreaseFOV()
@@ -120,7 +141,8 @@ void	APhotoCharacter::DecreaseFOV()
 		return;
 	}
 
-	photoCamera->FieldOfView -= 1.0f;
+	if (photoCamera->FieldOfView > 5.0f)
+		photoCamera->FieldOfView -= 1.0f;
 }
 
 void	APhotoCharacter::IncreaseCameraRoll()

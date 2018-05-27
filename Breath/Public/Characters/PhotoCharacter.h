@@ -4,6 +4,7 @@
 
 #include "PoseSnapshot.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
@@ -44,6 +45,7 @@ public:
 
 	void	MoveForward(float value);
 	void	MoveRight(float value);
+	void	MoveUp(float value);
 	void	RotateHorizontal(float value);
 	void	RotateVertical(float value);
 
@@ -85,6 +87,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
 	float	RotateSpeed = 100.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	FVector	MaxLateralOffset;
+
 private:
 	float								currentAddedRollValue = 0.0f;
 	FPoseSnapshot						lastPose;
@@ -93,4 +98,5 @@ private:
 	UAnimMontage*						lastPlayingBodyMontage = nullptr;
 	UAnimMontage*						lastPlayingFaceMontage = nullptr;
 	TWeakObjectPtr<UCameraComponent>	photoCamera;
+	TWeakObjectPtr<USpringArmComponent>	springArm;
 };

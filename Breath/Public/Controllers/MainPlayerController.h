@@ -44,6 +44,8 @@ public:
 
 	void	MovePhotoForward(float Value);
 	void	MovePhotoRight(float Value);
+	void	MovePhotoUp(float value);
+	void	MovePhotoDown(float value);
 
 	void	RotateHorizontal(float Value);
 	void	RotateVertical(float Value);
