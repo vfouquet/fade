@@ -4,6 +4,7 @@
 
 #include "UIWidgetControllerSupported.h"
 #include "PhotoCharacter.h"
+#include "AkAudio/Classes/AkAudioEvent.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
@@ -109,6 +110,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, CAtegory = "UI")
 	TSubclassOf<class UUserWidget>	PauseWidgetSample;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	UAkAudioEvent*	PauseAllEvent = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	UAkAudioEvent*	ResumeAllEvent = nullptr;
 
 protected:
 	UPROPERTY(VisibleAnywhere)

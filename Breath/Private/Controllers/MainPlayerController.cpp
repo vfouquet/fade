@@ -11,6 +11,7 @@
 #include "Cameras/CameraRailManager.h"
 
 #include "MainCharacter.h"
+#include "AkAudio/Classes/AkGameplayStatics.h"
 
 #include "Camera/CameraActor.h"
 #include "MainSpectatorPawn.h"
@@ -280,6 +281,7 @@ void	AMainPlayerController::Pause()
 			currentUIWidget = nullptr;
 		}
 		SetInputMode(FInputModeGameOnly());
+		UAkGameplayStatics::PostEvent(ResumeAllEvent, this);
 		UGameplayStatics::SetGamePaused(GetWorld(), false);
 		bIsPaused = false;
 	}
@@ -298,6 +300,7 @@ void	AMainPlayerController::Pause()
 			return;
 		}
 		currentUIWidget->AddToViewport();
+		UAkGameplayStatics::PostEvent(PauseAllEvent, this);
 		UGameplayStatics::SetGamePaused(GetWorld(), true);
 		bIsPaused = true;
 	}
