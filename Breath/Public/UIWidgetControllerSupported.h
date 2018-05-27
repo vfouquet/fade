@@ -23,13 +23,13 @@ public:
 	virtual void	MoveUp_Implementation() override { }
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Input")
 	void			MoveDown();
-	virtual void	MoveDown_Implementation() override { UE_LOG(LogTemp, Warning, TEXT("UP")); }
+	virtual void	MoveDown_Implementation() override { }
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Input")
 	void			MoveLeft();
 	virtual void	MoveLeft_Implementation() override {}
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Input")
 	void			MoveRight();
-	virtual void	MoveRight_Implementation() override { UE_LOG(LogTemp, Warning, TEXT("UP")); }
+	virtual void	MoveRight_Implementation() override { }
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Input")
 	void			Validate(bool pressed = false);
 	virtual void	Validate_Implementation(bool pressed = false) override {}
