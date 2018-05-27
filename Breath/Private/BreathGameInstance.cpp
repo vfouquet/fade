@@ -44,6 +44,10 @@ void UBreathGameInstance::Init()
 				UE_LOG(LogTemp, Warning, TEXT("ROW OK"));
 				//Row->Chapter.LoadSynchronous();
 			}
+			else
+			{ 
+				UE_LOG(LogTemp, Warning, TEXT("ROW NOK"));
+			}
 		}
 	}
 	else
@@ -108,6 +112,26 @@ void UBreathGameInstance::BeginLoadingScreen(const FLoadingScreenDescription& Sc
 	}
 
 	GetMoviePlayer()->SetupLoadingScreen(LoadingScreen);
+}
+
+bool UBreathGameInstance::IsChapterIsAlreadyPassed(UStoryChapter* Chapter)
+{
+	FString ContextString;
+	TArray<FStoryOrderData*> OutRowArray;
+	this->DataTable->GetAllRows<FStoryOrderData>(ContextString, OutRowArray);
+
+	for (FStoryOrderData* Row : OutRowArray)
+	{
+		if (Row != nullptr)
+		{
+			if (Row->Chapter == this->CurrentChapter)
+				return false;
+			else if (Row->Chapter == Chapter)
+				return true;
+		}
+	}
+
+	return false;
 }
 
 void UBreathGameInstance::OnStart()

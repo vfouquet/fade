@@ -48,6 +48,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	SetCameraTPSValue(bool value) { bIsTPSCamera = value; }
 
+	UFUNCTION(BlueprintCallable)
+	bool	IsChapterIsAlreadyPassed(UStoryChapter* Chapter);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UWorld*	PersistentLevel;
