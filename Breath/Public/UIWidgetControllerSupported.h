@@ -45,4 +45,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	UWidget*	FindWidgetByName(FName name) { return WidgetTree ? WidgetTree->FindWidget(name) : nullptr; }
+
+	UFUNCTION(BlueprintCallable)
+	static void	DestroyObject(UObject* object) { if (object) object->ConditionalBeginDestroy(); }
 };
