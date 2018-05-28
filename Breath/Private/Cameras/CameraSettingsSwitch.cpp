@@ -43,11 +43,11 @@ if (CameraRailManager.IsValid())
 
 			if (CameraRailManager->GetInputKeyAtWorldLocation(CameraRailManager->PlayerActor->GetActorLocation()) > SplineInputKey && bOutCameraSettings == true)
 			{
-				CameraRailManager->RailCamera->CameraSettings = this->OutCameraSettings;
+				CameraRailManager->RailCamera->ChangeSettings(OutCameraSettings);
 			}
 			else if (bInCameraSettings == true)
 			{
-				CameraRailManager->RailCamera->CameraSettings = this->InCameraSettings;
+				CameraRailManager->RailCamera->ChangeSettings(InCameraSettings);
 			}
 		}
 	}

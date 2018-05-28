@@ -28,9 +28,9 @@ struct FCameraSettings
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere)
-	float	CameraSpeed;
+	float	CameraSpeed; // interp
 	UPROPERTY(EditAnywhere)
-	float	CameraRotationSpeed;
+	float	CameraRotationSpeed; // interp
 	UPROPERTY(EditAnywhere)
 	float	CameraRailOffset;
 	UPROPERTY(EditAnywhere, meta = (ClampMin = 0.f))
@@ -38,11 +38,11 @@ struct FCameraSettings
 	UPROPERTY(EditAnywhere)
 	float	CameraDistanceOffset;
 	UPROPERTY(EditAnywhere)
-	float	CameraDistanceOffsetSpeed;
+	float	CameraDistanceOffsetSpeed; // interp
 	UPROPERTY(EditAnywhere)
 	float	CameraHeightOffset;
 	UPROPERTY(EditAnywhere)
-	float	CameraHeightOffsetSpeed;
+	float	CameraHeightOffsetSpeed; // interp
 	UPROPERTY(EditAnywhere)
 	TArray<FCameraInterestPoint>	InterestPoints;
 
@@ -69,10 +69,23 @@ public:
 	TAssetPtr<ACameraRailManager>	CurrentRailManager;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FCameraSettings	PreviousCameraSettings;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FCameraSettings	CameraSettings;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FCameraSettings	CurrentCameraSettings;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector	TargetRelativeLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float	SpeedInterpTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float	RotationSpeedInterpTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float	DistanceSpeedInterpTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float	HeightSpeedInterpTime;
 
 public:
 	ARailCamera(const FObjectInitializer& ObjectInitializer);
@@ -89,6 +102,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void	ChangePlayer(AActor* PlayerActor, bool bTeleport = false);
 
+	UFUNCTION(BlueprintCallable)
+	void	ChangeSettings(const FCameraSettings& Settings);
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent*	CameraArm;
@@ -96,4 +112,9 @@ protected:
 protected:
 	virtual void BeginPlay() override;
 
+private:
+	float	SpeedInterpAlpha;
+	float	RotationSpeedInterpAlpha;
+	float	DistanceSpeedInterpAlpha;
+	float	HeightSpeedInterpAlpha;
 };

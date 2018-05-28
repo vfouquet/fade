@@ -21,6 +21,11 @@ ARailCamera::ARailCamera(const FObjectInitializer& ObjectInitializer)
 
 	this->GetCameraComponent()->SetupAttachment(CameraArm);
 	this->GetCameraComponent()->PostProcessBlendWeight = 0.0f;
+
+	this->SpeedInterpTime = 1.0f;
+	this->RotationSpeedInterpTime = 1.0f;
+	this->DistanceSpeedInterpTime = 1.0f;
+	this->HeightSpeedInterpTime = 1.0f;
 }
 
 USceneComponent* ARailCamera::GetCameraArm()
@@ -31,6 +36,9 @@ USceneComponent* ARailCamera::GetCameraArm()
 void ARailCamera::BeginPlay()
 {
 	Super::BeginPlay();
+
+	this->PreviousCameraSettings = this->CameraSettings;
+	this->CurrentCameraSettings = this->CameraSettings;
 
 	ABreathLevelScriptActor* LevelScript = Cast<ABreathLevelScriptActor>(this->GetWorld()->GetLevelScriptActor());
 	if (LevelScript != nullptr && LevelScript->CameraRailManager != nullptr)
@@ -52,11 +60,11 @@ void ARailCamera::NotifyActorBeginOverlap(AActor* OtherActor)
 		if (CurrentRailManager->GetInputKeyAtWorldLocation(this->CameraArm->GetComponentToWorld().GetLocation()) > RailPoint->SplinePoint.InputKey 
 			&& RailPoint->bOutCameraSettings == true)
 		{
-			this->CameraSettings = RailPoint->OutCameraSettings;
+			this->ChangeSettings(RailPoint->OutCameraSettings);
 		}
 		else if (RailPoint->bInCameraSettings == true)
 		{
-			this->CameraSettings = RailPoint->InCameraSettings;
+			this->ChangeSettings(RailPoint->InCameraSettings);
 		}
 	}
 }
@@ -101,8 +109,39 @@ void	ARailCamera::ChangePlayer(AActor* PlayerActor, bool bTeleport)
 	}
 }
 
+void ARailCamera::ChangeSettings(const FCameraSettings & Settings)
+{
+	this->SpeedInterpAlpha = 0.0f;
+	this->RotationSpeedInterpAlpha = 0.0f;
+	this->DistanceSpeedInterpAlpha = 0.0f;
+	this->HeightSpeedInterpAlpha = 0.0f;
+
+	this->PreviousCameraSettings = this->CurrentCameraSettings;
+	this->CameraSettings = Settings;
+}
+
 void ARailCamera::UpdateCamera(float DeltaSeconds)
 {
+	SpeedInterpAlpha += (DeltaSeconds / SpeedInterpTime);
+	RotationSpeedInterpAlpha += (DeltaSeconds / RotationSpeedInterpTime);
+	DistanceSpeedInterpAlpha += (DeltaSeconds / DistanceSpeedInterpTime);
+	HeightSpeedInterpAlpha += (DeltaSeconds / HeightSpeedInterpTime);
+
+	if (SpeedInterpAlpha > 1.0f)
+		SpeedInterpAlpha = 1.0f;
+	if (RotationSpeedInterpAlpha > 1.0f)
+		RotationSpeedInterpAlpha = 1.0f;
+	if (DistanceSpeedInterpAlpha > 1.0f)
+		DistanceSpeedInterpAlpha = 1.0f;
+	if (HeightSpeedInterpAlpha > 1.0f)
+		HeightSpeedInterpAlpha = 1.0f;
+
+
+	this->CurrentCameraSettings.CameraSpeed = FMath::Lerp(this->PreviousCameraSettings.CameraSpeed, this->CameraSettings.CameraSpeed, this->SpeedInterpAlpha);
+	this->CurrentCameraSettings.CameraRotationSpeed = FMath::Lerp(this->PreviousCameraSettings.CameraRotationSpeed, this->CameraSettings.CameraRotationSpeed, this->RotationSpeedInterpAlpha);
+	this->CurrentCameraSettings.CameraDistanceOffsetSpeed = FMath::Lerp(this->PreviousCameraSettings.CameraDistanceOffsetSpeed, this->CameraSettings.CameraDistanceOffsetSpeed, this->DistanceSpeedInterpAlpha);
+	this->CurrentCameraSettings.CameraHeightOffsetSpeed = FMath::Lerp(this->PreviousCameraSettings.CameraHeightOffsetSpeed, this->CameraSettings.CameraHeightOffsetSpeed, this->HeightSpeedInterpAlpha);
+
 	FVector DistanceOffset(-this->CameraSettings.CameraDistanceOffset, 0.0f, 0.0f);
 	FVector CameraRelativeLocation = GetCameraComponent()->RelativeLocation;
 
@@ -110,8 +149,8 @@ void ARailCamera::UpdateCamera(float DeltaSeconds)
 	x = CameraRelativeLocation.X;
 	z = CameraRelativeLocation.Z;
 
-	x = FMath::FInterpConstantTo(x, -this->CameraSettings.CameraDistanceOffset, DeltaSeconds, this->CameraSettings.CameraDistanceOffsetSpeed);
-	z = FMath::FInterpConstantTo(z, this->CameraSettings.CameraHeightOffset, DeltaSeconds, this->CameraSettings.CameraHeightOffsetSpeed);
+	x = FMath::FInterpConstantTo(x, -this->CameraSettings.CameraDistanceOffset, DeltaSeconds, this->CurrentCameraSettings.CameraDistanceOffsetSpeed);
+	z = FMath::FInterpConstantTo(z, this->CameraSettings.CameraHeightOffset, DeltaSeconds, this->CurrentCameraSettings.CameraHeightOffsetSpeed);
 
 	GetCameraComponent()->SetRelativeLocation(FVector(x, 0.0f, z));
 

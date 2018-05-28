@@ -34,7 +34,7 @@ void ACameraSettingsZone::NotifyActorBeginOverlap(AActor* OtherActor)
 	{
 		if (OtherActor == CameraRailManager->PlayerActor && CameraRailManager->RailCamera != nullptr)
 		{
-			CameraRailManager->RailCamera->CameraSettings = this->InCameraSettings;
+			CameraRailManager->RailCamera->ChangeSettings(this->InCameraSettings);
 		}
 	}
 }
@@ -47,7 +47,7 @@ void ACameraSettingsZone::NotifyActorEndOverlap(AActor* OtherActor)
 	{
 		if (OtherActor == CameraRailManager->PlayerActor && CameraRailManager->RailCamera != nullptr)
 		{
-			CameraRailManager->RailCamera->CameraSettings = this->OutCameraSettings;
+			CameraRailManager->RailCamera->ChangeSettings(this->OutCameraSettings);
 		}
 	}
 }
