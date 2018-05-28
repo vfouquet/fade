@@ -276,9 +276,11 @@ void ACameraRailManager::Tick(float DeltaSeconds)
 		}
 
 		LookAtDir = (PlayerActor->GetActorLocation() + CentroidRelativeLocFromPlayer) - RailCamera->GetCameraComponent()->GetComponentLocation();
+		FVector LookAtDirRail = (PlayerActor->GetActorLocation() + CentroidRelativeLocFromPlayer) - RailCamera->GetActorLocation();
 		// Computes and sets new camera rotation
 		FRotator TargetRotation = FMath::RInterpConstantTo(RailCamera->GetCameraComponent()->GetComponentRotation(), FRotationMatrix::MakeFromX(LookAtDir).Rotator(), DeltaSeconds, RailCamera->CameraSettings.CameraRotationSpeed);
-		RailCamera->SetActorRotation(FRotator::MakeFromEuler(FVector(0.f, 0.f, TargetRotation.Yaw)));
+		FRotator TargetRotationRail = FMath::RInterpConstantTo(RailCamera->GetActorRotation(), FRotationMatrix::MakeFromX(LookAtDirRail).Rotator(), DeltaSeconds, RailCamera->CameraSettings.CameraRotationSpeed);
+		RailCamera->SetActorRotation(FRotator::MakeFromEuler(FVector(0.f, 0.f, TargetRotationRail.Yaw)));
 		RailCamera->GetCameraComponent()->SetWorldRotation(TargetRotation);
 		
 		this->CurrentDistanceAlongSpline = NewDistanceAlongSpline;
