@@ -217,7 +217,7 @@ void ACameraRailManager::Tick(float DeltaSeconds)
 
 		// Computes new distance along spline and new world location of the camera
 		float NewDistanceAlongSpline = FMath::FInterpConstantTo(CurrentDistanceAlongSpline, GetDistanceAlongSplineAtWorldLocation(PlayerLoc), DeltaSeconds, RailCamera->CurrentCameraSettings.CameraSpeed);
-		float NewDistanceAlongSplineWithOffset = FMath::FInterpConstantTo(CurrentDistanceAlongSplineWithOffset, GetDistanceAlongSplineAtWorldLocation(PlayerLoc) + RailCamera->CameraSettings.CameraRailOffset, DeltaSeconds, RailCamera->CurrentCameraSettings.CameraSpeed);
+		float NewDistanceAlongSplineWithOffset = FMath::FInterpConstantTo(CurrentDistanceAlongSplineWithOffset, GetDistanceAlongSplineAtWorldLocation(PlayerLoc) + RailCamera->CurrentCameraSettings.CameraRailOffset, DeltaSeconds, RailCamera->CurrentCameraSettings.CameraSpeed);
 		FVector NextCameraLocation = SplineComponent->GetWorldLocationAtDistanceAlongSpline(NewDistanceAlongSpline);
 		FVector NextCameraLocationWithOffset = SplineComponent->GetWorldLocationAtDistanceAlongSpline(NewDistanceAlongSplineWithOffset);
 
@@ -279,8 +279,8 @@ void ACameraRailManager::Tick(float DeltaSeconds)
 		FVector LookAtDirRail = (PlayerActor->GetActorLocation() + CentroidRelativeLocFromPlayer) - RailCamera->GetActorLocation();
 		// Computes and sets new camera rotation
 		FRotator TargetRotation = FMath::RInterpConstantTo(RailCamera->GetCameraComponent()->GetComponentRotation(), FRotationMatrix::MakeFromX(LookAtDir).Rotator(), DeltaSeconds, RailCamera->CurrentCameraSettings.CameraRotationSpeed);
-		FRotator TargetRotationRail = FMath::RInterpConstantTo(RailCamera->GetActorRotation(), FRotationMatrix::MakeFromX(LookAtDirRail).Rotator(), DeltaSeconds, RailCamera->CurrentCameraSettings.CameraRotationSpeed);
-		RailCamera->SetActorRotation(FRotator::MakeFromEuler(FVector(0.f, 0.f, TargetRotationRail.Yaw)));
+		FRotator TargetRotationRail = FMath::RInterpConstantTo(RailCamera->GetCameraArm()->GetComponentRotation(), FRotationMatrix::MakeFromX(LookAtDirRail).Rotator(), DeltaSeconds, RailCamera->CurrentCameraSettings.CameraRotationSpeed);
+		RailCamera->GetCameraArm()->SetWorldRotation(FRotator::MakeFromEuler(FVector(0.f, 0.f, TargetRotationRail.Yaw)));
 		RailCamera->GetCameraComponent()->SetWorldRotation(TargetRotation);
 		
 		this->CurrentDistanceAlongSpline = NewDistanceAlongSpline;

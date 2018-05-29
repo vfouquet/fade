@@ -26,6 +26,7 @@ ARailCamera::ARailCamera(const FObjectInitializer& ObjectInitializer)
 	this->RotationSpeedInterpTime = 1.0f;
 	this->DistanceSpeedInterpTime = 1.0f;
 	this->HeightSpeedInterpTime = 1.0f;
+	this->RailOffsetInterpTime = 1.0f;
 }
 
 USceneComponent* ARailCamera::GetCameraArm()
@@ -115,6 +116,7 @@ void ARailCamera::ChangeSettings(const FCameraSettings & Settings)
 	this->RotationSpeedInterpAlpha = 0.0f;
 	this->DistanceSpeedInterpAlpha = 0.0f;
 	this->HeightSpeedInterpAlpha = 0.0f;
+	this->RailOffsetInterpAlpha = 0.0f;
 
 	this->PreviousCameraSettings = this->CurrentCameraSettings;
 	this->CameraSettings = Settings;
@@ -126,6 +128,7 @@ void ARailCamera::UpdateCamera(float DeltaSeconds)
 	RotationSpeedInterpAlpha += (DeltaSeconds / RotationSpeedInterpTime);
 	DistanceSpeedInterpAlpha += (DeltaSeconds / DistanceSpeedInterpTime);
 	HeightSpeedInterpAlpha += (DeltaSeconds / HeightSpeedInterpTime);
+	RailOffsetInterpAlpha += (DeltaSeconds / RailOffsetInterpTime);
 
 	if (SpeedInterpAlpha > 1.0f)
 		SpeedInterpAlpha = 1.0f;
@@ -135,12 +138,15 @@ void ARailCamera::UpdateCamera(float DeltaSeconds)
 		DistanceSpeedInterpAlpha = 1.0f;
 	if (HeightSpeedInterpAlpha > 1.0f)
 		HeightSpeedInterpAlpha = 1.0f;
+	if (RailOffsetInterpAlpha > 1.0f)
+		RailOffsetInterpAlpha = 1.0f;
 
 
 	this->CurrentCameraSettings.CameraSpeed = FMath::Lerp(this->PreviousCameraSettings.CameraSpeed, this->CameraSettings.CameraSpeed, this->SpeedInterpAlpha);
 	this->CurrentCameraSettings.CameraRotationSpeed = FMath::Lerp(this->PreviousCameraSettings.CameraRotationSpeed, this->CameraSettings.CameraRotationSpeed, this->RotationSpeedInterpAlpha);
 	this->CurrentCameraSettings.CameraDistanceOffsetSpeed = FMath::Lerp(this->PreviousCameraSettings.CameraDistanceOffsetSpeed, this->CameraSettings.CameraDistanceOffsetSpeed, this->DistanceSpeedInterpAlpha);
 	this->CurrentCameraSettings.CameraHeightOffsetSpeed = FMath::Lerp(this->PreviousCameraSettings.CameraHeightOffsetSpeed, this->CameraSettings.CameraHeightOffsetSpeed, this->HeightSpeedInterpAlpha);
+	this->CurrentCameraSettings.CameraRailOffset= FMath::Lerp(this->PreviousCameraSettings.CameraRailOffset, this->CameraSettings.CameraRailOffset, this->RailOffsetInterpAlpha);
 
 	FVector DistanceOffset(-this->CameraSettings.CameraDistanceOffset, 0.0f, 0.0f);
 	FVector CameraRelativeLocation = GetCameraComponent()->RelativeLocation;

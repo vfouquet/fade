@@ -86,6 +86,8 @@ public:
 	float	DistanceSpeedInterpTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float	HeightSpeedInterpTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float	RailOffsetInterpTime;
 
 public:
 	ARailCamera(const FObjectInitializer& ObjectInitializer);
@@ -117,4 +119,5 @@ private:
 	float	RotationSpeedInterpAlpha;
 	float	DistanceSpeedInterpAlpha;
 	float	HeightSpeedInterpAlpha;
+	float	RailOffsetInterpAlpha;
 };
