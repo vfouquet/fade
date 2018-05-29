@@ -68,4 +68,6 @@ private:
 	float	CurrentDistanceAlongSpline;
 	float	CurrentDistanceAlongSplineWithOffset;
 
+	float	LastDistanceAlongSplineTarget;
+
 };
