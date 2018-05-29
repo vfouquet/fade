@@ -31,4 +31,9 @@ public:
 	UMaterialInterface*	MemoryTransparentMaterial = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Volume Effect")
 	UStaticMesh*		MemoryVolumeMesh = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TEMPSHIT")
+		int		STENCILVALUE = 252;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TEMPSHIT")
+		ERendererStencilMask	BITMASK = ERendererStencilMask::ERSM_Default;
 };

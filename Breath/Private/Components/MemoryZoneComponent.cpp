@@ -36,8 +36,10 @@ void	UMemoryZoneComponent::BeginPlay()
 		transparentSphere->SetMaterial(0, MemoryTransparentMaterial);
 		opaqueSphere->SetMaterial(0, MemoryOpaqueMaterial);
 		opaqueSphere->bRenderCustomDepth = true;
-		opaqueSphere->CustomDepthStencilValue = 252;
-		opaqueSphere->CustomDepthStencilWriteMask = ERendererStencilMask::ERSM_255;
+		
+		opaqueSphere->CustomDepthStencilValue = STENCILVALUE;
+		opaqueSphere->CustomDepthStencilWriteMask = BITMASK;
+		
 		opaqueSphere->bRenderInMainPass = false;
 		opaqueSphere->SetSimulatePhysics(false);
 		opaqueSphere->SetCollisionProfileName("NoCollision");

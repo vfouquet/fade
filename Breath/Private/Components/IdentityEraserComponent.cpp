@@ -64,12 +64,18 @@ void	UIdentityEraserComponent::BeginPlay()
 		transparentSphere->SetMaterial(0, SphereTransparentMaterial);
 		opaqueSphere->SetMaterial(0, SphereOpaqueMaterial);
 		opaqueSphere->bRenderCustomDepth = true;
-		opaqueSphere->CustomDepthStencilValue = 255;
+		
+		//opaqueSphere->CustomDepthStencilValue = 255;
+		opaqueSphere->CustomDepthStencilValue = STENCILVALUE;
+		opaqueSphere->CustomDepthStencilWriteMask = BITMASK;
+
 		opaqueSphere->bRenderInMainPass = false;
 		opaqueSphere->SetSimulatePhysics(false);
 		opaqueSphere->SetCollisionProfileName("NoCollision");
 		transparentSphere->SetSimulatePhysics(false);
 		transparentSphere->SetCollisionProfileName("NoCollision");
+		if (MaxCullDistance != 0.0f)
+			opaqueSphere->SetCullDistance(MaxCullDistance);
 
 		float scale = GetUnscaledSphereRadius() / SphereMesh->ExtendedBounds.BoxExtent.X;
 		opaqueSphere->SetRelativeScale3D(FVector(scale));

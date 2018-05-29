@@ -46,6 +46,13 @@ public:
 	UMaterialInterface*		SphereTransparentMaterial = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader")
 	float	FallOffValue = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Optimization")
+	float	MaxCullDistance = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TEMPSHIT")
+	int		STENCILVALUE = 255;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TEMPSHIT")
+	ERendererStencilMask	BITMASK = ERendererStencilMask::ERSM_Default;
 
 private:
 	UParticleSystemComponent*	particleSystem = nullptr;
