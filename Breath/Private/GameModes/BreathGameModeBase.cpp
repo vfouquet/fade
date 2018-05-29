@@ -107,7 +107,6 @@ void ABreathGameModeBase::LoadGameToChapter(UStoryChapter* Chapter)
 					
 					if (Camera != nullptr)
 					{
-						Camera->ChangeSettings(Chapter->Spawn->CameraSettings);
 						Camera->ChangePlayer(PlayerPawn, true);
 					}
 
