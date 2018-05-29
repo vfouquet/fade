@@ -37,8 +37,9 @@ void	UMemoryZoneComponent::BeginPlay()
 		opaqueSphere->SetMaterial(0, MemoryOpaqueMaterial);
 		opaqueSphere->bRenderCustomDepth = true;
 		
-		opaqueSphere->CustomDepthStencilValue = STENCILVALUE;
-		opaqueSphere->CustomDepthStencilWriteMask = BITMASK;
+		opaqueSphere->CustomDepthStencilValue = 254;
+		//opaqueSphere->CustomDepthStencilValue = STENCILVALUE;
+		//opaqueSphere->CustomDepthStencilWriteMask = BITMASK;
 		
 		opaqueSphere->bRenderInMainPass = false;
 		opaqueSphere->SetSimulatePhysics(false);
