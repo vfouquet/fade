@@ -172,7 +172,7 @@ void	AMainCharacter::StopGrab()
 
 void	AMainCharacter::Throw()
 {
-	if (!holdComponent)
+	if (!holdComponent || bLockThrow)
 		return;
 	holdComponent->Throw();
 }
