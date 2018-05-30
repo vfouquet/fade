@@ -41,11 +41,11 @@ void ARailCamera::BeginPlay()
 	this->PreviousCameraSettings = this->CameraSettings;
 	this->CurrentCameraSettings = this->CameraSettings;
 
-	/*ABreathLevelScriptActor* LevelScript = Cast<ABreathLevelScriptActor>(this->GetWorld()->GetLevelScriptActor());
+	ABreathLevelScriptActor* LevelScript = Cast<ABreathLevelScriptActor>(this->GetWorld()->GetLevelScriptActor());
 	if (LevelScript != nullptr && LevelScript->CameraRailManager != nullptr)
 	{
 		this->AttachToRail(LevelScript->CameraRailManager);
-	}*/
+	}
 
 #if WITH_EDITOR
 	this->SetActorLabel(TEXT("RailCamera"));
