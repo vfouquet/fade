@@ -319,6 +319,12 @@ void	AMainPlayerController::Pause()
 		bIsPaused = true;
 	}
 }
+	
+void	AMainPlayerController::Die() 
+{ 
+	if (MainCharacter) 
+		MainCharacter->Die(); 
+}
 
 void	AMainPlayerController::MenuUp()
 {

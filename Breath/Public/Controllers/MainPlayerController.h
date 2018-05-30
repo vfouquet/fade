@@ -78,6 +78,8 @@ public:
 	void	DisableGodMode();
 	UFUNCTION(Exec, BlueprintCallable)
 	void	PhotoMode(bool value, bool pauseGame = false);
+	UFUNCTION(Exec, BlueprintCallable)
+	void	Die();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void	OnPawnDeath();
