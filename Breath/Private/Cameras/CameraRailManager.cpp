@@ -75,20 +75,7 @@ void ACameraRailManager::AttachCamera(ARailCamera* CameraToAttach, AActor* Playe
 	{
 		this->RailCamera = CameraToAttach;
 		
-		if (PlayerActor != nullptr)
-		{
-			this->PlayerActor = PlayerActor;
-			this->CurrentInputKey = FlatSplineComponent->FindInputKeyClosestToWorldLocation(PlayerActor->GetActorLocation());
-
-			if (bTeleport == true)
-			{
-				this->CurrentDistanceAlongSpline = GetDistanceAlongSplineAtWorldLocation(PlayerActor->GetActorLocation());
-				this->CurrentDistanceAlongSplineWithOffset = this->CurrentDistanceAlongSpline;
-				this->LastDistanceAlongSplineTarget = this->CurrentDistanceAlongSpline;
-			}
-
-			this->SetActorTickEnabled(true);
-		}
+		this->ChangePlayer(PlayerActor, bTeleport);
 	}
 }
 
@@ -119,16 +106,20 @@ void	ACameraRailManager::ChangePlayer(AActor* PlayerActor, bool bTeleport)
 				}
 			}
 
-			CentroidRelativeLocFromPlayer /= RailCamera->CameraSettings.InterestPoints.Num() + 1; // 1 represents the player weight.
-
-			FVector LookAtDir;
-			LookAtDir = (PlayerActor->GetActorLocation() + CentroidRelativeLocFromPlayer) - NextCameraLocationWithOffset + RailCamera->GetCameraComponent()->RelativeLocation;
+			CentroidRelativeLocFromPlayer /= RailCamera->CameraSettings.InterestPoints.Num() + 1; // 1 represents the player weight
 
 			// Sets new camera location
 			RailCamera->SetActorLocation(NextCameraLocation);
 			RailCamera->GetCameraArm()->SetWorldLocation(NextCameraLocationWithOffset);
 
+
 			// Computes and sets new camera rotation
+
+			FVector LookAtDir = (PlayerActor->GetActorLocation() + CentroidRelativeLocFromPlayer) - NextCameraLocationWithOffset + RailCamera->GetCameraComponent()->RelativeLocation;
+			FVector LookAtDirRail = (PlayerActor->GetActorLocation() + CentroidRelativeLocFromPlayer) - RailCamera->GetCameraArm()->GetComponentLocation();
+			FRotator TargetRotationRail = FRotationMatrix::MakeFromX(LookAtDirRail).Rotator();
+
+			RailCamera->GetCameraArm()->SetWorldRotation(FRotator::MakeFromEuler(FVector(0.f, 0.f, TargetRotationRail.Yaw)));
 			RailCamera->GetCameraComponent()->SetWorldRotation(FRotationMatrix::MakeFromX(LookAtDir).Rotator());
 		}
 

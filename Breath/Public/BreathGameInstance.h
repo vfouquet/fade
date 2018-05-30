@@ -34,6 +34,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void	SetCurrentChapter(UStoryChapter* Chapter) { this->CurrentChapter = CurrentChapter; }
+	UFUNCTION(BlueprintCallable)
+	UStoryChapter*	GetCurrentChapter() { return this->CurrentChapter; }
 
 	virtual void LoadComplete(const float LoadTime, const FString& MapName) override;
 

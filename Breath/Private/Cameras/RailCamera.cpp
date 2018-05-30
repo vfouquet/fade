@@ -41,11 +41,11 @@ void ARailCamera::BeginPlay()
 	this->PreviousCameraSettings = this->CameraSettings;
 	this->CurrentCameraSettings = this->CameraSettings;
 
-	ABreathLevelScriptActor* LevelScript = Cast<ABreathLevelScriptActor>(this->GetWorld()->GetLevelScriptActor());
+	/*ABreathLevelScriptActor* LevelScript = Cast<ABreathLevelScriptActor>(this->GetWorld()->GetLevelScriptActor());
 	if (LevelScript != nullptr && LevelScript->CameraRailManager != nullptr)
 	{
 		this->AttachToRail(LevelScript->CameraRailManager);
-	}
+	}*/
 
 #if WITH_EDITOR
 	this->SetActorLabel(TEXT("RailCamera"));
@@ -110,13 +110,24 @@ void	ARailCamera::ChangePlayer(AActor* PlayerActor, bool bTeleport)
 	}
 }
 
-void ARailCamera::ChangeSettings(const FCameraSettings & Settings)
+void ARailCamera::ChangeSettings(const FCameraSettings & Settings, bool bInstantChange)
 {
-	this->SpeedInterpAlpha = 0.0f;
-	this->RotationSpeedInterpAlpha = 0.0f;
-	this->DistanceSpeedInterpAlpha = 0.0f;
-	this->HeightSpeedInterpAlpha = 0.0f;
-	this->RailOffsetInterpAlpha = 0.0f;
+	if (bInstantChange == false)
+	{
+		this->SpeedInterpAlpha = 0.0f;
+		this->RotationSpeedInterpAlpha = 0.0f;
+		this->DistanceSpeedInterpAlpha = 0.0f;
+		this->HeightSpeedInterpAlpha = 0.0f;
+		this->RailOffsetInterpAlpha = 0.0f;
+	}
+	else
+	{
+		this->SpeedInterpAlpha = 1.0f;
+		this->RotationSpeedInterpAlpha = 1.0f;
+		this->DistanceSpeedInterpAlpha = 1.0f;
+		this->HeightSpeedInterpAlpha = 1.0f;
+		this->RailOffsetInterpAlpha = 1.0f;
+	}
 
 	this->PreviousCameraSettings = this->CurrentCameraSettings;
 	this->CameraSettings = Settings;

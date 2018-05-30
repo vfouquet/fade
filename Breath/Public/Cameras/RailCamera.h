@@ -105,7 +105,7 @@ public:
 	void	ChangePlayer(AActor* PlayerActor, bool bTeleport = false);
 
 	UFUNCTION(BlueprintCallable)
-	void	ChangeSettings(const FCameraSettings& Settings);
+	void	ChangeSettings(const FCameraSettings& Settings, bool bInstanstChange = false);
 
 protected:
 	UPROPERTY(VisibleAnywhere)
