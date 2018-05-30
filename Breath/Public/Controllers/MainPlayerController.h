@@ -50,6 +50,7 @@ public:
 	void	RotateHorizontal(float Value);
 	void	RotateVertical(float Value);
 
+	UFUNCTION(BlueprintCallable)
 	void	Pause();
 	void	MenuUp();
 	void	MenuDown();
