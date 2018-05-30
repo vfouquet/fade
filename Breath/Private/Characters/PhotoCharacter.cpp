@@ -76,6 +76,11 @@ void	APhotoCharacter::RotateVertical(float value)
 {
 	AddControllerPitchInput(value * RotateSpeed * GetWorld()->GetDeltaSeconds());
 }
+		
+void	APhotoCharacter::HideCharacter(bool value)
+{
+	SetActorHiddenInGame(value);
+}
 
 void	APhotoCharacter::PlayPreviousBodyPose()
 {

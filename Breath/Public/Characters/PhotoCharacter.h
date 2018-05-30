@@ -50,6 +50,8 @@ public:
 	void	RotateVertical(float value);
 
 	UFUNCTION(BlueprintCallable)
+	void	HideCharacter(bool value);
+	UFUNCTION(BlueprintCallable)
 	void	PlayPreviousBodyPose();
 	UFUNCTION(BlueprintCallable)
 	void	PlayNextBodyPose();
