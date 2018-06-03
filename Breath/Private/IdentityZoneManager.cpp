@@ -33,10 +33,14 @@ void AIdentityZoneManager::BeginPlay()
 	if (auto* cont = GetWorld()->GetFirstPlayerController())
 		character = cont->GetPawn();
 	
+	UBoxComponent* box = FindComponentByClass<UBoxComponent>();
+	if (!box)
+		return;
+
 	if (DecalNormalMaterialInterface)
-		createNormalDecal(FVector::ZeroVector);
+		createNormalDecal(box->GetScaledBoxExtent());
 	if (DecalRoughnessMaterialInterface)
-		createRoughnessDecal(FVector::ZeroVector);
+		createRoughnessDecal(box->GetScaledBoxExtent());
 }
 
 // Called every frame
@@ -149,6 +153,7 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 		decalRoughnessMaterial->SetScalarParameterValue(FName(*("Memory_Size_" + indexStr)), 0.0f);
 	}
 
+	return;
 	FVector newDecalsLocation;
 	FVector newDecalsExtent;
 	if (computeDecalsExtent(newDecalsLocation, newDecalsExtent))

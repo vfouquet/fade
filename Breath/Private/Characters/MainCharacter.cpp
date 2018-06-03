@@ -809,6 +809,11 @@ void	AMainCharacter::OnCapsuleEndOverlap(UPrimitiveComponent* OverlappedComponen
 		memoryZoneCount--;
 	}
 
+	if (memoryZoneCount < 0)
+		memoryZoneCount = 0;
+	if (eraseZoneCount < 0)
+		eraseZoneCount = 0;
+
 	UChemicalComponent*	comp = UChemicalComponent::FindAssociatedChemicalComponent(OtherComp);
 	if (!comp)
 		return;

@@ -98,7 +98,7 @@ public:
 	void	DealDamage(FHitResult hitResult, UPrimitiveComponent* damageDealer, bool HeavyDamage = true);
 	void	OnDamage(FVector impactDir = FVector::ZeroVector);
 	void	Die(FVector impact = FVector::ZeroVector, FVector impactLoc = FVector::ZeroVector, FName boneName = NAME_None);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void	OnCapsuleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 	UFUNCTION()
 	void	OnCapsuleEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
