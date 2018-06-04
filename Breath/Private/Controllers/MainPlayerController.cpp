@@ -479,6 +479,23 @@ void	AMainPlayerController::updateCharacterValues()
 	if (difference < 0.0f)
 		difference += 360.0f;
 
+	if (difference >= 90.0f + HeavyAngleTolerance && difference <= 270.0f - HeavyAngleTolerance)
+		MainCharacter->SetPushingAxis(1.0f);
+	else if (difference >= 270.0f + HeavyAngleTolerance || difference <= 90.0f - HeavyAngleTolerance)
+		MainCharacter->SetPushingAxis(-1.0f);
+	else
+		MainCharacter->SetPushingAxis(0.0f);
+
+	if (difference >= HeavyAngleTolerance && difference <= 180.0f - HeavyAngleTolerance)
+		MainCharacter->SetRotatingRight(true);
+	else
+		MainCharacter->SetRotatingRight(false);
+	if (difference >= 180.0f + HeavyAngleTolerance && difference < 360.0f - HeavyAngleTolerance)
+		MainCharacter->SetRotatingLeft(true);
+	else
+		MainCharacter->SetRotatingLeft(false);
+
+	/*
 	if (difference >= 180.0f - HeavyAngleTolerance && difference <= 180.0f + HeavyAngleTolerance)
 	{
 		MainCharacter->SetRotatingLeft(false);
@@ -497,4 +514,5 @@ void	AMainPlayerController::updateCharacterValues()
 		MainCharacter->SetRotatingLeft(difference > 180.0f + HeavyAngleTolerance && difference < 360.0f - HeavyAngleTolerance);
 		MainCharacter->SetPushingAxis(0.0f);
 	}
+	*/
 }
