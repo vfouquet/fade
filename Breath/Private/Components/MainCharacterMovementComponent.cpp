@@ -17,6 +17,14 @@ void UMainCharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick 
 	FVector last = LastUpdateLocation;
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	lastOffsetLocation = LastUpdateLocation - last;
+	
+	currentPushAndPullSpeed = FMath::FInterpTo(currentPushAndPullSpeed, pushAndPullTargetSpeed, DeltaTime, PushPullInterpSpeed);
+	currentRotateSpeed = FMath::FInterpTo(currentRotateSpeed, rotateTargetSpeed, DeltaTime, RotateInterpSpeed);
+
+	if (!FMath::IsNearlyZero(currentPushAndPullSpeed))
+		updatePushAndPull();
+	if (!FMath::IsNearlyZero(currentRotateSpeed))
+		updateRotatePushAndPull();
 }
 
 /*
@@ -87,197 +95,24 @@ void UMainCharacterMovementComponent::SetPostLandedPhysics(const FHitResult& Hit
 		bOrientRotationToMovement = true;
 }
 	
-void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, UInteractableComponent* holdingObject)
+void	UMainCharacterMovementComponent::ProcessPushAndPull(float const& coeff, UInteractableComponent* holdingObj)
 {
-	if (holdingObject == nullptr || holdingObject->GetOwner() == nullptr) return;
-
-	FVector MoveDir = GetCharacterOwner()->GetActorRotation().Vector() * coeff;
-
-	FHitResult SweepResult;
-
-// 	holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * 10.f, true);
-// 	holdingObject->GetAssociatedComponent()->AddForce(MoveDir * 1000.f);//this->PushPullSpeed);
-// 	this->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
-
-	if (coeff < 0.f)
-	{
-		if (holdingObject->bLockPull)	return;
-		this->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
-
-		if (SweepResult.bBlockingHit == false)
-		{
-// 			TArray<FHitResult> OutHits;
-// 			FCollisionQueryParams CollisionQueryParams;
-// 			CollisionQueryParams.AddIgnoredActor(this->GetOwner());
-// 			CollisionQueryParams.AddIgnoredActor(holdingObject->GetOwner());
-// 
-// 			const TArray<UInteractableComponent::FStickConstraint>& StickConstraints = holdingObject->GetStickConstraints();
-// 
-// 			for (auto StickConstraint : StickConstraints)
-// 			{
-// 				CollisionQueryParams.AddIgnoredActor(StickConstraint.hook->GetOwner());
-// 				CollisionQueryParams.AddIgnoredActor(StickConstraint.hook->GetOwner()->GetRootComponent()->GetAttachParent()->GetOwner());
-// 			}
-// 
-// 			FVector EndLocation = MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds();
-// 
-// 			GetWorld()->SweepMultiByChannel(
-// 				OutHits,
-// 				holdingObject->GetOwner()->GetActorLocation() + FVector(0.f, 0.f, 50.f),
-// 				holdingObject->GetOwner()->GetActorLocation() + EndLocation + FVector(0.f, 0.f, 50.f),
-// 				holdingObject->GetOwner()->GetActorQuat(),
-// 				ECC_WorldDynamic,
-// 				FCollisionShape::MakeBox(holdingObject->GetOwner()->GetComponentsBoundingBox(false).GetExtent() * 0.9f),
-// 				CollisionQueryParams
-// 			);
-
-			holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * 10.f, true);
-			holdingObject->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
-
-
-// 			for (auto Hit : OutHits)
-// 			{
-// 				if (Hit.bBlockingHit == true)
-// 				{
-// 					this->GetOwner()->AddActorWorldOffset(-MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
-// 					return;
-// 				}
-// 			}
-// 
-// 			holdingObject->GetOwner()->AddActorWorldOffset(EndLocation);
-
-			if (SweepResult.bBlockingHit == true)
-			{
-				this->GetOwner()->AddActorWorldOffset(-MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
-			}
-
-			holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * -10.f, true);
-
-		}
-	}
-	else
-	{
-		if (holdingObject->bLockPush)	return;
-// 		TArray<FHitResult> OutHits;
-// 		FCollisionQueryParams CollisionQueryParams;
-// 		CollisionQueryParams.AddIgnoredActor(this->GetOwner());
-// 		CollisionQueryParams.AddIgnoredActor(holdingObject->GetOwner());
-// 
-// 		const TArray<UInteractableComponent::FStickConstraint>& StickConstraints = holdingObject->GetStickConstraints();
-// 
-// 		for (auto StickConstraint : StickConstraints)
-// 		{
-// 			CollisionQueryParams.AddIgnoredActor(StickConstraint.hook->GetOwner());
-// 			CollisionQueryParams.AddIgnoredActor(StickConstraint.hook->GetOwner()->GetRootComponent()->GetAttachParent()->GetOwner());
-// 		}
-// 
-// 		FVector EndLocation = MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds();
-// 
-// 		GetWorld()->SweepMultiByChannel(
-// 			OutHits,
-// 			holdingObject->GetOwner()->GetActorLocation() + FVector(0.f, 0.f, 50.f),
-// 			holdingObject->GetOwner()->GetActorLocation() + EndLocation + FVector(0.f, 0.f, 50.f),
-// 			holdingObject->GetOwner()->GetActorQuat(),
-// 			ECC_WorldDynamic,
-// 			FCollisionShape::MakeBox(holdingObject->GetOwner()->GetComponentsBoundingBox(false).GetExtent() * 0.9f),
-// 			CollisionQueryParams
-// 		);
-// 
-// 		for (auto Hit : OutHits)
-// 		{
-// 			if (Hit.bBlockingHit == true)
-// 			{
-// 				return;
-// 			}
-// 		}
-// 
-// 		this->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
-// 	
-// 		if (SweepResult.bBlockingHit == false)
-// 		{
-// 			holdingObject->GetOwner()->AddActorWorldOffset(EndLocation);
-// 		}
-
-		holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * 10.f, true);
-		holdingObject->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
-
-		if (SweepResult.bBlockingHit == false)
-		{
-			this->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
-
-			if (SweepResult.bBlockingHit == true)
-			{
-				holdingObject->GetOwner()->AddActorWorldOffset(-MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
-			}
-		}
-
-		holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * -10.f, true);
-	}
+	holdingObject = holdingObj;
+	if (holdingObject == nullptr || holdingObject->GetOwner() == nullptr)
+		pushAndPullTargetSpeed = 0.0f;
+	pushAndPullTargetSpeed = coeff * PushPullSpeed;
 }
 
-void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(bool direction, UInteractableComponent* holdingObject, FVector holdingObjectLocation)
+void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(float direction, UInteractableComponent* holdingObj, FVector holdingObjectLocation)
 {
-	if (holdingObject == nullptr || holdingObject->GetOwner() == nullptr) return;
-	if (!direction && holdingObject->bLockLeftRotate)	return;
-	if (direction && holdingObject->bLockRightRotate)	return;
-	float angle = RotationSpeed * GetWorld()->GetDeltaSeconds();
-	angle *= direction ? -1.0f : 1.0f;
-	//MAYBE USE OBJECT WEIGHT
-	//TO DO REPLACE THIS OLD WAY OF ROTATING OBJECT
-	FRotator	rotation = FQuat(FVector::UpVector, FMath::DegreesToRadians(angle)).Rotator();
-	FVector		holdingToCharac = GetActorLocation() - holdingObjectLocation;
-	FVector		holdingToNewLoc = rotation.RotateVector(holdingToCharac);
-	FVector		finalLocation = holdingToNewLoc + holdingObjectLocation;
-	FRotator	finalRotation = rotation + GetCharacterOwner()->GetActorRotation();
-	FRotator	finalObjectRotation = rotation + holdingObject->GetOwner()->GetActorRotation();
-
-	FHitResult SweepResult;
-	FCollisionQueryParams CollisionQueryParams;
-	CollisionQueryParams.AddIgnoredActor(GetCharacterOwner());
-	//CollisionQueryParams.bTraceComplex = true;
-	//CollisionQueryParams.bIgnoreTouches = true;
-
-	GetWorld()->SweepSingleByChannel(
-		SweepResult,
-		GetCharacterOwner()->GetActorLocation(),
-		finalLocation,
-		FQuat::Identity,
-		ECC_WorldDynamic,
-		GetCharacterOwner()->GetCapsuleComponent()->GetCollisionShape(),
-		CollisionQueryParams
-	);
-
-	GetCharacterOwner()->SetActorLocation(finalLocation, true, &SweepResult);
-
-	if (SweepResult.bBlockingHit == false)
-	{
-		CollisionQueryParams = FCollisionQueryParams::DefaultQueryParam;
-		CollisionQueryParams.AddIgnoredActor(holdingObject->GetOwner());
-
-		FVector	objectFinalLocationWithZOffset = holdingObject->GetOwner()->GetActorLocation();
-		objectFinalLocationWithZOffset.Z += 10.f;
-
-		holdingObject->GetOwner()->SetActorLocationAndRotation(holdingObject->GetOwner()->GetActorLocation(), finalObjectRotation.Quaternion(), true, &SweepResult);
-
-		if (SweepResult.bBlockingHit == true)
-		{	
-			holdingToCharac = GetActorLocation() - holdingObjectLocation;
-			holdingToNewLoc = rotation.RotateVector(holdingToCharac);
-			finalLocation = holdingToNewLoc + holdingObjectLocation;
-			holdingObject->GetOwner()->SetActorLocationAndRotation(holdingObject->GetOwner()->GetActorLocation(), finalObjectRotation.Quaternion(), true);
-		}
-
-		GetCharacterOwner()->SetActorLocation(finalLocation, true);
-	}
-
-	FVector LookAtDir = holdingObject->GetOwner()->GetActorLocation() - GetCharacterOwner()->GetActorLocation();
-	LookAtDir.Normalize();
-
-	FRotator LookAtOnZ = FRotationMatrix::MakeFromX(LookAtDir).Rotator();
-	LookAtOnZ.Pitch = 0.f;
-	LookAtOnZ.Roll = 0.f;
-
-	GetCharacterOwner()->SetActorRotation(LookAtOnZ);
+	holdingObject = holdingObj;
+	if (holdingObject == nullptr || holdingObject->GetOwner() == nullptr)
+		rotateTargetSpeed = 0.0f;
+	if (direction == -1.0f && holdingObject->bLockLeftRotate)
+		rotateTargetSpeed = 0.0f;
+	if (direction == 1.0f && holdingObject->bLockRightRotate)
+		rotateTargetSpeed = 0.0f;
+	rotateTargetSpeed = direction * RotationSpeed;
 }
 
 void	UMainCharacterMovementComponent::ProcessThrowRotation(float coeff)
@@ -327,6 +162,197 @@ bool	UMainCharacterMovementComponent::IsFalling(bool& ascending)
 {
 	ascending = Velocity.Z >= 0.0f;
 	return UCharacterMovementComponent::IsFalling();
+}
+
+void	UMainCharacterMovementComponent::updatePushAndPull()
+{
+	bool pushing = currentPushAndPullSpeed >= 0.0f;
+
+	FVector MoveDir = GetCharacterOwner()->GetActorRotation().Vector() * (pushing? 1.0f : -1.0f);
+
+	FHitResult SweepResult;
+
+	// 	holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * 10.f, true);
+	// 	holdingObject->GetAssociatedComponent()->AddForce(MoveDir * 1000.f);//this->PushPullSpeed);
+	// 	this->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+
+	if (!pushing)
+	{
+		if (holdingObject->bLockPull)	return;
+		this->GetOwner()->AddActorWorldOffset(MoveDir * -currentPushAndPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+
+		if (SweepResult.bBlockingHit == false)
+		{
+			// 			TArray<FHitResult> OutHits;
+			// 			FCollisionQueryParams CollisionQueryParams;
+			// 			CollisionQueryParams.AddIgnoredActor(this->GetOwner());
+			// 			CollisionQueryParams.AddIgnoredActor(holdingObject->GetOwner());
+			// 
+			// 			const TArray<UInteractableComponent::FStickConstraint>& StickConstraints = holdingObject->GetStickConstraints();
+			// 
+			// 			for (auto StickConstraint : StickConstraints)
+			// 			{
+			// 				CollisionQueryParams.AddIgnoredActor(StickConstraint.hook->GetOwner());
+			// 				CollisionQueryParams.AddIgnoredActor(StickConstraint.hook->GetOwner()->GetRootComponent()->GetAttachParent()->GetOwner());
+			// 			}
+			// 
+			// 			FVector EndLocation = MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds();
+			// 
+			// 			GetWorld()->SweepMultiByChannel(
+			// 				OutHits,
+			// 				holdingObject->GetOwner()->GetActorLocation() + FVector(0.f, 0.f, 50.f),
+			// 				holdingObject->GetOwner()->GetActorLocation() + EndLocation + FVector(0.f, 0.f, 50.f),
+			// 				holdingObject->GetOwner()->GetActorQuat(),
+			// 				ECC_WorldDynamic,
+			// 				FCollisionShape::MakeBox(holdingObject->GetOwner()->GetComponentsBoundingBox(false).GetExtent() * 0.9f),
+			// 				CollisionQueryParams
+			// 			);
+
+			holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * 10.f, true);
+			holdingObject->GetOwner()->AddActorWorldOffset(MoveDir * -currentPushAndPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+
+
+			// 			for (auto Hit : OutHits)
+			// 			{
+			// 				if (Hit.bBlockingHit == true)
+			// 				{
+			// 					this->GetOwner()->AddActorWorldOffset(-MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+			// 					return;
+			// 				}
+			// 			}
+			// 
+			// 			holdingObject->GetOwner()->AddActorWorldOffset(EndLocation);
+
+			if (SweepResult.bBlockingHit == true)
+			{
+				this->GetOwner()->AddActorWorldOffset(-MoveDir * -currentPushAndPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+			}
+
+			holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * -10.f, true);
+
+		}
+	}
+	else
+	{
+		if (holdingObject->bLockPush)	return;
+		// 		TArray<FHitResult> OutHits;
+		// 		FCollisionQueryParams CollisionQueryParams;
+		// 		CollisionQueryParams.AddIgnoredActor(this->GetOwner());
+		// 		CollisionQueryParams.AddIgnoredActor(holdingObject->GetOwner());
+		// 
+		// 		const TArray<UInteractableComponent::FStickConstraint>& StickConstraints = holdingObject->GetStickConstraints();
+		// 
+		// 		for (auto StickConstraint : StickConstraints)
+		// 		{
+		// 			CollisionQueryParams.AddIgnoredActor(StickConstraint.hook->GetOwner());
+		// 			CollisionQueryParams.AddIgnoredActor(StickConstraint.hook->GetOwner()->GetRootComponent()->GetAttachParent()->GetOwner());
+		// 		}
+		// 
+		// 		FVector EndLocation = MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds();
+		// 
+		// 		GetWorld()->SweepMultiByChannel(
+		// 			OutHits,
+		// 			holdingObject->GetOwner()->GetActorLocation() + FVector(0.f, 0.f, 50.f),
+		// 			holdingObject->GetOwner()->GetActorLocation() + EndLocation + FVector(0.f, 0.f, 50.f),
+		// 			holdingObject->GetOwner()->GetActorQuat(),
+		// 			ECC_WorldDynamic,
+		// 			FCollisionShape::MakeBox(holdingObject->GetOwner()->GetComponentsBoundingBox(false).GetExtent() * 0.9f),
+		// 			CollisionQueryParams
+		// 		);
+		// 
+		// 		for (auto Hit : OutHits)
+		// 		{
+		// 			if (Hit.bBlockingHit == true)
+		// 			{
+		// 				return;
+		// 			}
+		// 		}
+		// 
+		// 		this->GetOwner()->AddActorWorldOffset(MoveDir * PushPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+		// 	
+		// 		if (SweepResult.bBlockingHit == false)
+		// 		{
+		// 			holdingObject->GetOwner()->AddActorWorldOffset(EndLocation);
+		// 		}
+
+		holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * 10.f, true);
+		holdingObject->GetOwner()->AddActorWorldOffset(MoveDir * currentPushAndPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+
+		if (SweepResult.bBlockingHit == false)
+		{
+			this->GetOwner()->AddActorWorldOffset(MoveDir * currentPushAndPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+
+			if (SweepResult.bBlockingHit == true)
+			{
+				holdingObject->GetOwner()->AddActorWorldOffset(-MoveDir * currentPushAndPullSpeed * GetWorld()->GetDeltaSeconds(), true, &SweepResult);
+			}
+		}
+
+		holdingObject->GetOwner()->AddActorWorldOffset(FVector(0.f, 0.f, 1.f) * -10.f, true);
+	}
+}
+
+void	UMainCharacterMovementComponent::updateRotatePushAndPull()
+{
+	if (!holdingObject)
+		return;
+	float angle = -currentRotateSpeed * GetWorld()->GetDeltaSeconds();
+	//MAYBE USE OBJECT WEIGHT
+	//TO DO REPLACE THIS OLD WAY OF ROTATING OBJECT
+	FRotator	rotation = FQuat(FVector::UpVector, FMath::DegreesToRadians(angle)).Rotator();
+	FVector		holdingToCharac = GetActorLocation() - holdingObject->GetAssociatedLocation();
+	FVector		holdingToNewLoc = rotation.RotateVector(holdingToCharac);
+	FVector		finalLocation = holdingToNewLoc + holdingObject->GetAssociatedLocation();
+	FRotator	finalRotation = rotation + GetCharacterOwner()->GetActorRotation();
+	FRotator	finalObjectRotation = rotation + holdingObject->GetOwner()->GetActorRotation();
+
+	FHitResult SweepResult;
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(GetCharacterOwner());
+	//CollisionQueryParams.bTraceComplex = true;
+	//CollisionQueryParams.bIgnoreTouches = true;
+
+	GetWorld()->SweepSingleByChannel(
+		SweepResult,
+		GetCharacterOwner()->GetActorLocation(),
+		finalLocation,
+		FQuat::Identity,
+		ECC_WorldDynamic,
+		GetCharacterOwner()->GetCapsuleComponent()->GetCollisionShape(),
+		CollisionQueryParams
+	);
+
+	GetCharacterOwner()->SetActorLocation(finalLocation, true, &SweepResult);
+
+	if (SweepResult.bBlockingHit == false)
+	{
+		CollisionQueryParams = FCollisionQueryParams::DefaultQueryParam;
+		CollisionQueryParams.AddIgnoredActor(holdingObject->GetOwner());
+
+		FVector	objectFinalLocationWithZOffset = holdingObject->GetOwner()->GetActorLocation();
+		objectFinalLocationWithZOffset.Z += 10.f;
+
+		holdingObject->GetOwner()->SetActorLocationAndRotation(holdingObject->GetOwner()->GetActorLocation(), finalObjectRotation.Quaternion(), true, &SweepResult);
+
+		if (SweepResult.bBlockingHit == true)
+		{
+			holdingToCharac = GetActorLocation() - holdingObject->GetAssociatedLocation();
+			holdingToNewLoc = rotation.RotateVector(holdingToCharac);
+			finalLocation = holdingToNewLoc + holdingObject->GetAssociatedLocation();
+			holdingObject->GetOwner()->SetActorLocationAndRotation(holdingObject->GetOwner()->GetActorLocation(), finalObjectRotation.Quaternion(), true);
+		}
+
+		GetCharacterOwner()->SetActorLocation(finalLocation, true);
+	}
+
+	FVector LookAtDir = holdingObject->GetOwner()->GetActorLocation() - GetCharacterOwner()->GetActorLocation();
+	LookAtDir.Normalize();
+
+	FRotator LookAtOnZ = FRotationMatrix::MakeFromX(LookAtDir).Rotator();
+	LookAtOnZ.Pitch = 0.f;
+	LookAtOnZ.Roll = 0.f;
+
+	GetCharacterOwner()->SetActorRotation(LookAtOnZ);
 }
 
 void UMainCharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)

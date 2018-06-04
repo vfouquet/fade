@@ -101,21 +101,22 @@ void AMainCharacter::Tick(float DeltaTime)
 	}
 	else if (bMovingHeavyObject)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Push/Pull : %f    Left : %s  Right : %s"), pushingAxis, rotatingLeft? *FString("True") : *FString("False"), rotatingRight? *FString("True") : *FString("False"));
 		//ADDITIONAL SECURITY TEST FOR PUSH/PULL SHOULD BE REMOVED
 		if (holdComponent)
 		{
 			if (rotatingLeft)
-				mainCharacterMovement->ProcessRotateHeavyObject(false, holdComponent->GetCurrentHeldObject(), holdComponent->GetHoldingObjectLocation());
+				mainCharacterMovement->ProcessRotateHeavyObject(-1.0f, holdComponent->GetCurrentHeldObject(), holdComponent->GetHoldingObjectLocation());
 			else if (rotatingRight)
-				mainCharacterMovement->ProcessRotateHeavyObject(true, holdComponent->GetCurrentHeldObject(), holdComponent->GetHoldingObjectLocation());
-			if (!FMath::IsNearlyZero(pushingAxis))
-			{
-				if (pushingAxis == 1.0f)
-					mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetCurrentHeldObject());
-				else if (pushingAxis == -1.0f)
-					mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetCurrentHeldObject());
-			}
+				mainCharacterMovement->ProcessRotateHeavyObject(1.0f, holdComponent->GetCurrentHeldObject(), holdComponent->GetHoldingObjectLocation());
+			else	
+				mainCharacterMovement->ProcessRotateHeavyObject(0.0f, holdComponent->GetCurrentHeldObject(), holdComponent->GetHoldingObjectLocation());
+				
+			mainCharacterMovement->ProcessPushAndPull(pushingAxis, holdComponent->GetCurrentHeldObject());
+		}
+		else
+		{
+			mainCharacterMovement->ProcessPushAndPull(0.0f, holdComponent->GetCurrentHeldObject());
+			mainCharacterMovement->ProcessRotateHeavyObject(0.0f, holdComponent->GetCurrentHeldObject(), holdComponent->GetHoldingObjectLocation());
 		}
 	}
 }

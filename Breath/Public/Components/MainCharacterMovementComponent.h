@@ -33,7 +33,7 @@ public:
 	virtual void	SetPostLandedPhysics(const FHitResult& Hit) override;
 
 	void	ProcessPushAndPull(float const& coeff, UInteractableComponent* holdingObject);
-	void	ProcessRotateHeavyObject(bool direction, UInteractableComponent* holdingObject, FVector holdingObjectLocation);
+	void	ProcessRotateHeavyObject(float direction, UInteractableComponent* holdingObject, FVector holdingObjectLocation);
 	void	ProcessThrowRotation(float coeff);
 
 	void	EndJumping();
@@ -70,6 +70,10 @@ public:
 	float	MoveRotationSpeed = 360.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
 	float	FallingRotationSpeed = 100.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
+	float	RotateInterpSpeed = 1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
+	float	PushPullInterpSpeed = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Push/Pull")
 	float	PushPullSpeed = 200.f;
@@ -83,11 +87,21 @@ public:
 	FLocomotionStateDelegate onLocomotionStateChanged;
 
 private:
+	void	updatePushAndPull();
+	void	updateRotatePushAndPull();
+
+private:
+	UInteractableComponent*	holdingObject = nullptr;
 	ELocomotionState		currentLocomotionState = ELocomotionState::Walking;
 	FVector	jumpDirection;
 	//float	currentCoyoteTime = 0.0f;
 	FVector	lastOffsetLocation = FVector::ZeroVector;
 	bool	bIsJumping = false;
+	float	currentPushAndPullSpeed = 0.0f;
+	float	currentRotateSpeed = 0.0f;
+	float	pushAndPullTargetSpeed = 0.0f;
+	float	rotateTargetSpeed = 0.0f;
+
 protected:
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 
