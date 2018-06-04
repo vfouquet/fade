@@ -119,6 +119,11 @@ void AMainCharacter::Tick(float DeltaTime)
 			mainCharacterMovement->ProcessRotateHeavyObject(0.0f, holdComponent->GetCurrentHeldObject(), holdComponent->GetHoldingObjectLocation());
 		}
 	}
+	else
+	{
+		mainCharacterMovement->ProcessPushAndPull(0.0f, holdComponent->GetCurrentHeldObject());
+		mainCharacterMovement->ProcessRotateHeavyObject(0.0f, holdComponent->GetCurrentHeldObject(), holdComponent->GetHoldingObjectLocation());
+	}
 }
 
 // Called to bind functionality to input
