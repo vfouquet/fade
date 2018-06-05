@@ -107,7 +107,10 @@ void	UMainCharacterMovementComponent::ProcessRotateHeavyObject(float direction, 
 {
 	holdingObject = holdingObj;
 	if (holdingObject == nullptr || holdingObject->GetOwner() == nullptr)
+	{
 		rotateTargetSpeed = 0.0f;
+		return;
+	}
 	if (direction == -1.0f && holdingObject->bLockLeftRotate)
 		rotateTargetSpeed = 0.0f;
 	if (direction == 1.0f && holdingObject->bLockRightRotate)
@@ -166,6 +169,9 @@ bool	UMainCharacterMovementComponent::IsFalling(bool& ascending)
 
 void	UMainCharacterMovementComponent::updatePushAndPull()
 {
+	if (!holdingObject)
+		return;
+
 	bool pushing = currentPushAndPullSpeed >= 0.0f;
 
 	FVector MoveDir = GetCharacterOwner()->GetActorRotation().Vector() * (pushing? 1.0f : -1.0f);
