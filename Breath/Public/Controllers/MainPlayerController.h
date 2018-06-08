@@ -23,6 +23,7 @@ class BREATH_API AMainPlayerController : public APlayerController
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 
 	virtual void SetSpectatorPawn(class ASpectatorPawn* NewSpectatorPawn) override;
@@ -55,7 +56,9 @@ public:
 	void	MenuUp();
 	void	MenuDown();
 	void	MenuLeft();
+	void	MenuLeftReleased();
 	void	MenuRight();
+	void	MenuRightReleased();
 	void	MenuValidatePressed();
 	void	MenuValidateReleased();
 	void	MenuBackPressed();
@@ -115,6 +118,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, CAtegory = "UI")
 	TSubclassOf<class UUserWidget>	PauseWidgetSample;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, CAtegory = "UI")
+	float	PressingTimeInput = 1.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	UAkAudioEvent*	PauseAllEvent = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
@@ -133,6 +138,11 @@ private:
 	FVector2D						lastStickInput;
 	bool							bIsTPS = false;
 	bool							bIsPaused = false;
+
+	bool							bPressingLeft = false;
+	float							currentLeftPressingTime = 0.0f;
+	bool							bPressingRight = false;
+	float							currentRightPressingTime = 0.0f;
 
 	TWeakObjectPtr<UUIWidgetControllerSupported>	currentUIWidget;
 };

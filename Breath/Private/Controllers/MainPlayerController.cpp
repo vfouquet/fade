@@ -44,6 +44,32 @@ void AMainPlayerController::BeginPlay()
 	this->SetViewTarget(CameraActor);
 
 }
+	
+void AMainPlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (bPressingLeft)
+	{
+		currentLeftPressingTime += DeltaTime;
+		if (currentLeftPressingTime >= PressingTimeInput)
+		{
+			if (currentUIWidget.IsValid() && bIsPaused)
+				IUMGController::Execute_MoveLeft(currentUIWidget.Get());
+			currentLeftPressingTime = 0.0f;
+		}
+	}
+	if (bPressingRight)
+	{
+		currentRightPressingTime += DeltaTime;
+		if (currentRightPressingTime >= PressingTimeInput)
+		{
+			if (currentUIWidget.IsValid() && bIsPaused)
+				IUMGController::Execute_MoveRight(currentUIWidget.Get());
+			currentRightPressingTime = 0.0f;
+		}
+	}
+}
 
 void AMainPlayerController::SetSpectatorPawn(class ASpectatorPawn* NewSpectatorPawn)
 {
@@ -150,7 +176,9 @@ void AMainPlayerController::SetupInputComponent()
 		InputComponent->BindAction("MenuUp", IE_Pressed, this, &AMainPlayerController::MenuUp).bExecuteWhenPaused = true;
 		InputComponent->BindAction("MenuDown", IE_Pressed, this, &AMainPlayerController::MenuDown).bExecuteWhenPaused = true;
 		InputComponent->BindAction("MenuRight", IE_Pressed, this, &AMainPlayerController::MenuRight).bExecuteWhenPaused = true;
+		InputComponent->BindAction("MenuRight", IE_Released, this, &AMainPlayerController::MenuRightReleased).bExecuteWhenPaused = true;
 		InputComponent->BindAction("MenuLeft", IE_Pressed, this, &AMainPlayerController::MenuLeft).bExecuteWhenPaused = true;
+		InputComponent->BindAction("MenuLeft", IE_Released, this, &AMainPlayerController::MenuLeftReleased).bExecuteWhenPaused = true;
 		InputComponent->BindAction("MenuValidate", IE_Pressed, this, &AMainPlayerController::MenuValidatePressed).bExecuteWhenPaused = true;
 		InputComponent->BindAction("MenuValidate", IE_Released, this, &AMainPlayerController::MenuValidateReleased).bExecuteWhenPaused = true;
 		InputComponent->BindAction("MenuCancel", IE_Pressed, this, &AMainPlayerController::MenuBackPressed).bExecuteWhenPaused = true;
@@ -247,6 +275,7 @@ void	AMainPlayerController::MovePhotoForward(float value)
 
 void	AMainPlayerController::MovePhotoRight(float value)
 {
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, CAtegory = "UI")
 	if (PhotoCharacter.IsValid())
 		PhotoCharacter->MoveRight(value);
 }
@@ -342,12 +371,26 @@ void	AMainPlayerController::MenuLeft()
 {
 	if (currentUIWidget.IsValid() && bIsPaused)
 		IUMGController::Execute_MoveLeft(currentUIWidget.Get());
+	bPressingLeft = true;
+}
+
+void	AMainPlayerController::MenuLeftReleased()
+{
+	bPressingLeft = false;
+	currentLeftPressingTime = 0.0f;
+}
+
+void	AMainPlayerController::MenuRightReleased()
+{
+	bPressingRight = false;
+	currentRightPressingTime = 0.0f;
 }
 
 void	AMainPlayerController::MenuRight()
 {
 	if (currentUIWidget.IsValid() && bIsPaused)
 		IUMGController::Execute_MoveRight(currentUIWidget.Get());
+	bPressingRight = true;
 }
 
 void	AMainPlayerController::MenuValidatePressed()
