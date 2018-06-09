@@ -24,6 +24,8 @@ void UBreathGameInstance::Init()
 {
 	Super::Init();
 
+	for (int pos = 0; pos < 6; pos++)
+		levelsReady[pos] = false;
 
 	UE_LOG(LogTemp, Warning, TEXT("INIT"));
 
@@ -88,6 +90,35 @@ void UBreathGameInstance::LoadComplete(const float LoadTime, const FString& MapN
 	{
 		// return to main menu
 	}
+}
+
+void	UBreathGameInstance::ResetLevelReadyTab()
+{
+	levelsReady[0] = false;
+	levelsReady[1] = false;
+	levelsReady[2] = false;
+	levelsReady[3] = false;
+	levelsReady[4] = false;
+	levelsReady[5] = false;
+}
+
+bool	UBreathGameInstance::ToggleLevelReady(int value)
+{
+	if (value > 5 || value < 0)
+		return false;
+	levelsReady[value] = true;
+	
+	return LevelAllReady();
+}
+
+bool	UBreathGameInstance::LevelAllReady() const
+{
+	for (int pos = 0; pos < 6; pos++)
+	{
+		if (!levelsReady[pos])
+			return false;
+	}
+	return true;
 }
 
 void UBreathGameInstance::HandlePrepareLoadingScreen()

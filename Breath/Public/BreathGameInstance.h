@@ -39,6 +39,13 @@ public:
 
 	virtual void LoadComplete(const float LoadTime, const FString& MapName) override;
 
+	UFUNCTION(BlueprintCallable)
+	void	ResetLevelReadyTab();
+	UFUNCTION(BlueprintCallable)
+	bool	ToggleLevelReady(int value);
+	UFUNCTION(BlueprintPure)
+	bool	LevelAllReady() const;
+	
 	UFUNCTION()
 	void HandlePrepareLoadingScreen();
 
@@ -75,5 +82,7 @@ private:
 	void	LoadChapter(UStoryChapter* Chapter);
 
 	UWidget*	CurrentScreenWidget;
+
+	bool	levelsReady[6];
 
 };
