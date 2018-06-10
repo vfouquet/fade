@@ -84,6 +84,16 @@ void UHoldComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		}
 	}
 
+	if (currentHoldingState == EHoldingState::HeavyGrabbing)
+	{
+		if (holdingObject.IsValid() && holdingObject->GetAssociatedComponent())
+		{
+			float currentDist = FVector::Dist(mainCharacter->GetActorLocation(), holdingObject->GetAssociatedComponent()->GetComponentLocation());
+			if (FMath::Abs(currentDist - beginHeavyPushDistance) > 25.0f)
+				StopGrab();
+		}
+	}
+
 	if (currentHoldingState == EHoldingState::ReleasingLightGrab)
 	{
 		if (holdingObject.IsValid())
@@ -157,13 +167,6 @@ void	UHoldComponent::Grab()
 	}
 	else
 	{
-		currentHoldingState = EHoldingState::PreHeavyGrabbing;
-		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::PreHeavyGrabbing);
-
-		mainCharacter->BlockCharacter();
-
-		holdingObject = closestInteractableObject.Get();
-
 		FRotator newRot = (closestInteractableNormal * -1.0f).Rotation();
 		newRot.Roll = 0.0f;
 		newRot.Pitch = 0.0f;
@@ -171,14 +174,25 @@ void	UHoldComponent::Grab()
 		FRotator tempRotator = (characterCapsule->GetComponentRotation() - newRot);
 		tempRotator.Normalize();
 		float deltaRot = FMath::Abs(tempRotator.Yaw);
+		if (deltaRot > 35.0f)
+			return;
+
+		currentHoldingState = EHoldingState::PreHeavyGrabbing;
+		holdingStateChangedDelegate.Broadcast(EHoldingState::None, EHoldingState::PreHeavyGrabbing);
+
+		mainCharacter->BlockCharacter();
+
+		holdingObject = closestInteractableObject.Get();
+
+		FVector newLocation = closestInteractableLocation + closestInteractableNormal * HeavyGrabSnapDistance;
+		newLocation.Z = mainCharacter->GetActorLocation().Z;
+
+		beginHeavyPushDistance = FVector::Dist(newLocation, holdingObject->GetAssociatedComponent()->GetComponentLocation());
 
 		FTimerDelegate	del;
 		del.BindUFunction(mainCharacter, "PlayHeavyGrabMontage");
 
-		if (deltaRot > 45.0f)
-			mainCharacter->SnapCharacterTo(closestInteractableLocation - characterCapsule->GetForwardVector() * HeavyGrabSnapDistance, characterCapsule->GetComponentRotation(), 0.2f, del);
-		else
-			mainCharacter->SnapCharacterTo(closestInteractableLocation + closestInteractableNormal * HeavyGrabSnapDistance, newRot, 0.5f, del);
+		mainCharacter->SnapCharacterTo(newLocation, newRot, 0.5f, del);
 	}
 }
 void	UHoldComponent::BeginLightGrabPositionUpdate()
@@ -477,12 +491,20 @@ void	UHoldComponent::detectInteractableAround()
 	if (holdingObject.IsValid())
 		queryParams.AddIgnoredActor(holdingObject->GetOwner());
 
+	/*
 	FVector	beginTrace = characterCapsule->GetComponentLocation();
 	FVector traceLocation = characterCapsule->GetComponentLocation() + GetOwner()->GetActorForwardVector() * 2.0f * characterCapsule->GetScaledCapsuleRadius();
 	GetWorld()->SweepMultiByChannel(hitResults, beginTrace, traceLocation, characterCapsule->GetComponentQuat(), ECollisionChannel::ECC_GameTraceChannel2,
 		FCollisionShape::MakeBox(FVector(characterCapsule->GetScaledCapsuleRadius(), characterCapsule->GetScaledCapsuleRadius(), 
 			characterCapsule->GetScaledCapsuleHalfHeight())), queryParams);
-	
+	*/
+
+	FVector	beginTrace = characterCapsule->GetComponentLocation() + characterCapsule->GetScaledCapsuleRadius() * 0.9f * characterCapsule->GetForwardVector();
+	FVector	endTrace = characterCapsule->GetComponentLocation() + characterCapsule->GetScaledCapsuleRadius() * 2.0f * characterCapsule->GetForwardVector();
+
+	GetWorld()->SweepMultiByChannel(hitResults, beginTrace, endTrace, characterCapsule->GetComponentQuat(), ECollisionChannel::ECC_GameTraceChannel2, 
+		FCollisionShape::MakeCapsule(characterCapsule->GetScaledCapsuleRadius(), characterCapsule->GetScaledCapsuleHalfHeight()), queryParams);
+
 	if (hitResults.Num() > 0)
 	{
 		for (auto& hitRes : hitResults)
@@ -490,14 +512,14 @@ void	UHoldComponent::detectInteractableAround()
 			if (!hitRes.Component.IsValid())
 				continue;
 
-			float scalRes = FVector::DotProduct(characterCapsule->GetForwardVector(), hitRes.Location - characterCapsule->GetComponentLocation());
+			float scalRes = FVector::DotProduct(characterCapsule->GetForwardVector(), hitRes.ImpactPoint - characterCapsule->GetComponentLocation());
 			if (scalRes < 0.0f)
 				continue;
 
 			UInteractableComponent* interComp = UInteractableComponent::FindAssociatedInteractableComponent(hitRes.Component.Get());
 			if (interComp == holdingObject)
 			{
-				closestInteractableLocation = hitRes.Location;
+				closestInteractableLocation = hitRes.ImpactPoint;
 				closestInteractableNormal = hitRes.Normal;
 				continue;
 			}
@@ -508,7 +530,7 @@ void	UHoldComponent::detectInteractableAround()
 				{
 					closestInteractable = distance;
 					closestInteractableObject = interComp;
-					closestInteractableLocation = hitRes.Location;
+					closestInteractableLocation = hitRes.ImpactPoint;
 					closestInteractableNormal = hitRes.Normal;
 				}
 			}

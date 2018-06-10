@@ -107,6 +107,7 @@ protected:
 	TWeakObjectPtr<UInteractableComponent>		closestInteractableObject;
 	FVector										closestInteractableNormal;
 	FVector										closestInteractableLocation;
+	float										beginHeavyPushDistance = 0.0f;
 
 	UCapsuleComponent*				characterCapsule = nullptr;
 	bool							previousGravityValue = false;
