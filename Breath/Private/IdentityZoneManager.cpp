@@ -10,6 +10,8 @@
 #include "Components/DecalComponent.h"
 #include "Components/BoxComponent.h"
 
+#include "Classes/Materials/MaterialParameterCollectionInstance.h"
+
 // Sets default values
 AIdentityZoneManager::AIdentityZoneManager()
 {
@@ -75,6 +77,10 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 	if (!whiteZoneMaterial || !decalNormalMaterial || !decalRoughnessMaterial)
 		return;
 
+	UMaterialParameterCollectionInstance*	paramInst = nullptr;
+	if (StopParametersCollection)
+		paramInst = GetWorld()->GetParameterCollectionInstance(StopParametersCollection);
+
 	if (!character)
 		return;
 
@@ -83,8 +89,8 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 	FVector sourceLocation = character->GetActorLocation();
 	erasedZones.Sort([sourceLocation](const TWeakObjectPtr<UIdentityEraserComponent>& A, const TWeakObjectPtr<UIdentityEraserComponent>& B)
 	{
-		float distA = FVector::DistSquared(sourceLocation, A->GetComponentLocation());
-		float distB = FVector::DistSquared(sourceLocation, B->GetComponentLocation());
+		float distA = FVector::Dist(sourceLocation, A->GetComponentLocation());
+		float distB = FVector::Dist(sourceLocation, B->GetComponentLocation());
 		return distA < distB;
 	});
 
@@ -95,16 +101,43 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 	int pos = 0;
 	for (pos; pos < maxIdx; pos++)
 	{
+		float currentDist = FVector::Dist(sourceLocation, erasedZones[pos]->GetComponentLocation());
 		FString indexStr = FString::FromInt(pos + 1);
 
-		whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius() + erasedZones[pos]->FallOffValue);
-		whiteZoneMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
-	
-		decalNormalMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius() + erasedZones[pos]->FallOffValue);
-		decalNormalMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
+		if (erasedZones[pos]->MaxCullDistance > 0.0f && currentDist > erasedZones[pos]->MaxCullDistance)
+		{
+			whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), 0.0f);
+			whiteZoneMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), FVector::ZeroVector);
 
-		decalRoughnessMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius() + erasedZones[pos]->FallOffValue);
-		decalRoughnessMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
+			decalNormalMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), 0.0f);
+			decalNormalMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), FVector::ZeroVector);
+
+			decalRoughnessMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), 0.0f);
+			decalRoughnessMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), FVector::ZeroVector);
+
+			if (paramInst)
+			{
+				paramInst->SetVectorParameterValue(FName(*("Meteor_" + indexStr + "_Position")), FVector::ZeroVector);
+				paramInst->SetScalarParameterValue(FName(*("Meteor_" + indexStr + "_FallOff_start")), 0.0f);
+			}
+		}
+		else
+		{
+			whiteZoneMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius() + erasedZones[pos]->FallOffValue);
+			whiteZoneMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
+
+			decalNormalMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius() + erasedZones[pos]->FallOffValue);
+			decalNormalMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
+
+			decalRoughnessMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), erasedZones[pos]->GetScaledSphereRadius() + erasedZones[pos]->FallOffValue);
+			decalRoughnessMaterial->SetVectorParameterValue(FName(*("Position_" + indexStr)), erasedZones[pos]->GetComponentLocation());
+
+			if (paramInst)
+			{
+				paramInst->SetVectorParameterValue(FName(*("Meteor_" + indexStr + "_Position")), erasedZones[pos]->GetComponentLocation());
+				paramInst->SetScalarParameterValue(FName(*("Meteor_" + indexStr + "_FallOff_start")), erasedZones[pos]->GetScaledSphereRadius());
+			}
+		}
 	}
 	for (pos; pos < 30; pos++)
 	{

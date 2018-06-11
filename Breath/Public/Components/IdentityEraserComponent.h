@@ -48,6 +48,8 @@ public:
 	float	FallOffValue = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Optimization")
 	float	MaxCullDistance = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Optimization")
+	float	MaxExclusionCullDistance = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TEMPSHIT")
 	int		STENCILVALUE = 255;

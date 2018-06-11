@@ -56,7 +56,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader")
 	UMaterialInterface*	DecalRoughnessMaterialInterface = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader")
-	UMaterialInterface*	DecalNormalMaterialInterface = nullptr;
+	UMaterialInterface*		DecalNormalMaterialInterface = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader")
+	UMaterialParameterCollection*	StopParametersCollection = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shader")
 	float	ZoneOffset = 100.0f;
 
