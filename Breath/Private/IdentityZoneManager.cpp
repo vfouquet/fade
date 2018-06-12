@@ -147,6 +147,11 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 		decalNormalMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), 0.0f);
 		
 		decalRoughnessMaterial->SetScalarParameterValue(FName(*("Size_" + indexStr)), 0.0f);
+		if (paramInst)
+		{
+			paramInst->SetVectorParameterValue(FName(*("Meteor_" + indexStr + "_Position")), FVector::ZeroVector);
+			paramInst->SetScalarParameterValue(FName(*("Meteor_" + indexStr + "_FallOff_start")), 0.0f);
+		}
 	}
 
 	memoryZones.RemoveAll([](const TWeakObjectPtr<UMemoryZoneComponent>& p1) { return !p1.IsValid(); });
@@ -175,6 +180,12 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 
 		decalRoughnessMaterial->SetScalarParameterValue(FName(*("Memory_Size_" + indexStr)), memoryZones[pos]->GetScaledSphereRadius());
 		decalRoughnessMaterial->SetVectorParameterValue(FName(*("Memory_Position_" + indexStr)), memoryZones[pos]->GetComponentLocation());
+
+		if (paramInst)
+		{
+			paramInst->SetVectorParameterValue(FName(*("Memory_" + indexStr + "_Position")), memoryZones[pos]->GetComponentLocation());
+			paramInst->SetScalarParameterValue(FName(*("Memory_" + indexStr + "_Radius")), memoryZones[pos]->GetScaledSphereRadius());
+		}
 	}
 	for (pos; pos < 5; pos++)
 	{
@@ -184,6 +195,12 @@ void AIdentityZoneManager::Tick(float DeltaTime)
 		decalNormalMaterial->SetScalarParameterValue(FName(*("Memory_Size_" + indexStr)), 0.0f);
 		
 		decalRoughnessMaterial->SetScalarParameterValue(FName(*("Memory_Size_" + indexStr)), 0.0f);
+	
+		if (paramInst)
+		{
+			paramInst->SetVectorParameterValue(FName(*("Memory_" + indexStr + "_Position")), FVector::ZeroVector);
+			paramInst->SetScalarParameterValue(FName(*("Memory_" + indexStr + "_Radius")), 0.0f);
+		}
 	}
 
 	return;
