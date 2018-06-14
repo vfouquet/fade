@@ -47,6 +47,7 @@ public:
 	void	MovePhotoRight(float Value);
 	void	MovePhotoUp(float value);
 	void	MovePhotoDown(float value);
+	void	MovePhotoFaster(float value);
 
 	void	RotateHorizontal(float Value);
 	void	RotateVertical(float Value);
@@ -75,6 +76,8 @@ public:
 	AMainCharacter*	GetMainCharacter() const { return MainCharacter; }
 	UFUNCTION(BlueprintPure)
 	APhotoCharacter*	GetPhotoCharacter() const { return PhotoCharacter.IsValid()? PhotoCharacter.Get() : nullptr; }
+	UFUNCTION(BlueprintPure)
+	UUIWidgetControllerSupported*	GetCurrentUIWidget() const { return currentUIWidget.IsValid() ? currentUIWidget.Get() : nullptr; }
 
 	UFUNCTION(Exec)
 	void	EnableGodMode();
@@ -123,7 +126,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	UAkAudioEvent*	PauseAllEvent = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
-	UAkAudioEvent*	ResumeAllEvent = nullptr;
+	UAkAudioEvent*	ResumeAllEvent = nullptr;	
 
 protected:
 	UPROPERTY(VisibleAnywhere)

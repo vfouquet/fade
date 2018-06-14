@@ -164,6 +164,7 @@ void AMainPlayerController::SetupInputComponent()
 		InputComponent->BindAxis("MoveRight", this, &AMainPlayerController::MovePhotoRight).bExecuteWhenPaused = true;
 		InputComponent->BindAxis("MovePhotoUp", this, &AMainPlayerController::MovePhotoUp).bExecuteWhenPaused = true;
 		InputComponent->BindAxis("MovePhotoDown", this, &AMainPlayerController::MovePhotoDown).bExecuteWhenPaused = true;
+		InputComponent->BindAxis("MovePhotoFaster", this, &AMainPlayerController::MovePhotoFaster).bExecuteWhenPaused = true;
 		InputComponent->BindAxis("LookHorizontal", this, &AMainPlayerController::RotateHorizontal);
 		InputComponent->BindAxis("LookVertical", this, &AMainPlayerController::RotateVertical);
 
@@ -290,6 +291,12 @@ void	AMainPlayerController::MovePhotoDown(float value)
 {
 	if (PhotoCharacter.IsValid())
 		PhotoCharacter->MoveUp(-value);
+}
+
+void	AMainPlayerController::MovePhotoFaster(float value)
+{
+	if (PhotoCharacter.IsValid())
+		PhotoCharacter->SetSpeedCoef(1.0f + value);
 }
 
 void	AMainPlayerController::RotateHorizontal(float Value)
