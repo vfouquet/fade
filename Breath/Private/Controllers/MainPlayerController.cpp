@@ -195,6 +195,7 @@ void AMainPlayerController::Possess(APawn* aPawn)
 {
 	Super::Possess(aPawn);
 
+	const bool maincCharaAlreadyAssign = MainCharacter != nullptr;
 	AMainCharacter* tempChara = Cast<AMainCharacter>(aPawn);
 	if (tempChara)
 		MainCharacter = tempChara;
@@ -206,11 +207,12 @@ void AMainPlayerController::Possess(APawn* aPawn)
 
 		SpringArmComponent = MainCharacter->FindComponentByClass<USpringArmComponent>();
 
-		
-		FScriptDelegate	onDieDel;
-		onDieDel.BindUFunction(this, "OnPawnDeath");
-		MainCharacter->OnDie.Add(onDieDel);
-
+		if (!maincCharaAlreadyAssign)
+		{
+			FScriptDelegate	onDieDel;
+			onDieDel.BindUFunction(this, "OnPawnDeath");
+			MainCharacter->OnDie.Add(onDieDel);
+		}
 	}
 }
 
